@@ -115,13 +115,16 @@ export const extend = <T extends object>(
 }
 
 /** Decodes theme values from unknown input, such as a language model's structured output,
- *  and builds the theme. Fails with a `SchemaError` that says which values were wrong. */
+ *  and builds the theme. Fails with a `SchemaError` that lists every wrong value, each with
+ *  its path and the kind it should have been, such as
+ *  `Expected a CSS length, such as 0.75rem or 12px at ["space"]["2"]`. */
 export const decode = <T extends object>(
   tokens: T,
   input: unknown,
 ): Effect.Effect<Theme, Schema.SchemaError> =>
-  Effect.map(Schema.decodeUnknownEffect(schema(tokens))(input), values =>
-    make(tokens, values),
+  Effect.map(
+    Schema.decodeUnknownEffect(schema(tokens))(input, { errors: 'all' }),
+    values => make(tokens, values),
   )
 
 /** The rule that applies `theme` at `selector`. */
