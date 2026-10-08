@@ -71,7 +71,7 @@ export const theme = (
   for (const [name, tokenValue] of value.declarations) {
     tokenValues.set(name, tokenValue)
   }
-  const merged: Theme.Theme = { _tag: 'Theme', declarations: [...tokenValues] }
+  const merged: Theme.Theme = { ...value, declarations: [...tokenValues] }
   const text = wrapInAtRules(condition, Theme.css(merged, selector))
   tokenValuesByScope.set(id, tokenValues)
   registerGlobal({ id, layer: 'themes', rule: text })
