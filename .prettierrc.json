@@ -1,0 +1,13 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "arrowParens": "avoid",
+  "trailingComma": "all",
+  "printWidth": 90,
+  "overrides": [
+    {
+      "files": ["site/src/snippet/**", "site/src/demo/**"],
+      "options": { "printWidth": 68 }
+    }
+  ]
+}

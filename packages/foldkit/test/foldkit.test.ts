@@ -37,10 +37,7 @@ const view = (model: Model, h: HtmlBuilder<never>): Document => ({
 
 const render = (model: Model) =>
   Effect.runPromise(
-    Server.renderToString(
-      { init: () => ({ model }), view },
-      { isHydratable: false },
-    ),
+    Server.renderToString({ init: () => ({ model }), view }, { isHydratable: false }),
   )
 
 describe('css', () => {

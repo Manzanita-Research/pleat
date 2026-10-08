@@ -10,7 +10,15 @@
     "url": "git+https://github.com/Manzanita-Research/pleat.git",
     "directory": "packages/core"
   },
-  "keywords": ["css", "css-in-ts", "atomic-css", "effect", "foldkit", "design-tokens", "generative-ui"],
+  "keywords": [
+    "css",
+    "css-in-ts",
+    "atomic-css",
+    "effect",
+    "foldkit",
+    "design-tokens",
+    "generative-ui"
+  ],
   "exports": {
     ".": {
       "@pleat/source": "./src/index.ts",
@@ -18,7 +26,11 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "src", "!src/**/*.test.ts"],
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"

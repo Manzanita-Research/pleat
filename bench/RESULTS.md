@@ -5,17 +5,17 @@ common Tailwind stack (class-variance-authority for variants, tailwind-merge so 
 
 Measured Oct 8 2026 on an AMD Ryzen 5 7640HS, Node v26.8.2, median of 7 rounds.
 
-| One styled element per render | Time per operation | Relative |
-| --- | ---: | ---: |
-| Pleat: recipe → `css()` | 90 ns | 1.0× |
-| Pleat: recipe + override → `css()` | 107 ns | 1.2× |
-| cva | 228 ns | 2.5× |
-| cva + tailwind-merge with an override | 334 ns | 3.7× |
+| One styled element per render         | Time per operation | Relative |
+| ------------------------------------- | -----------------: | -------: |
+| Pleat: recipe → `css()`               |              90 ns |     1.0× |
+| Pleat: recipe + override → `css()`    |             107 ns |     1.2× |
+| cva                                   |             228 ns |     2.5× |
+| cva + tailwind-merge with an override |             334 ns |     3.7× |
 
 | Server render of 500 buttons with Foldkit | Time per operation | Relative |
-| --- | ---: | ---: |
-| Pleat | 32.76 ms | 1.0× |
-| Tailwind classes via cva | 39.14 ms | 1.2× |
+| ----------------------------------------- | -----------------: | -------: |
+| Pleat                                     |           32.76 ms |     1.0× |
+| Tailwind classes via cva                  |           39.14 ms |     1.2× |
 
 What the numbers mean:
 

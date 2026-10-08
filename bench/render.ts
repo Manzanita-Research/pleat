@@ -23,9 +23,10 @@ const button = Recipe.make({
       Primary: Style.make({ backgroundColor: 'rgb(29, 78, 216)', color: 'white' }).pipe(
         Style.when(When.hover, { backgroundColor: 'rgb(30, 64, 175)' }),
       ),
-      Neutral: Style.make({ backgroundColor: 'rgb(243, 244, 246)', color: 'rgb(17, 24, 39)' }).pipe(
-        Style.when(When.hover, { backgroundColor: 'rgb(229, 231, 235)' }),
-      ),
+      Neutral: Style.make({
+        backgroundColor: 'rgb(243, 244, 246)',
+        color: 'rgb(17, 24, 39)',
+      }).pipe(Style.when(When.hover, { backgroundColor: 'rgb(229, 231, 235)' })),
       Danger: Style.make({ backgroundColor: 'rgb(220, 38, 38)', color: 'white' }),
     },
     size: {
@@ -111,7 +112,12 @@ const describe = (group: string, define: () => void) => {
 const bench = (name: string, operation: () => unknown) => {
   cases.push({ name, operation })
 }
-const pending: Array<Readonly<{ group: string; cases: ReadonlyArray<Readonly<{ name: string; operation: () => unknown }>> }>> = []
+const pending: Array<
+  Readonly<{
+    group: string
+    cases: ReadonlyArray<Readonly<{ name: string; operation: () => unknown }>>
+  }>
+> = []
 
 // CASES
 
@@ -143,7 +149,11 @@ describe('one styled element per render', () => {
   })
 })
 
-type Row = Readonly<{ id: number; tone: (typeof TONES)[number]; size: (typeof SIZES)[number] }>
+type Row = Readonly<{
+  id: number
+  tone: (typeof TONES)[number]
+  size: (typeof SIZES)[number]
+}>
 const rows: ReadonlyArray<Row> = Array.from({ length: ROWS }, (_, id) => ({
   id,
   tone: TONES[id % 3] ?? 'Neutral',
@@ -168,7 +178,10 @@ const tailwindView = (model: ReadonlyArray<Row>, h: HtmlBuilder<never>): Documen
 
 const renderStatic = (view: typeof pleatView) =>
   Effect.runPromise(
-    Server.renderToString({ init: () => ({ model: rows }), view }, { isHydratable: false }),
+    Server.renderToString(
+      { init: () => ({ model: rows }), view },
+      { isHydratable: false },
+    ),
   )
 
 describe(`server render of ${ROWS} buttons with Foldkit`, () => {

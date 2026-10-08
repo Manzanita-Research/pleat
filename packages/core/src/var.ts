@@ -54,8 +54,7 @@ export const makeRef = <Fields extends object>(
       `[pleat] Fallback ${JSON.stringify(fallback)} for ${name} is not a safe CSS value.`,
     )
   }
-  const reference =
-    fallback === undefined ? `var(${name})` : `var(${name}, ${fallback})`
+  const reference = fallback === undefined ? `var(${name})` : `var(${name}, ${fallback})`
   return Object.assign(Object.create(RefProto), fields, { name, reference })
 }
 

@@ -7,10 +7,7 @@ import { build, defaultClientConditions } from 'vite'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { description } from '../../packages/core/test/arbitrary.ts'
-import {
-  type Description,
-  fromDescription,
-} from '../../packages/core/test/universe.ts'
+import { type Description, fromDescription } from '../../packages/core/test/universe.ts'
 import { launch } from './chromium.ts'
 
 // The claim under test: for any style and any set of active conditions, the browser's
@@ -70,7 +67,10 @@ const samplesFor = (index: number): ReadonlyArray<Sample> =>
     seed: SEED + index,
   })
 
-const activeAtomKeys = (environment: Environment, state: ElementState): ReadonlySet<string> => {
+const activeAtomKeys = (
+  environment: Environment,
+  state: ElementState,
+): ReadonlySet<string> => {
   const keys = new Set<string>()
   const add = (condition: When.Condition, isActive: boolean) => {
     if (isActive) {
@@ -152,7 +152,9 @@ const computedStyles = (page: Page, count: number) =>
         return Object.fromEntries(
           probed.map(property => [
             property,
-            computed.getPropertyValue(property.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)),
+            computed.getPropertyValue(
+              property.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`),
+            ),
           ]),
         )
       }
@@ -238,7 +240,9 @@ describe('the compiled CSS means what Style.resolve says', () => {
   for (const [index, environment] of ENVIRONMENTS.entries()) {
     test(`server-rendered sheet, ${JSON.stringify(environment)}`, async () => {
       const samples = samplesFor(index)
-      const classNames = samples.map(({ description }) => fromDescription(description).className)
+      const classNames = samples.map(
+        ({ description }) => fromDescription(description).className,
+      )
       const page = await browser.newPage()
       await configure(page, environment)
       await page.setContent(
@@ -246,7 +250,11 @@ describe('the compiled CSS means what Style.resolve says', () => {
           `<body>${renderElements(samples, classNames)}</body></html>`,
       )
       await forcePseudoStates(page, samples)
-      const mismatches = compare(samples, environment, await computedStyles(page, samples.length))
+      const mismatches = compare(
+        samples,
+        environment,
+        await computedStyles(page, samples.length),
+      )
       await page.close()
       expect(mismatches.slice(0, 3)).toEqual([])
     })
@@ -255,7 +263,9 @@ describe('the compiled CSS means what Style.resolve says', () => {
   for (const [index, environment] of ENVIRONMENTS.entries()) {
     test(`browser insertion next to a partial server sheet, ${JSON.stringify(environment)}`, async () => {
       const samples = samplesFor(index + ENVIRONMENTS.length)
-      const nodeClassNames = samples.map(({ description }) => fromDescription(description).className)
+      const nodeClassNames = samples.map(
+        ({ description }) => fromDescription(description).className,
+      )
       const half = Math.floor(samples.length / 2)
       const serverHtml = renderElements(samples.slice(0, half), nodeClassNames)
       const page = await browser.newPage()
@@ -275,11 +285,18 @@ describe('the compiled CSS means what Style.resolve says', () => {
         [...samples].reverse().map(({ description }) => description),
       )
       expect([...pageClassNames].reverse()).toEqual(nodeClassNames)
-      await page.evaluate(html => {
-        document.body.innerHTML = html
-      }, renderElements(samples, nodeClassNames))
+      await page.evaluate(
+        html => {
+          document.body.innerHTML = html
+        },
+        renderElements(samples, nodeClassNames),
+      )
       await forcePseudoStates(page, samples)
-      const mismatches = compare(samples, environment, await computedStyles(page, samples.length))
+      const mismatches = compare(
+        samples,
+        environment,
+        await computedStyles(page, samples.length),
+      )
       await page.close()
       expect(mismatches.slice(0, 3)).toEqual([])
     })

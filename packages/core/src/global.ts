@@ -73,7 +73,8 @@ export const fontFace = (declarations: Declarations): void => {
   registerGlobal({ id: `font:${digest(text)}`, layer: 'globals', rule: text })
 }
 
-const KEYFRAME_SELECTOR = /^(from|to|\d{1,3}(\.\d+)?%)(\s*,\s*(from|to|\d{1,3}(\.\d+)?%))*$/
+const KEYFRAME_SELECTOR =
+  /^(from|to|\d{1,3}(\.\d+)?%)(\s*,\s*(from|to|\d{1,3}(\.\d+)?%))*$/
 const KEYFRAMES_NAME = /^[a-z][a-z0-9-]*$/
 
 /** Defines an `@keyframes` animation and returns its name, made unique by a hash of its

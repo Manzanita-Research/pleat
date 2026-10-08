@@ -8,15 +8,11 @@ import { isRef, type Ref } from './var.ts'
 
 /** Values for every token in a tree. A value may be another token, to alias it. */
 export type Values<T> =
-  T extends Token<infer A>
-    ? A | Ref
-    : { readonly [K in keyof T]: Values<T[K]> }
+  T extends Token<infer A> ? A | Ref : { readonly [K in keyof T]: Values<T[K]> }
 
 /** Values for some tokens in a tree, for overriding part of a theme. */
 export type PartialValues<T> =
-  T extends Token<infer A>
-    ? A | Ref
-    : { readonly [K in keyof T]?: PartialValues<T[K]> }
+  T extends Token<infer A> ? A | Ref : { readonly [K in keyof T]?: PartialValues<T[K]> }
 
 /** An assignment of values to tokens. Applying a theme to a selector sets its custom
  *  properties there, and every style that uses the tokens follows. Themes nest by selector. */
@@ -82,7 +78,9 @@ const collect = (
   }
   if (typeof values !== 'object' || values === null) {
     if (values !== undefined) {
-      throw new Error(`[pleat] Theme values at ${path.join('.') || 'the root'} must be an object.`)
+      throw new Error(
+        `[pleat] Theme values at ${path.join('.') || 'the root'} must be an object.`,
+      )
     }
     return
   }

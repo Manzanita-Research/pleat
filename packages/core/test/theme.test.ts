@@ -19,7 +19,9 @@ describe('Token', () => {
   test('names custom properties after their path', () => {
     expect(tokens.color.onAccent.name).toBe('--color-on-accent')
     expect(String(tokens.space[2])).toBe('var(--space-2)')
-    expect(Token.make({ ink: Token.color }, { prefix: 'brand-' }).ink.name).toBe('--brand-ink')
+    expect(Token.make({ ink: Token.color }, { prefix: 'brand-' }).ink.name).toBe(
+      '--brand-ink',
+    )
     expect(Token.leaves(tokens)).toHaveLength(7)
   })
 })

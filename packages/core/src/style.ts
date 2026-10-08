@@ -13,13 +13,7 @@ import {
 } from './declarations.ts'
 import { digest, hash32 } from './hash.ts'
 import { overlapsPartially, shadows } from './property.ts'
-import {
-  type Atom,
-  compareAtoms,
-  insert,
-  makeAtom,
-  registerAtom,
-} from './sheet.ts'
+import { type Atom, compareAtoms, insert, makeAtom, registerAtom } from './sheet.ts'
 import type { Value } from './var.ts'
 import * as When from './when.ts'
 
@@ -149,11 +143,7 @@ const replayOrder = (style: Style): ReadonlyArray<Atom> =>
 
 const CLASS_PREFIX = 'p'
 
-const atomFor = (
-  condition: When.Condition,
-  property: string,
-  value: string,
-): Atom => {
+const atomFor = (condition: When.Condition, property: string, value: string): Atom => {
   const key = `${condition.key}{${property}:${value}}`
   return registerAtom(
     makeAtom(
@@ -294,9 +284,9 @@ export const under: {
  *  const darkenText = Style.evolve({ color: color => Color.darken(color, 0.1) })
  *  ``` */
 export const evolve: {
-  (
-    transforms: { readonly [Property in keyof Declarations]?: (value: string) => Value },
-  ): (self: Style) => Style
+  (transforms: {
+    readonly [Property in keyof Declarations]?: (value: string) => Value
+  }): (self: Style) => Style
   (
     self: Style,
     transforms: { readonly [Property in keyof Declarations]?: (value: string) => Value },
@@ -306,8 +296,7 @@ export const evolve: {
   (
     self: Style,
     transforms: { readonly [Property in keyof Declarations]?: (value: string) => Value },
-  ): Style =>
-  {
+  ): Style => {
     const byProperty = new Map<string, (value: string) => Value>()
     for (const [property, transform] of Object.entries(transforms)) {
       if (typeof transform === 'function') {
@@ -373,7 +362,7 @@ export const get = (
 
 /** One declaration of a style, for inspection. */
 export type Entry = Readonly<{
-  /** The condition's canonical key, or `always`. */
+  /** The condition, described by `When.label`. */
   condition: string
   property: string
   value: string
@@ -385,7 +374,7 @@ export const declarations = (style: Style): ReadonlyArray<Entry> =>
     .filter(atom => atom._tag === 'Declaration')
     .sort(compareAtoms)
     .map(atom => ({
-      condition: atom.condition.key === '' ? 'always' : atom.condition.key,
+      condition: When.label(atom.condition),
       property: atom.property,
       value: atom.value,
     }))
@@ -403,10 +392,7 @@ export const resolve = (
   isActive: (atom: When.Atom) => boolean = () => false,
 ): Readonly<Record<string, string>> => {
   const active = style.atoms
-    .filter(
-      atom =>
-        atom._tag === 'Declaration' && atom.condition.atoms.every(isActive),
-    )
+    .filter(atom => atom._tag === 'Declaration' && atom.condition.atoms.every(isActive))
     .sort(compareAtoms)
   const resolved = new Map<string, string>()
   for (const atom of active) {

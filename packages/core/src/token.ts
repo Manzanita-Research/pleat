@@ -6,7 +6,9 @@ import { isRef, makeRef, type Ref } from './var.ts'
 // KINDS
 
 const safe = Schema.makeFilter((value: string) =>
-  isSafeValue(value) ? undefined : 'a CSS value without ; { } < ! comments or unbalanced brackets',
+  isSafeValue(value)
+    ? undefined
+    : 'a CSS value without ; { } < ! comments or unbalanced brackets',
 )
 
 const COLOR =
@@ -56,7 +58,11 @@ export const duration: Kind<string> = kind(
 /** A font stack such as `"Inter", system-ui, sans-serif`. */
 export const fontFamily: Kind<string> = kind(
   'FontFamily',
-  patterned(FONT_FAMILY, 'Font family', 'A CSS font stack, such as "Inter", system-ui, sans-serif.'),
+  patterned(
+    FONT_FAMILY,
+    'Font family',
+    'A CSS font stack, such as "Inter", system-ui, sans-serif.',
+  ),
 )
 
 /** A unitless number such as a font weight, line height, or opacity. */
@@ -89,10 +95,11 @@ export type Spec = Kind | { readonly [key: string]: Spec }
 
 /** The tokens for a spec: the same tree with tokens at the leaves. */
 export type Tokens<S extends Spec> =
-  S extends Kind<infer A> ? Token<A> : { readonly [K in keyof S]: S[K] extends Spec ? Tokens<S[K]> : never }
+  S extends Kind<infer A>
+    ? Token<A>
+    : { readonly [K in keyof S]: S[K] extends Spec ? Tokens<S[K]> : never }
 
-const isKind = (spec: Spec): spec is Kind =>
-  '_tag' in spec && spec._tag === 'Kind'
+const isKind = (spec: Spec): spec is Kind => '_tag' in spec && spec._tag === 'Kind'
 
 const SEGMENT = /^[A-Za-z0-9]+$/
 
@@ -126,7 +133,10 @@ const build = (spec: Spec, path: ReadonlyArray<string>, prefix: string): unknown
     return makeRef(name, { kind: spec, path })
   }
   return Object.fromEntries(
-    Object.entries(spec).map(([key, child]) => [key, build(child, [...path, key], prefix)]),
+    Object.entries(spec).map(([key, child]) => [
+      key,
+      build(child, [...path, key], prefix),
+    ]),
   )
 }
 

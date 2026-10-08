@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/not-found.ts",
     "preview": "vite preview --outDir dist/client",
     "typecheck": "tsc --noEmit"
   },

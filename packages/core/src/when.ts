@@ -92,8 +92,7 @@ const fromAtoms = (atoms: Iterable<Atom>): Condition => {
 export const always: Condition = fromAtoms([])
 
 /** Whether `condition` is {@link always}. */
-export const isAlways = (condition: Condition): boolean =>
-  condition.atoms.length === 0
+export const isAlways = (condition: Condition): boolean => condition.atoms.length === 0
 
 /** The conjunction of conditions: holds when every one of them holds. */
 export const all = (...conditions: ReadonlyArray<Condition>): Condition =>
@@ -187,10 +186,7 @@ const assertAttributeName = (name: string): void => {
 }
 
 /** A pseudo-class on the element, such as `:first-child` or `:nth-child(odd)`. */
-export const pseudo = (
-  selector: string,
-  rank: number = Rank.structure,
-): Condition => {
+export const pseudo = (selector: string, rank: number = Rank.structure): Condition => {
   if (!PSEUDO_SELECTOR.test(selector) || selector.startsWith('::')) {
     throw new Error(
       `[pleat] ${JSON.stringify(selector)} is not a pseudo-class. ` +
@@ -230,15 +226,9 @@ export const hover: Condition = stateSelector(':hover', Rank.hover)
 /** The element has focus. */
 export const focus: Condition = stateSelector(':focus', Rank.focus)
 /** The element has focus and the browser would show a focus ring (keyboard focus). */
-export const focusVisible: Condition = stateSelector(
-  ':focus-visible',
-  Rank.focusVisible,
-)
+export const focusVisible: Condition = stateSelector(':focus-visible', Rank.focusVisible)
 /** The element or one of its descendants has focus. */
-export const focusWithin: Condition = stateSelector(
-  ':focus-within',
-  Rank.focusWithin,
-)
+export const focusWithin: Condition = stateSelector(':focus-within', Rank.focusWithin)
 /** The element is being pressed. */
 export const active: Condition = stateSelector(':active', Rank.active)
 
@@ -279,25 +269,13 @@ export const open: Condition = stateSelector(
   Rank.open,
 )
 /** The element is the highlighted option of a menu or listbox (`data-active` in Foldkit UI). */
-export const highlighted: Condition = stateSelector(
-  '[data-active]',
-  Rank.highlighted,
-)
+export const highlighted: Condition = stateSelector('[data-active]', Rank.highlighted)
 /** A transitioning element in its closed state (`data-closed`). */
-export const closed: Condition = stateSelector(
-  '[data-closed]',
-  Rank.transition,
-)
+export const closed: Condition = stateSelector('[data-closed]', Rank.transition)
 /** A transitioning element while it enters (`data-enter`). */
-export const entering: Condition = stateSelector(
-  '[data-enter]',
-  Rank.transition,
-)
+export const entering: Condition = stateSelector('[data-enter]', Rank.transition)
 /** A transitioning element while it leaves (`data-leave`). */
-export const leaving: Condition = stateSelector(
-  '[data-leave]',
-  Rank.transition,
-)
+export const leaving: Condition = stateSelector('[data-leave]', Rank.transition)
 /** An element with an active transition (`data-transition`). */
 export const transitioning: Condition = stateSelector(
   '[data-transition]',
@@ -388,12 +366,7 @@ export const precededBy: {
   (condition: Condition): Condition
   (marker: Marker, condition?: Condition): Condition
 } = (markerOrCondition: Marker | Condition, condition?: Condition) =>
-  relational(
-    selector => `${selector} ~ *`,
-    markerOrCondition,
-    condition,
-    'precededBy',
-  )
+  relational(selector => `${selector} ~ *`, markerOrCondition, condition, 'precededBy')
 
 /** The element contains a descendant that matches: `has(checkbox, When.checked)`. */
 export const has: {
@@ -483,15 +456,9 @@ export const maxWidth = (width: string): Condition => {
 }
 
 /** The user prefers a dark color scheme. */
-export const dark: Condition = media(
-  '(prefers-color-scheme: dark)',
-  Rank.colorScheme,
-)
+export const dark: Condition = media('(prefers-color-scheme: dark)', Rank.colorScheme)
 /** The user prefers a light color scheme. */
-export const light: Condition = media(
-  '(prefers-color-scheme: light)',
-  Rank.colorScheme,
-)
+export const light: Condition = media('(prefers-color-scheme: light)', Rank.colorScheme)
 /** The user asked for reduced motion. */
 export const reducedMotion: Condition = media(
   '(prefers-reduced-motion: reduce)',
@@ -503,10 +470,7 @@ export const motionSafe: Condition = media(
   Rank.motion,
 )
 /** The user asked for more contrast. */
-export const moreContrast: Condition = media(
-  '(prefers-contrast: more)',
-  Rank.contrast,
-)
+export const moreContrast: Condition = media('(prefers-contrast: more)', Rank.contrast)
 /** The primary pointer can hover. Pair with {@link hover} to skip sticky hover on touch. */
 export const canHover: Condition = media('(hover: hover)', Rank.media)
 /** The page is being printed. */
@@ -536,6 +500,21 @@ export const placeholder: Condition = pseudoElement('::placeholder')
 export const selection: Condition = pseudoElement('::selection')
 /** A dialog's or full-screen element's backdrop. */
 export const backdrop: Condition = pseudoElement('::backdrop')
+
+/** A readable description of a condition, such as `@media (prefers-color-scheme: dark) & :hover`,
+ *  or `always`. */
+export const label = (condition: Condition): string =>
+  isAlways(condition)
+    ? 'always'
+    : condition.atoms
+        .map(atom =>
+          atom._tag === 'Selector'
+            ? atom.selector
+            : atom._tag === 'AtRule'
+              ? atom.atRule
+              : atom.pseudoElement,
+        )
+        .join(' & ')
 
 // RENDERING
 

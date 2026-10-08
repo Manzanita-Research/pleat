@@ -11,9 +11,7 @@ describe('Style is an idempotent monoid', () => {
   test('merge is associative', () => {
     fc.assert(
       fc.property(style, style, style, (a, b, c) => {
-        expect(Style.merge(Style.merge(a, b), c)).toBe(
-          Style.merge(a, Style.merge(b, c)),
-        )
+        expect(Style.merge(Style.merge(a, b), c)).toBe(Style.merge(a, Style.merge(b, c)))
       }),
       { numRuns: RUNS },
     )
@@ -106,9 +104,7 @@ describe('conditions act on styles', () => {
     fc.assert(
       fc.property(condition, condition, style, (c, d, a) => {
         fc.pre(!mentions(a, c) && !mentions(a, d))
-        expect(Style.under(Style.under(a, d), c)).toBe(
-          Style.under(a, When.all(c, d)),
-        )
+        expect(Style.under(Style.under(a, d), c)).toBe(Style.under(a, When.all(c, d)))
       }),
       { numRuns: RUNS },
     )
@@ -153,11 +149,16 @@ describe('class names', () => {
     fc.assert(
       fc.property(style, a => {
         const rebuilt = Style.mergeAll(
-          [...a.atoms].sort(Sheet.compareAtoms).map(atom =>
-            atom._tag === 'Marker'
-              ? Style.empty
-              : Style.under(Style.make({ [atom.property]: atom.value }), atom.condition),
-          ),
+          [...a.atoms]
+            .sort(Sheet.compareAtoms)
+            .map(atom =>
+              atom._tag === 'Marker'
+                ? Style.empty
+                : Style.under(
+                    Style.make({ [atom.property]: atom.value }),
+                    atom.condition,
+                  ),
+            ),
         )
         expect(rebuilt.className).toBe(a.className)
       }),

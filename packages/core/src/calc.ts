@@ -22,8 +22,7 @@ export const divide = (value: Value, divisor: Value): string =>
   `calc(${format(value)} / ${formatFactor(divisor)})`
 
 /** `calc(-1 * a)`. */
-export const negate = (value: Value): string =>
-  `calc(-1 * ${format(value)})`
+export const negate = (value: Value): string => `calc(-1 * ${format(value)})`
 
 /** `clamp(min, preferred, max)`. */
 export const clamp = (min: Value, preferred: Value, max: Value): string =>

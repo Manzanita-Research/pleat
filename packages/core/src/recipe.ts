@@ -19,41 +19,44 @@ export type OptionValue<O extends Options> = [keyof O] extends ['true' | 'false'
   ? boolean
   : Extract<keyof O, string>
 
-/** A complete choice of one option per dimension. */
-export type Selection<V extends Variants> = {
+/** A recipe's shape: each dimension and the values it takes. Recipes are typed by their
+ *  shape alone, so their types stay small and portable whatever the option styles are. */
+export type Shape = Readonly<Record<string, string | boolean>>
+
+/** The shape of a set of variants. */
+export type ShapeOf<V extends Variants> = {
   readonly [Dimension in keyof V]: OptionValue<V[Dimension]>
 }
 
 /** What a recipe is called with: dimensions with defaults are optional. */
-export type Props<V extends Variants, D extends Partial<Selection<V>>> = {
-  readonly [Dimension in keyof V as Dimension extends keyof D
-    ? never
-    : Dimension]: OptionValue<V[Dimension]>
+export type Props<S extends Shape, D extends Partial<S>> = {
+  readonly [
+    Dimension in keyof S as Dimension extends keyof D ? never : Dimension
+  ]: S[Dimension]
 } & {
-  readonly [Dimension in keyof V as Dimension extends keyof D
-    ? Dimension
-    : never]?: OptionValue<V[Dimension]> | undefined
+  readonly [Dimension in keyof S as Dimension extends keyof D ? Dimension : never]?:
+    S[Dimension] | undefined
 }
 
-type FieldSchema<O extends Options> = [keyof O] extends ['true' | 'false']
+type FieldSchema<A> = [A] extends [boolean]
   ? Schema.Boolean
-  : Schema.Literals<ReadonlyArray<Extract<keyof O, string>>>
+  : Schema.Literals<ReadonlyArray<Extract<A, string>>>
 
 /** The Schema fields of a recipe's props. */
-export type Fields<V extends Variants, D extends Partial<Selection<V>>> = {
-  readonly [Dimension in keyof V]: Dimension extends keyof D
-    ? Schema.optionalKey<FieldSchema<V[Dimension]>>
-    : FieldSchema<V[Dimension]>
+export type Fields<S extends Shape, D extends Partial<S>> = {
+  readonly [Dimension in keyof S]: Dimension extends keyof D
+    ? Schema.optionalKey<FieldSchema<S[Dimension]>>
+    : FieldSchema<S[Dimension]>
 }
 
 /** A style that applies when every named dimension has the named option. */
 export type Compound<V extends Variants> = Readonly<{
-  when: Partial<Selection<V>>
+  when: Partial<ShapeOf<V>>
   style: Style.Style | Declarations
 }>
 
 /** What {@link make} takes. */
-export type Config<V extends Variants, D extends Partial<Selection<V>>> = Readonly<{
+export type Config<V extends Variants, D extends Partial<ShapeOf<V>>> = Readonly<{
   /** Names the recipe in its schema, for documentation and generated interfaces. */
   name?: string
   /** Describes the recipe in its schema. A language model reads this. */
@@ -80,16 +83,15 @@ const TypeId = '~@pleat/core/Recipe'
  *
  *  The props are described by {@link Recipe.schema}, so a language model can be asked for
  *  them with JSON Schema and its answer decoded before it reaches the view. */
-export interface Recipe<V extends Variants, D extends Partial<Selection<V>>>
-  extends Pipeable {
-  (props: Props<V, D>): Style.Style
+export interface Recipe<S extends Shape, D extends Partial<S>> extends Pipeable {
+  (props: Props<S, D>): Style.Style
   readonly [TypeId]: typeof TypeId
   readonly name: string | undefined
-  /** The option names of each dimension, in declaration order. */
-  readonly dimensions: { readonly [Dimension in keyof V]: ReadonlyArray<OptionValue<V[Dimension]>> }
+  /** The option values of each dimension, in declaration order. */
+  readonly dimensions: { readonly [Dimension in keyof S]: ReadonlyArray<S[Dimension]> }
   readonly defaults: D
   /** Validates and describes props. */
-  readonly schema: Schema.Struct<Fields<V, D>>
+  readonly schema: Schema.Struct<Fields<S, D>>
 }
 
 /** What every recipe has, whatever its variants. */
@@ -133,12 +135,9 @@ const toStyle = (input: Style.Style | Declarations): Style.Style =>
  *
  *  button({ tone: 'Primary' })
  *  ``` */
-export const make = <
-  const V extends Variants,
-  const D extends Partial<Selection<V>> = {},
->(
+export const make = <const V extends Variants, const D extends Partial<ShapeOf<V>> = {}>(
   config: Config<V, D>,
-): Recipe<V, D> => {
+): Recipe<{ readonly [Dimension in keyof V]: OptionValue<V[Dimension]> }, D> => {
   const base = config.base === undefined ? Style.empty : toStyle(config.base)
   const dimensionNames = Object.keys(config.variants)
   const defaults: Readonly<Record<string, unknown>> = config.defaults ?? {}
@@ -171,7 +170,9 @@ export const make = <
   }
 
   const compose = (path: ReadonlyArray<string>): Style.Style => {
-    const chosen = new Map(dimensionNames.map((dimension, index) => [dimension, path[index]]))
+    const chosen = new Map(
+      dimensionNames.map((dimension, index) => [dimension, path[index]]),
+    )
     const variantStyles = dimensionNames.flatMap((dimension, index) => {
       const style = optionStyles.get(dimension)?.get(path[index] ?? '')
       return style === undefined ? [] : [style]
@@ -255,15 +256,18 @@ export const make = <
     pipe(this: unknown) {
       return pipeArguments(this, arguments)
     },
-  }) as unknown as Recipe<V, D>
+  }) as unknown as Recipe<
+    { readonly [Dimension in keyof V]: OptionValue<V[Dimension]> },
+    D
+  >
 }
 
 // QUERIES
 
 /** Every combination of options, with its style. For galleries, tests, and precomputation. */
-export const combinations = <V extends Variants, D extends Partial<Selection<V>>>(
-  recipe: Recipe<V, D>,
-): ReadonlyArray<Readonly<{ props: Selection<V>; style: Style.Style }>> => {
+export const combinations = <S extends Shape, D extends Partial<S>>(
+  recipe: Recipe<S, D>,
+): ReadonlyArray<Readonly<{ props: S; style: Style.Style }>> => {
   const entries: ReadonlyArray<readonly [string, ReadonlyArray<unknown>]> =
     Object.entries(recipe.dimensions)
   const selections = entries.reduce<ReadonlyArray<Record<string, unknown>>>(
@@ -274,12 +278,18 @@ export const combinations = <V extends Variants, D extends Partial<Selection<V>>
     [{}],
   )
   return selections.map(selection => {
-    // NOTE: each selection holds one listed option per dimension, which is a Selection<V>.
-    const props = selection as Selection<V>
-    return { props, style: recipe(props as unknown as Props<V, D>) }
+    // NOTE: each selection holds one listed value per dimension, which is an S,
+    // and a complete S is valid props whatever the defaults are.
+    const props = selection as S
+    return { props, style: recipe(props as unknown as Props<S, D>) }
   })
 }
 
-/** The JSON Schema document for a recipe's props, for structured output and tool calls. */
-export const jsonSchema = (recipe: Any): JsonSchema.Document<'draft-2020-12'> =>
-  Schema.toJsonSchemaDocument(recipe.schema)
+/** The JSON Schema document for a recipe's props, for structured output and tool calls.
+ *  Objects are closed (`additionalProperties: false`), which strict structured-output modes
+ *  require; pass `onExcessProperty: 'ignore'` to leave them open. */
+export const jsonSchema = (
+  recipe: Any,
+  options: Schema.ToJsonSchemaOptions = {},
+): JsonSchema.Document<'draft-2020-12'> =>
+  Schema.toJsonSchemaDocument(recipe.schema, { onExcessProperty: 'error', ...options })

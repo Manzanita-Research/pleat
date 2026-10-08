@@ -10,7 +10,13 @@
     "url": "git+https://github.com/Manzanita-Research/pleat.git",
     "directory": "packages/foldkit"
   },
-  "keywords": ["foldkit", "css", "atomic-css", "effect", "ssr"],
+  "keywords": [
+    "foldkit",
+    "css",
+    "atomic-css",
+    "effect",
+    "ssr"
+  ],
   "exports": {
     ".": {
       "@pleat/source": "./src/index.ts",
@@ -23,7 +29,11 @@
       "import": "./dist/server.js"
     }
   },
-  "files": ["dist", "src", "!src/**/*.test.ts"],
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"

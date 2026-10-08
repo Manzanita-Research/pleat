@@ -31,11 +31,7 @@ export const compareAtoms = (left: Atom, right: Atom): number => {
   if (left.priority !== right.priority) {
     return left.priority - right.priority
   }
-  return left.className < right.className
-    ? -1
-    : left.className > right.className
-      ? 1
-      : 0
+  return left.className < right.className ? -1 : left.className > right.className ? 1 : 0
 }
 
 // REGISTRY

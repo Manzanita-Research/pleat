@@ -33,6 +33,13 @@ export const className = (value: string): ClassName => {
   return { _tag: 'ClassName', value: tokens.join(' ') }
 }
 
+/** The attributes {@link css} produces: a `Class` and a `Style`. They carry no Message, so
+ *  they fit any element, including ones that refuse other attributes, like `textarea`. */
+export type CssAttribute = Extract<
+  Attribute<never>,
+  Readonly<{ _tag: 'Class' | 'Style' }>
+>
+
 /** Anything {@link css} accepts. */
 export type Part = Style.Style | Var.Binding | ClassName
 
@@ -41,11 +48,11 @@ const isClassName = (part: Part): part is ClassName =>
 
 // ATTRIBUTES
 
-const NO_ATTRIBUTES: ReadonlyArray<Attribute<never>> = Object.freeze([])
+const NO_ATTRIBUTES: ReadonlyArray<CssAttribute> = Object.freeze([])
 
-const attributesByStyle = new WeakMap<Style.Style, ReadonlyArray<Attribute<never>>>()
+const attributesByStyle = new WeakMap<Style.Style, ReadonlyArray<CssAttribute>>()
 
-const attributesFor = (style: Style.Style): ReadonlyArray<Attribute<never>> => {
+const attributesFor = (style: Style.Style): ReadonlyArray<CssAttribute> => {
   const cached = attributesByStyle.get(style)
   if (cached !== undefined) {
     return cached
@@ -71,7 +78,7 @@ const attributesFor = (style: Style.Style): ReadonlyArray<Attribute<never>> => {
  *  h.div([...css(card, isSelected ? selectedRing : Style.empty)], children)
  *  h.div([...css(progressBar, Var.bind(progress, model.percent))])
  *  ``` */
-export const css = (...parts: ReadonlyArray<Part>): ReadonlyArray<Attribute<never>> => {
+export const css = (...parts: ReadonlyArray<Part>): ReadonlyArray<CssAttribute> => {
   if (parts.length === 1) {
     const [only] = parts
     if (only !== undefined && Style.isStyle(only)) {
@@ -104,7 +111,7 @@ export const css = (...parts: ReadonlyArray<Part>): ReadonlyArray<Attribute<neve
       : extraClasses === ''
         ? styleClasses
         : `${styleClasses} ${extraClasses}`
-  const attributes: Array<Attribute<never>> = []
+  const attributes: Array<CssAttribute> = []
   if (classes !== '') {
     attributes.push(inertHtml.Class(classes))
   }

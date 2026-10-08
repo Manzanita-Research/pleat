@@ -32,12 +32,13 @@ describe('Style.make', () => {
   })
 
   test('a later key wins, including a shorthand written after its longhands', () => {
-    expect(
-      Style.resolve(Style.make({ paddingTop: 2, padding: 8 })),
-    ).toEqual({ padding: '8px' })
-    expect(
-      Style.resolve(Style.make({ padding: 8, paddingTop: 2 })),
-    ).toEqual({ padding: '8px', paddingTop: '2px' })
+    expect(Style.resolve(Style.make({ paddingTop: 2, padding: 8 }))).toEqual({
+      padding: '8px',
+    })
+    expect(Style.resolve(Style.make({ padding: 8, paddingTop: 2 }))).toEqual({
+      padding: '8px',
+      paddingTop: '2px',
+    })
   })
 
   test('skips undefined values', () => {
@@ -55,7 +56,9 @@ describe('Style.make', () => {
   })
 
   test('rejects property names that are not CSS properties', () => {
-    expect(() => Style.make({ ['color;x' as 'color']: 'red' })).toThrow(/not a CSS property/)
+    expect(() => Style.make({ ['color;x' as 'color']: 'red' })).toThrow(
+      /not a CSS property/,
+    )
   })
 })
 
@@ -83,16 +86,19 @@ describe('Style.merge', () => {
       Style.when(When.hover, { color: 'blue' }),
       Style.merge(Style.make({ color: 'gray' })),
     )
-    expect(declarations(style)).toEqual([
-      'always color: gray',
-      's:hover color: blue',
-    ])
+    expect(declarations(style)).toEqual(['always color: gray', ':hover color: blue'])
   })
 
   test('warns once when partially overlapping shorthands meet', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    Style.merge(Style.make({ borderTop: '1px solid red' }), Style.make({ borderColor: 'blue' }))
-    Style.merge(Style.make({ borderTop: '2px solid red' }), Style.make({ borderColor: 'green' }))
+    Style.merge(
+      Style.make({ borderTop: '1px solid red' }),
+      Style.make({ borderColor: 'blue' }),
+    )
+    Style.merge(
+      Style.make({ borderTop: '2px solid red' }),
+      Style.make({ borderColor: 'green' }),
+    )
     expect(warn).toHaveBeenCalledTimes(1)
     warn.mockRestore()
   })
@@ -101,11 +107,14 @@ describe('Style.merge', () => {
 describe('Style.when', () => {
   test('nests conditions', () => {
     const style = Style.empty.pipe(
-      Style.when(When.dark, Style.make({ color: 'white' }).pipe(Style.when(When.hover, { color: 'cyan' }))),
+      Style.when(
+        When.dark,
+        Style.make({ color: 'white' }).pipe(Style.when(When.hover, { color: 'cyan' })),
+      ),
     )
     expect(declarations(style)).toEqual([
-      'a@media (prefers-color-scheme: dark) color: white',
-      'a@media (prefers-color-scheme: dark) & s:hover color: cyan',
+      '@media (prefers-color-scheme: dark) color: white',
+      '@media (prefers-color-scheme: dark) & :hover color: cyan',
     ])
   })
 })
@@ -117,7 +126,9 @@ describe('Style.resolve', () => {
     Style.when(When.all(When.dark, When.hover), { backgroundColor: 'dimgray' }),
   )
   const activeAtoms = (...conditions: ReadonlyArray<When.Condition>) => {
-    const keys = new Set(conditions.flatMap(condition => condition.atoms.map(atom => atom.key)))
+    const keys = new Set(
+      conditions.flatMap(condition => condition.atoms.map(atom => atom.key)),
+    )
     return (atom: When.Atom) => keys.has(atom.key)
   }
 
@@ -140,13 +151,17 @@ describe('Style.resolve', () => {
 
 describe('Style transforms', () => {
   test('evolve maps values where the style is defined', () => {
-    const darkenText = Style.evolve({ color: (color: string) => Color.darken(color, 0.1) })
+    const darkenText = Style.evolve({
+      color: (color: string) => Color.darken(color, 0.1),
+    })
     const style = darkenText(
-      Style.make({ color: 'oklch(70% 0.1 200)' }).pipe(Style.when(When.hover, { color: 'teal' })),
+      Style.make({ color: 'oklch(70% 0.1 200)' }).pipe(
+        Style.when(When.hover, { color: 'teal' }),
+      ),
     )
     expect(declarations(style)).toEqual([
       'always color: oklch(from oklch(70% 0.1 200) calc(l - 0.1) c h)',
-      's:hover color: oklch(from teal calc(l - 0.1) c h)',
+      ':hover color: oklch(from teal calc(l - 0.1) c h)',
     ])
   })
 

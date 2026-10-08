@@ -1,7 +1,8 @@
 import type { Value } from './var.ts'
 
 /** A color space `color-mix()` can interpolate in. */
-export type MixSpace = 'oklab' | 'oklch' | 'srgb' | 'srgb-linear' | 'display-p3' | 'lab' | 'lch'
+export type MixSpace =
+  'oklab' | 'oklch' | 'srgb' | 'srgb-linear' | 'display-p3' | 'lab' | 'lch'
 
 /** `color-mix(in <space>, base, other <amount>%)`: `amount` percent of `other` mixed into `base`.
  *

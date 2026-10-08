@@ -15,9 +15,7 @@ export type Properties = CSS.Properties<number | (string & {}), string & {}>
  *  are strings, numbers (`px` unless the property is unitless), or tokens and variables. */
 export type Declarations = {
   readonly [Property in keyof Properties]?:
-    | Properties[Property]
-    | Extract<Value, object>
-    | undefined
+    Properties[Property] | Extract<Value, object> | undefined
 } & {
   readonly [Property: `--${string}`]: Value | undefined
 }
@@ -45,11 +43,7 @@ export const entriesOf = (
           'Write properties in camelCase (backgroundColor) or as custom properties (--accent).',
       )
     }
-    if (
-      typeof value !== 'string' &&
-      typeof value !== 'number' &&
-      !isRef(value)
-    ) {
+    if (typeof value !== 'string' && typeof value !== 'number' && !isRef(value)) {
       throw new Error(
         `[pleat] ${property} has a ${typeof value} value. Use a string, a number, or a token.`,
       )

@@ -6,8 +6,7 @@ const CAMEL_PROPERTY = /^[A-Za-z][A-Za-z0-9]*$/
 const CUSTOM_PROPERTY = /^--[A-Za-z0-9_-]+$/
 
 /** Whether `name` is a CSS custom property such as `--color-ink`. */
-export const isCustomProperty = (name: string): boolean =>
-  CUSTOM_PROPERTY.test(name)
+export const isCustomProperty = (name: string): boolean => CUSTOM_PROPERTY.test(name)
 
 /** Whether `name` can be written as one declaration: camelCase or `--custom`. */
 export const isValidPropertyName = (name: string): boolean =>
@@ -140,27 +139,13 @@ const logicalPair = (
 
 const BORDER_SIDES = ['Top', 'Right', 'Bottom', 'Left'] as const
 const BORDER_ASPECTS = ['Width', 'Style', 'Color'] as const
-const LOGICAL_SIDES = [
-  'BlockStart',
-  'BlockEnd',
-  'InlineStart',
-  'InlineEnd',
-] as const
+const LOGICAL_SIDES = ['BlockStart', 'BlockEnd', 'InlineStart', 'InlineEnd'] as const
 
 const borderEntries = (): ReadonlyArray<readonly [string, ReadonlyArray<string>]> => [
-  [
-    'border',
-    [
-      ...BORDER_SIDES.map(side => `border${side}`),
-      'borderImage',
-    ],
-  ],
+  ['border', [...BORDER_SIDES.map(side => `border${side}`), 'borderImage']],
   ...BORDER_SIDES.map(
     side =>
-      [
-        `border${side}`,
-        BORDER_ASPECTS.map(aspect => `border${side}${aspect}`),
-      ] as const,
+      [`border${side}`, BORDER_ASPECTS.map(aspect => `border${side}${aspect}`)] as const,
   ),
   ...BORDER_ASPECTS.map(
     aspect =>
@@ -170,10 +155,7 @@ const borderEntries = (): ReadonlyArray<readonly [string, ReadonlyArray<string>]
   ['borderInline', ['borderInlineStart', 'borderInlineEnd']],
   ...LOGICAL_SIDES.map(
     side =>
-      [
-        `border${side}`,
-        BORDER_ASPECTS.map(aspect => `border${side}${aspect}`),
-      ] as const,
+      [`border${side}`, BORDER_ASPECTS.map(aspect => `border${side}${aspect}`)] as const,
   ),
   ...(['Block', 'Inline'] as const).flatMap(axis =>
     BORDER_ASPECTS.map(
@@ -258,10 +240,7 @@ const SHORTHAND_ENTRIES: ReadonlyArray<readonly [string, ReadonlyArray<string>]>
   ],
   ['gap', ['rowGap', 'columnGap']],
   ['grid', ['gridTemplate', 'gridAutoRows', 'gridAutoColumns', 'gridAutoFlow']],
-  [
-    'gridTemplate',
-    ['gridTemplateRows', 'gridTemplateColumns', 'gridTemplateAreas'],
-  ],
+  ['gridTemplate', ['gridTemplateRows', 'gridTemplateColumns', 'gridTemplateAreas']],
   ['gridArea', ['gridRow', 'gridColumn']],
   ['gridRow', ['gridRowStart', 'gridRowEnd']],
   ['gridColumn', ['gridColumnStart', 'gridColumnEnd']],
@@ -317,9 +296,7 @@ const SHORTHAND_ENTRIES: ReadonlyArray<readonly [string, ReadonlyArray<string>]>
   ],
 ]
 
-const SHORTHANDS: ReadonlyMap<string, ReadonlyArray<string>> = new Map(
-  SHORTHAND_ENTRIES,
-)
+const SHORTHANDS: ReadonlyMap<string, ReadonlyArray<string>> = new Map(SHORTHAND_ENTRIES)
 
 const leavesCache = new Map<string, ReadonlySet<string>>()
 
@@ -347,9 +324,7 @@ const heightOf = (property: string): number => {
   }
   const children = SHORTHANDS.get(property)
   const height =
-    children === undefined
-      ? 0
-      : 1 + Math.max(...children.map(child => heightOf(child)))
+    children === undefined ? 0 : 1 + Math.max(...children.map(child => heightOf(child)))
   heightCache.set(property, height)
   return height
 }
@@ -359,14 +334,9 @@ const MAX_PROPERTY_PRIORITY = 3
 /** Where a property's rules sit among rules for the same condition. Longhands come last so
  *  that a longhand written after its shorthand wins, as it would in an inline style. */
 export const propertyPriority = (property: string): number =>
-  property === 'all'
-    ? 0
-    : Math.max(1, MAX_PROPERTY_PRIORITY - heightOf(property))
+  property === 'all' ? 0 : Math.max(1, MAX_PROPERTY_PRIORITY - heightOf(property))
 
-const isSubset = (
-  inner: ReadonlySet<string>,
-  outer: ReadonlySet<string>,
-): boolean => {
+const isSubset = (inner: ReadonlySet<string>, outer: ReadonlySet<string>): boolean => {
   for (const leaf of inner) {
     if (!outer.has(leaf)) {
       return false

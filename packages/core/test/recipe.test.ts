@@ -21,9 +21,7 @@ const button = Recipe.make({
     isOutline: { true: outlineify(solid), false: {} },
   },
   defaults: { tone: 'Neutral', isOutline: false },
-  compounds: [
-    { when: { tone: 'Primary', size: 'Large' }, style: { fontWeight: 700 } },
-  ],
+  compounds: [{ when: { tone: 'Primary', size: 'Large' }, style: { fontWeight: 700 } }],
   descriptions: { tone: 'The emphasis of the button.' },
 })
 
@@ -70,7 +68,9 @@ describe('Recipe', () => {
 
   test('every rule a recipe can produce exists before it is first called', () => {
     const lazy = Recipe.make({
-      variants: { tone: { Calm: { color: 'rgb(1, 1, 1)' }, Loud: { color: 'rgb(2, 2, 2)' } } },
+      variants: {
+        tone: { Calm: { color: 'rgb(1, 1, 1)' }, Loud: { color: 'rgb(2, 2, 2)' } },
+      },
     })
     const loud = Style.make({ color: 'rgb(2, 2, 2)' })
     expect(loud.atoms[0]).toBeDefined()
@@ -81,7 +81,9 @@ describe('Recipe', () => {
     const link = Recipe.make({
       variants: {
         tone: {
-          Quiet: Style.make({ color: 'gray' }).pipe(Style.when(When.hover, { color: 'black' })),
+          Quiet: Style.make({ color: 'gray' }).pipe(
+            Style.when(When.hover, { color: 'black' }),
+          ),
         },
       },
     })
@@ -110,7 +112,7 @@ describe('Recipe.schema', () => {
       {
         "definitions": {
           "Button": {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "description": "A clickable button.",
             "properties": {
               "isOutline": {
