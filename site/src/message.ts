@@ -3,6 +3,7 @@ import { defineMessageUnion } from 'foldkit/message'
 import { UrlRequest } from 'foldkit/navigation'
 import { Url } from 'foldkit/url'
 
+import * as FoldkitUi from './demo/foldkitUi.ts'
 import { Brand, Density, Mode, Scope } from './demo/theming/scope.ts'
 import { AppRoute } from './route.ts'
 
@@ -50,6 +51,7 @@ export const Model = Schema.Struct({
   preset: Schema.Option(Preset),
   specSource: Schema.String,
   theming: Theming,
+  foldkitUi: FoldkitUi.Model,
 })
 export type Model = typeof Model.Type
 
@@ -72,5 +74,6 @@ export const Message = defineMessageUnion({
   PickedDensity: { density: Density },
   EditedBrandSource: { source: Schema.String },
   ClickedBrandPreset: { preset: BrandPreset },
+  GotFoldkitUiMessage: { message: FoldkitUi.Message },
 })
 export type Message = typeof Message.Type
