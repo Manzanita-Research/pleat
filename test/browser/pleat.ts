@@ -1,6 +1,15 @@
 import * as Pleat from '@pleat/core'
 
-/** Pleat in the page, as `globalThis.Pleat`, for tests that drive it from `page.evaluate`. */
-export type PleatGlobal = Readonly<{ Pleat: typeof Pleat }>
+/** The computed color of the element with `id`. */
+const colorOf = (id: string): string => {
+  const element = document.getElementById(id)
+  if (element === null) {
+    throw new Error(`No element #${id}.`)
+  }
+  return getComputedStyle(element).color
+}
 
-Object.assign(globalThis, { Pleat })
+/** What this fixture puts on `globalThis`, for tests that drive Pleat from `page.evaluate`. */
+export type PleatGlobal = Readonly<{ Pleat: typeof Pleat; colorOf: typeof colorOf }>
+
+Object.assign(globalThis, { Pleat, colorOf })
