@@ -5,6 +5,7 @@ import { Url } from 'foldkit/url'
 
 import * as FoldkitUi from './demo/foldkitUi.ts'
 import { Brand, Density, Mode, Scope } from './demo/theming/scope.ts'
+import { Channel, ContrastDemo, PalettePreset, Swatch } from './contrast/demo.ts'
 import { AppRoute } from './route.ts'
 
 // MODEL
@@ -52,6 +53,7 @@ export const Model = Schema.Struct({
   specSource: Schema.String,
   theming: Theming,
   foldkitUi: FoldkitUi.Model,
+  contrast: ContrastDemo,
 })
 export type Model = typeof Model.Type
 
@@ -75,5 +77,8 @@ export const Message = defineMessageUnion({
   EditedBrandSource: { source: Schema.String },
   ClickedBrandPreset: { preset: BrandPreset },
   GotFoldkitUiMessage: { message: FoldkitUi.Message },
+  PickedSwatch: { swatch: Swatch },
+  ChangedChannel: { channel: Channel, value: Schema.Number },
+  ClickedPalettePreset: { preset: PalettePreset },
 })
 export type Message = typeof Message.Type

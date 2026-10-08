@@ -8,6 +8,7 @@ import {
   AppRoute,
   algebraRouter,
   foldkitUiRouter,
+  contrastRouter,
   generativeRouter,
   guideRouter,
   homeRouter,
@@ -322,6 +323,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     links: [
       ['The algebra', algebraRouter(), 'Algebra'],
       ['Theming', themingRouter(), 'Theming'],
+      ['Contrast', contrastRouter(), 'Contrast'],
     ],
   },
   {
