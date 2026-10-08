@@ -1,4 +1,4 @@
-import { Effect, Exit } from 'effect'
+import { Cause, Effect, Exit } from 'effect'
 import { describe, expect, test } from 'vitest'
 
 import { Theme, Token } from '../src/index.ts'
@@ -69,6 +69,26 @@ describe('Theme', () => {
       }),
     )
     expect(Theme.css(valid)).toContain('--space-2:8px')
+  })
+
+  test('names every wrong value and its kind when decoding fails', async () => {
+    const exit = await Effect.runPromiseExit(
+      Theme.decode(tokens, {
+        color: { canvas: '#fafafa', ink: 'teal; } body {', onAccent: 'white' },
+        space: { 1: '4px', 2: 'eight pixels' },
+        font: { body: 'Georgia, serif', weight: 400 },
+      }),
+    )
+    if (!Exit.isFailure(exit)) {
+      throw new Error('expected the decode to fail')
+    }
+    const message = String(Cause.squash(exit.cause))
+    expect(message).toContain('Expected a CSS color, such as #1d4ed8')
+    expect(message).toContain('at ["color"]["ink"]')
+    expect(message).toContain('Expected a CSS value without ;')
+    expect(message).toContain('Expected a CSS length, such as 0.75rem or 12px')
+    expect(message).toContain('at ["space"]["2"]')
+    expect(message).not.toContain('RegExp')
   })
 
   test('describes values with JSON Schema patterns', () => {

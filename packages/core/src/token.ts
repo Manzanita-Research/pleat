@@ -8,7 +8,7 @@ import { isRef, makeRef, type Ref } from './var.ts'
 const safe = Schema.makeFilter((value: string) =>
   isSafeValue(value)
     ? undefined
-    : 'a CSS value without ; { } < ! comments or unbalanced brackets',
+    : 'Expected a CSS value without ; { } < ! comments or unbalanced brackets',
 )
 
 const COLOR =
@@ -18,11 +18,14 @@ const LENGTH =
 const DURATION = /^(\d*\.?\d+(ms|s)|var\([^;{}<>!]*\))$/
 const FONT_FAMILY = /^[A-Za-z0-9 ,"'_.-]+$|^var\([^;{}<>!]*\)$/
 
+// NOTE: `expected` names the kind in decode errors, which would otherwise print the pattern.
 const patterned = (pattern: RegExp, title: string, description: string) =>
-  Schema.String.check(Schema.isPattern(pattern), safe).annotate({
-    title,
-    description,
-  })
+  Schema.String.check(
+    Schema.isPattern(pattern, {
+      expected: description.charAt(0).toLowerCase() + description.slice(1, -1),
+    }),
+    safe,
+  ).annotate({ title, description })
 
 /** What kind of value a token holds. The kind's schema validates theme values and describes
  *  them to language models. */
