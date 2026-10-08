@@ -28,7 +28,27 @@ const TypeId = '~@pleat/core/Style'
  *  so `merge(a, b)` reads like `{ ...a, ...b }` and keeps reading that way when shorthands
  *  meet longhands (`padding` then `paddingTop`). Merging a style with itself changes nothing.
  *
- *  Equal styles are the same object, so they work as `Equal` keys and memoize by identity. */
+ *  Equal styles are the same object, so they work as `Equal` keys and memoize by identity.
+ *
+ *  Where "apply after" stops being exact:
+ *
+ *  - `all` is rejected. It resets every other property, and atomic rules can't order it
+ *    against them. Reset elements with `Global.rule`, or write the properties you mean.
+ *  - Pleat knows which longhands a shorthand sets for margin, padding, inset, gap, overflow,
+ *    border and its sides, aspects, and logical forms, borderRadius, borderImage, outline,
+ *    background, backgroundPosition, mask, font, flex, flexFlow, grid, gridTemplate,
+ *    gridArea, gridRow, gridColumn, columns, columnRule, listStyle, textDecoration,
+ *    textEmphasis, transition, animation, container, containIntrinsicSize, the place
+ *    shorthands, and scrollMargin and scrollPadding. Every other property is treated as a
+ *    longhand.
+ *  - Some longhands are only reset by their shorthand and aren't in that list yet: font's
+ *    `fontKerning`, `fontFeatureSettings`, `fontVariationSettings`, `fontOpticalSizing`,
+ *    `fontSizeAdjust`, `fontLanguageOverride`, and the `fontVariant*` longhands, and
+ *    animation's `animationTimeline`, `animationRangeStart`, and `animationRangeEnd`. Write
+ *    them after the shorthand.
+ *  - Shorthands that share only some longhands (`borderTop` and `borderColor`), and logical
+ *    and physical properties for one side, are ordered by property priority rather than by
+ *    when they were written. Pleat warns about the first in development. */
 export interface Style extends Pipeable, Inspectable, Equal.Equal {
   readonly [TypeId]: typeof TypeId
   /** The atoms, sorted by class name. */
@@ -158,20 +178,32 @@ const atomFor = (condition: When.Condition, property: string, value: string): At
 
 // CONSTRUCTORS
 
+const checkSupported = (property: string): void => {
+  if (property === 'all') {
+    throw new Error(
+      "[pleat] Style can't hold `all`. It resets every other property, and atomic rules " +
+        "can't order it against them. Reset elements with Global.rule, or write the " +
+        'properties you mean.',
+    )
+  }
+}
+
 /** The style with no declarations. The identity of {@link merge}. */
 export const empty: Style = fromNormalizedAtoms([])
 
 /** A style from a declaration block. Later keys win over earlier ones the way they would in
- *  an inline style, including a shorthand written after its longhands.
+ *  an inline style, including a shorthand written after its longhands. Throws on `all`; see
+ *  {@link Style} for what else "later wins" covers.
  *
  *  ```ts
  *  const card = Style.make({ display: 'grid', gap: 12, padding: 16, color: tokens.color.ink })
  *  ``` */
 export const make = (declarations: Declarations): Style =>
   fromWrites(
-    entriesOf(declarations).map(([property, value]) =>
-      atomFor(When.always, property, value),
-    ),
+    entriesOf(declarations).map(([property, value]) => {
+      checkSupported(property)
+      return atomFor(When.always, property, value)
+    }),
   )
 
 /** A style that puts `marker`'s class on an element, so relational conditions such as
