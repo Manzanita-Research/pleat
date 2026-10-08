@@ -623,7 +623,7 @@ export const themingView = (model: Model, h: HtmlBuilder<Message>): Html => {
         ]),
         paragraph(
           h,
-          '`Global.theme` applies each one at an attribute selector. Because an alias resolves wherever it is declared, a brand changes `brand[600]` and `accent` follows in every mode, with nothing written twice.',
+          '`Global.theme` applies each one at an attribute selector. Because an alias resolves wherever it is declared, a brand changes `brand[600]` and `accent` follows in every mode, with nothing written twice. Aliases are checked by kind, so pointing `surface` at a spacing step is a type error.',
         ),
         codeBlock(h, themesSource, 'themes.ts'),
       ]),

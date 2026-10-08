@@ -6,10 +6,12 @@ export const STEPS = [
 ] as const
 export type Step = (typeof STEPS)[number]
 
-const ramp = (): { readonly [S in Step]: Token.Kind<string> } =>
-  Object.fromEntries(STEPS.map(step => [step, Token.color])) as {
-    readonly [S in Step]: Token.Kind<string>
-  }
+// One color token per step. Typed with the color kind, so a theme
+// can only alias a ramp step to another color.
+type Ramp = { readonly [S in Step]: typeof Token.color }
+
+const ramp = (): Ramp =>
+  Object.fromEntries(STEPS.map(step => [step, Token.color])) as Ramp
 
 // PRIMITIVES: the raw palette and scales. The only layer with
 // literal values, and no component reads it directly.
