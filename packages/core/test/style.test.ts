@@ -60,6 +60,12 @@ describe('Style.make', () => {
       /not a CSS property/,
     )
   })
+  test('rejects `all`, which resets properties atomic rules cannot order it against', () => {
+    expect(() => Style.make({ all: 'initial' })).toThrow(/Style can't hold `all`/)
+    expect(() =>
+      Style.make({ color: 'red' }).pipe(Style.when(When.hover, { all: 'unset' })),
+    ).toThrow(/Style can't hold `all`/)
+  })
 })
 
 describe('Style.merge', () => {
