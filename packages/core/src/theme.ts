@@ -1,7 +1,14 @@
 import { Effect, Schema } from 'effect'
 
 import { formatNumber } from './property.ts'
-import { isToken, type Kind, type Spec, type Token, type Tokens } from './token.ts'
+import {
+  isToken,
+  type Kind,
+  leaves,
+  type Spec,
+  type Token,
+  type Tokens,
+} from './token.ts'
 import { isRef, type Ref } from './var.ts'
 
 // TYPES
@@ -20,6 +27,9 @@ export interface Theme {
   readonly _tag: 'Theme'
   /** Custom property declarations, in token order. */
   readonly declarations: ReadonlyArray<readonly [name: string, value: string]>
+  /** Every token of the trees the theme was made from, by custom property name, whether
+   *  the theme sets it or not. */
+  readonly tokens: ReadonlyMap<string, Token>
 }
 
 // SCHEMA
@@ -44,7 +54,35 @@ export const schema = <T extends object>(tokens: T): Schema.Codec<Values<T>, unk
   // NOTE: the Struct is built by walking the token tree, which mirrors Values<T>.
   schemaFor(tokens, false) as unknown as Schema.Codec<Values<T>, unknown>
 
+// TOKENS
+
+const tokensOf = (tokens: object): ReadonlyMap<string, Token> =>
+  new Map(leaves(tokens).map(token => [token.name, token]))
+
+// NOTE: tokens are compared by identity, so two trees that happen to share a
+// path (two `space.2`s from separate `Token.make` calls) still collide.
+const unionTokens = (
+  left: ReadonlyMap<string, Token>,
+  right: ReadonlyMap<string, Token>,
+): ReadonlyMap<string, Token> => {
+  const union = new Map(left)
+  for (const [name, token] of right) {
+    const existing = union.get(name)
+    if (existing !== undefined && existing !== token) {
+      throw new Error(
+        `[pleat] Two token trees both name ${name} (${existing.path.join('.')} and ` +
+          `${token.path.join('.')}). Give one tree a prefix with Token.make(spec, { prefix }).`,
+      )
+    }
+    union.set(name, token)
+  }
+  return union
+}
+
 // CONSTRUCTORS
+
+/** The theme that sets nothing. The identity of {@link merge}. */
+export const empty: Theme = { _tag: 'Theme', declarations: [], tokens: new Map() }
 
 const encode = (token: Token, value: unknown): string =>
   isRef(value)
@@ -96,7 +134,7 @@ const collect = (
 export const make = <T extends object>(tokens: T, values: Values<T>): Theme => {
   const declarations: Array<readonly [string, string]> = []
   collect(tokens, values, [], declarations)
-  return { _tag: 'Theme', declarations }
+  return { _tag: 'Theme', declarations, tokens: tokensOf(tokens) }
 }
 
 /** A theme that overrides part of `theme`, such as a brand's accent over a base palette. */
@@ -105,13 +143,37 @@ export const extend = <T extends object>(
   tokens: T,
   values: PartialValues<T>,
 ): Theme => {
+  const unioned = unionTokens(theme.tokens, tokensOf(tokens))
   const overrides: Array<readonly [string, string]> = []
   collect(tokens, values, [], overrides)
   const merged = new Map(theme.declarations)
   for (const [name, value] of overrides) {
     merged.set(name, value)
   }
-  return { _tag: 'Theme', declarations: [...merged] }
+  return { _tag: 'Theme', declarations: [...merged], tokens: unioned }
+}
+
+/** One theme from two that set independent tokens, such as a palette and a component
+ *  library's tokens, to apply at one selector. Declarations keep their order, `self` first.
+ *
+ *  Throws when two different tokens share a custom property name, or when both themes set
+ *  one token to different values; overriding is what {@link extend} is for. So merging is
+ *  associative and idempotent, with {@link empty} as its identity, and the order of
+ *  arguments changes only the order of declarations. */
+export const merge = (self: Theme, that: Theme): Theme => {
+  const tokens = unionTokens(self.tokens, that.tokens)
+  const declarations = new Map(self.declarations)
+  for (const [name, value] of that.declarations) {
+    const existing = declarations.get(name)
+    if (existing !== undefined && existing !== value) {
+      throw new Error(
+        `[pleat] Both themes set ${name} (${existing} and ${value}). ` +
+          'Use Theme.extend to override a value.',
+      )
+    }
+    declarations.set(name, value)
+  }
+  return { _tag: 'Theme', declarations: [...declarations], tokens }
 }
 
 /** Decodes theme values from unknown input, such as a language model's structured output,
