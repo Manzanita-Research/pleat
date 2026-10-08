@@ -243,7 +243,8 @@ export const invalid: Condition = stateSelector(
   '[data-invalid], [aria-invalid="true"]',
   Rank.invalid,
 )
-/** The element is read-only: native `:read-only` form fields or `data-readonly`. */
+/** The element is read-only: `data-readonly` or `aria-readonly="true"`. Native `:read-only`
+ *  is left out because it matches every element that is not editable. */
 export const readonly: Condition = stateSelector(
   '[data-readonly], [aria-readonly="true"]',
   Rank.readonly,
@@ -251,6 +252,13 @@ export const readonly: Condition = stateSelector(
 /** The element is checked: native `:checked`, `data-checked`, or `aria-checked="true"`. */
 export const checked: Condition = stateSelector(
   ':checked, [data-checked], [aria-checked="true"]',
+  Rank.selected,
+)
+/** The element is in a mixed state: native `:indeterminate`, `data-indeterminate`, or
+ *  `aria-checked="mixed"`. Foldkit UI's Checkbox sets the last two in place of
+ *  `data-checked`, so a mixed checkbox matches this and not {@link checked}. */
+export const indeterminate: Condition = stateSelector(
+  ':indeterminate, [data-indeterminate], [aria-checked="mixed"]',
   Rank.selected,
 )
 /** The element is selected: `data-selected` or `aria-selected="true"`. */
@@ -268,7 +276,10 @@ export const open: Condition = stateSelector(
   '[data-open], [aria-expanded="true"]',
   Rank.open,
 )
-/** The element is the highlighted option of a menu or listbox (`data-active` in Foldkit UI). */
+/** The element is the highlighted option of a menu, listbox, or combobox (`data-active` in
+ *  Foldkit UI). In a Foldkit UI RadioGroup, `data-active` marks the option that holds the
+ *  roving tab stop, even while the group has no focus, so use {@link focusVisible} to show
+ *  keyboard focus there. */
 export const highlighted: Condition = stateSelector('[data-active]', Rank.highlighted)
 /** A transitioning element in its closed state (`data-closed`). */
 export const closed: Condition = stateSelector('[data-closed]', Rank.transition)

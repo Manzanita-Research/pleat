@@ -4,7 +4,7 @@ import type { Document, HtmlBuilder } from 'foldkit/html'
 import { Server } from 'foldkit/experimental'
 import { describe, expect, test } from 'vitest'
 
-import { className, css } from '../src/index.ts'
+import { className, css, cssClass } from '../src/index.ts'
 import { renderDocument } from '../src/server.ts'
 
 const card = Style.make({ display: 'grid', gap: 12, padding: 16 }).pipe(
@@ -62,6 +62,16 @@ describe('css', () => {
 
   test('rejects class names that are not class names', () => {
     expect(() => className('ok "><script>')).toThrow()
+  })
+})
+
+describe('cssClass', () => {
+  test('returns the same classes css would put on the element', () => {
+    expect(cssClass(card)).toBe(card.className)
+    expect(cssClass(card, selectedRing)).toBe(Style.merge(card, selectedRing).className)
+    expect(cssClass(className('prose'), card)).toBe(`${card.className} prose`)
+    expect(cssClass(className('prose'))).toBe('prose')
+    expect(cssClass(Style.empty)).toBe('')
   })
 })
 
