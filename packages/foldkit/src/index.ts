@@ -23,14 +23,24 @@ export interface ClassName {
   readonly value: string
 }
 
-const CLASS_TOKEN = /^-?[_a-zA-Z][_a-zA-Z0-9-:/[\].%]*$/
+// NOTE: a class attribute separates tokens with ASCII whitespace only, so only that splits.
+const ASCII_WHITESPACE = /[\t\n\f\r ]+/
+const WHITESPACE_OR_CONTROL = /[\s\p{Cc}]/u
 
-/** Wraps class names Pleat doesn't own so {@link css} can put them on the element too. */
+/** Wraps class names Pleat doesn't own so {@link css} can put them on the element too.
+ *
+ *  Any HTML class token passes, including Tailwind's arbitrary values and variants, such as
+ *  `w-[calc(100%-1rem)]`, `data-[state=open]:block`, and `text-red-500!`. Tokens are
+ *  separated by ASCII whitespace, as in a class attribute. A token that contains other
+ *  whitespace or a control character throws. Foldkit escapes the attribute when it renders,
+ *  so a token can't break out of it. */
 export const className = (value: string): ClassName => {
-  const tokens = value.split(/\s+/).filter(token => token !== '')
+  const tokens = value.split(ASCII_WHITESPACE).filter(token => token !== '')
   for (const token of tokens) {
-    if (!CLASS_TOKEN.test(token)) {
-      throw new Error(`[pleat] ${JSON.stringify(token)} is not a class name.`)
+    if (WHITESPACE_OR_CONTROL.test(token)) {
+      throw new Error(
+        `[pleat] ${JSON.stringify(token)} is not a class name: it contains whitespace or a control character.`,
+      )
     }
   }
   return { _tag: 'ClassName', value: tokens.join(' ') }

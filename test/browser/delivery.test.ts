@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { bundle } from './bundle.ts'
 import { launch } from './chromium.ts'
 import type { PleatGlobal } from './pleat.ts'
+import { tailwindCss } from './tailwind.ts'
 
 // How Pleat's rules reach the page: the server's <style data-pleat>, the browser sheet the
 // client inserts into, and the two together. Each expectation is a literal computed value,
@@ -209,5 +210,67 @@ describe('hydration', () => {
     })
     await opened.close()
     expect(result).toEqual({ mounted: 1, replaced: 1, color: BLUE })
+  })
+})
+
+describe('Tailwind v4', () => {
+  // The contract: Pleat's layers sit after Tailwind's theme, base, and components, and
+  // before its utilities. A utility on an element beats Pleat's atoms, and Pleat's atoms
+  // beat Tailwind's preflight, whichever stylesheet the page loads first.
+
+  const UTILITIES = 'text-[rgb(0,0,255)] hidden data-[state=open]:block'
+  const card = Style.make({ color: 'red', marginTop: 8 })
+  const cardHtml = `<div id="card" data-state="open" class="${card.className} ${UTILITIES}"></div>`
+
+  const measure = () => {
+    const { colorOf } = globalThis as unknown as PleatGlobal
+    const element = document.getElementById('card')
+    if (element === null) {
+      throw new Error('No card element.')
+    }
+    const computed = getComputedStyle(element)
+    return {
+      color: colorOf('card'),
+      marginTop: computed.marginTop,
+      display: computed.display,
+    }
+  }
+
+  const expected = { color: BLUE, marginTop: '8px', display: 'block' }
+
+  let tailwind: string
+  beforeAll(async () => {
+    tailwind = `<style>${await tailwindCss(UTILITIES.split(' '))}</style>`
+  })
+
+  test('server-rendered, with Pleat first in the head', async () => {
+    const opened = await page(`${Sheet.styleTag(cardHtml)}${tailwind}`, cardHtml)
+    const result = await opened.evaluate(measure)
+    await opened.close()
+    expect(result).toEqual(expected)
+  })
+
+  test('server-rendered, with Tailwind first in the head, once the client mounts', async () => {
+    const opened = await page(`${tailwind}${Sheet.styleTag(cardHtml)}`, cardHtml)
+    await opened.evaluate(() => {
+      ;(globalThis as unknown as PleatGlobal).Pleat.Sheet.mount()
+    })
+    const result = await opened.evaluate(measure)
+    await opened.close()
+    expect(result).toEqual(expected)
+  })
+
+  test('client-only, next to a Tailwind stylesheet', async () => {
+    const opened = await page(tailwind, '<div id="card" data-state="open"></div>')
+    await opened.evaluate(utilities => {
+      const { Style } = (globalThis as unknown as PleatGlobal).Pleat
+      const card = document.getElementById('card')
+      if (card !== null) {
+        card.className = `${Style.use(Style.make({ color: 'red', marginTop: 8 }))} ${utilities}`
+      }
+    }, UTILITIES)
+    const result = await opened.evaluate(measure)
+    await opened.close()
+    expect(result).toEqual(expected)
   })
 })

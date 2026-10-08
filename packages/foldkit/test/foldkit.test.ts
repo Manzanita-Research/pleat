@@ -60,8 +60,49 @@ describe('css', () => {
     expect(css(Style.empty)).toEqual([])
   })
 
-  test('rejects class names that are not class names', () => {
-    expect(() => className('ok "><script>')).toThrow()
+  test('passes through any HTML class token, such as Tailwind arbitrary values and variants', () => {
+    const tokens = [
+      'w-[calc(100%-1rem)]',
+      'data-[state=open]:block',
+      'bg-[var(--x)]',
+      'text-red-500!',
+      "content-['hi']",
+      '[&>*]:p-2',
+      '@md:flex',
+      'group-hover/item:underline',
+    ]
+    expect(className(tokens.join(' ')).value).toBe(tokens.join(' '))
+    expect(className(' a\tb\n c\f\r ').value).toBe('a b c')
+  })
+
+  test('rejects whitespace and control characters inside a class token', () => {
+    for (const token of [
+      'a\u0000b',
+      'a\u0007b',
+      'a\u007fb',
+      'a\u0085b',
+      'a\u00a0b',
+      'a\u2028b',
+    ]) {
+      expect(() => className(token)).toThrow(/whitespace or a control character/)
+    }
+  })
+
+  test('leaves escaping to Foldkit, so a token cannot break out of the attribute', async () => {
+    const html = await Effect.runPromise(
+      Server.renderToString(
+        {
+          init: () => ({ model: {} }),
+          view: (_model: object, h: HtmlBuilder<never>): Document => ({
+            title: 'Pleat',
+            body: h.p([...css(className('ok "><script>alert(1)</script>'))], []),
+          }),
+        },
+        { isHydratable: false },
+      ),
+    )
+    expect(html.html).toContain('class="ok &quot;>&lt;script>alert(1)&lt;/script>"')
+    expect(html.html).not.toContain('<script>')
   })
 })
 
@@ -92,13 +133,28 @@ describe('renderDocument', () => {
     }
   })
 
+  test('puts Pleat’s style ahead of the app’s stylesheets, so its layer order comes first', async () => {
+    const application = await render({ isSelected: false, percent: 10 })
+    const document = renderDocument({ head: '<link rel="stylesheet" href="/head.css">' })(
+      application,
+      { ...assets, stylesheets: ['/tailwind.css'] },
+    )
+    const style = document.indexOf('<style data-pleat>')
+    expect(style).toBeGreaterThan(0)
+    expect(style).toBeLessThan(document.indexOf('href="/head.css"'))
+    expect(style).toBeLessThan(document.indexOf('href="/tailwind.css"'))
+    expect(document).toContain(
+      '<style data-pleat>@layer theme, base, components, pleat, utilities;',
+    )
+  })
+
   test('can ship the whole sheet instead', async () => {
     const application = await render({ isSelected: false, percent: 10 })
     const document = renderDocument({ isCritical: false, head: '<meta name="x">' })(
       application,
       assets,
     )
-    expect(document).toContain('<meta name="x"><style data-pleat>')
+    expect(document).toContain('</style><meta name="x">')
     expect(document).toContain(Sheet.render())
   })
 })

@@ -12,10 +12,11 @@ describe('Sheet.render', () => {
   )
   const both = Style.merge(base, states)
 
-  test('declares layers so unlayered CSS wins over Pleat', () => {
-    expect(Sheet.render().split('\n')[0]).toBe(
+  test('declares the layer order first: Tailwind’s base, then Pleat, then utilities', () => {
+    expect(Sheet.render().split('\n').slice(0, 2)).toEqual([
+      '@layer theme, base, components, pleat, utilities;',
       '@layer pleat.globals, pleat.themes, pleat.atoms;',
-    )
+    ])
   })
 
   test('emits atoms in precedence order', () => {
