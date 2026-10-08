@@ -91,6 +91,44 @@ describe('Recipe', () => {
   })
 })
 
+describe('one-sided boolean dimensions', () => {
+  const busy = Style.make({ opacity: 0.5 })
+  const spinner = Recipe.make({
+    name: 'Spinner',
+    variants: { isBusy: { true: busy } },
+    compounds: [{ when: { isBusy: false }, style: { cursor: 'pointer' } }],
+  })
+  const idle = Recipe.make({
+    variants: { isIdle: { false: busy } },
+    defaults: { isIdle: false },
+  })
+
+  test('take both booleans, and the absent branch is an empty style', () => {
+    expect(spinner({ isBusy: true })).toBe(busy)
+    expect(spinner({ isBusy: false })).toBe(Style.make({ cursor: 'pointer' }))
+    expect(idle({ isIdle: true })).toBe(Style.empty)
+    expect(idle({})).toBe(busy)
+  })
+
+  test('list both values, decode both values, and default to the absent branch', () => {
+    expect(spinner.dimensions.isBusy).toEqual([true, false])
+    expect(Recipe.combinations(spinner)).toHaveLength(2)
+    const decode = Schema.decodeUnknownSync(spinner.schema)
+    expect(spinner(decode({ isBusy: false }))).toBe(Style.make({ cursor: 'pointer' }))
+    const quiet = Recipe.make({
+      variants: { isBusy: { true: busy } },
+      defaults: { isBusy: false },
+    })
+    expect(quiet({})).toBe(Style.empty)
+  })
+
+  test('a dimension with no options is a configuration error', () => {
+    expect(() => Recipe.make({ name: 'Broken', variants: { tone: {} } })).toThrow(
+      /Recipe Broken: dimension tone has no options/,
+    )
+  })
+})
+
 describe('Recipe.schema', () => {
   test('decodes props, making defaulted dimensions optional', () => {
     const decode = Schema.decodeUnknownExit(button.schema)
