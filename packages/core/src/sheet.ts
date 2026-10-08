@@ -103,7 +103,13 @@ export const registerGlobal = (global: Global): void => {
 
 // RENDERING
 
-const LAYER_ORDER = '@layer pleat.globals, pleat.themes, pleat.atoms;'
+// NOTE: cascade layers are ordered by where the page first declares them, so this goes
+// before any other CSS. Tailwind v4's theme, base (its preflight reset), and components
+// layers come first, then Pleat, then Tailwind's utilities: a utility beats a Pleat atom,
+// and Pleat's globals and atoms beat the reset. Unlayered CSS beats them all.
+const LAYER_ORDER =
+  '@layer theme, base, components, pleat, utilities;\n' +
+  '@layer pleat.globals, pleat.themes, pleat.atoms;'
 
 let sortedCache: Readonly<{ version: number; atoms: ReadonlyArray<Atom> }> = {
   version: -1,
@@ -136,8 +142,12 @@ export type RenderOptions = Readonly<{
 
 /** The stylesheet for every style, theme, and global rule defined so far.
  *
- *  Rules live in three cascade layers, `pleat.globals`, `pleat.themes`, and `pleat.atoms`,
- *  so unlayered CSS (an app's own stylesheet, Tailwind utilities) always wins over Pleat. */
+ *  Rules live in three cascade layers, `pleat.globals`, `pleat.themes`, and `pleat.atoms`.
+ *  The sheet opens by declaring the page's layer order,
+ *  `@layer theme, base, components, pleat, utilities`, which puts Pleat after Tailwind v4's
+ *  theme, preflight reset, and components, and before its utilities. Unlayered CSS (an
+ *  app's own stylesheet) wins over Pleat. Layers are ordered by where the page first
+ *  declares them, so this sheet must come before any other stylesheet. */
 export const render = (options: RenderOptions = {}): string => {
   const included =
     options.classNames === undefined ? undefined : new Set(options.classNames)
@@ -180,7 +190,8 @@ export const STYLE_ATTRIBUTE = 'data-pleat'
 const escapeStyleText = (css: string): string => css.replace(/<\//g, '<\\/')
 
 /** A `<style data-pleat>` element for a document head. Pass `html` to include only the atoms
- *  that page uses. */
+ *  that page uses. Put it before every other stylesheet, so its layer order comes first; see
+ *  {@link render}. */
 export const styleTag = (html?: string): string =>
   `<style ${STYLE_ATTRIBUTE}>${escapeStyleText(html === undefined ? render() : renderFor(html))}</style>`
 
@@ -255,6 +266,32 @@ const createSheet = (target: Document): LayerBlocks => {
     throw new Error('[pleat] Could not create a stylesheet with cascade layers.')
   }
   return blocks
+}
+
+const LAYERS_ATTRIBUTE = `${STYLE_ATTRIBUTE}-layers`
+
+/** Makes Pleat's layer order the first the page declares, even when another stylesheet,
+ *  such as Tailwind's, came before Pleat's. Returns whether it had to add one. */
+const declareLayersFirst = (target: Document): boolean => {
+  const first = target.querySelector('style, link[rel~="stylesheet" i]')
+  if (first?.hasAttribute(STYLE_ATTRIBUTE) === true) {
+    return false
+  }
+  const element = target.createElement('style')
+  element.setAttribute(LAYERS_ATTRIBUTE, '')
+  element.textContent = LAYER_ORDER
+  target.head.prepend(element)
+  return true
+}
+
+// NOTE: Chromium doesn't reorder layers when a stylesheet is added ahead of the others,
+// only when an existing one changes, so changing Pleat's own sheet makes it notice.
+const refreshLayerOrder = (block: CSSGroupingRule): void => {
+  const sheet = block.parentStyleSheet
+  if (sheet !== null) {
+    sheet.insertRule('@layer pleat;', sheet.cssRules.length)
+    sheet.deleteRule(sheet.cssRules.length - 1)
+  }
 }
 
 const serverSheet = (target: Document): LayerBlocks | undefined => {
@@ -418,19 +455,26 @@ const insertGlobals = (target: Mounted): void => {
  *  same style definitions the client loads, and left in place once the client mounts.
  *  Without one, Pleat creates its own stylesheet.
  *
+ *  Unless the server's `<style data-pleat>` is already the page's first stylesheet, mounting
+ *  also puts a `<style data-pleat-layers>` with Pleat's layer order at the start of the head,
+ *  so Tailwind's utilities still win when its stylesheet loaded first; see {@link render}.
+ *
  *  {@link use} mounts on first call, so most applications never call this directly. */
 export const mount = (target: Document = document): void => {
   if (mounted !== undefined) {
     return
   }
-  const server = serverSheet(target)
+  const isLayerOrderAdded = declareLayersFirst(target)
   const state: Mounted = {
-    ...(server ?? createSheet(target)),
+    ...(serverSheet(target) ?? createSheet(target)),
     ruleClassNames: [],
     insertedAtoms: [],
     insertedClassNames: new Set(),
     pendingClassNames: new Set(),
     insertedGlobals: new Map(),
+  }
+  if (isLayerOrderAdded) {
+    refreshLayerOrder(state.atoms)
   }
   mounted = state
   adoptServerAtoms(state)

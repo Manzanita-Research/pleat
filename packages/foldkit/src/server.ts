@@ -21,7 +21,8 @@ export type DocumentOptions = Server.DocumentOptions &
     isCritical?: boolean
   }>
 
-/** A Foldkit `renderDocument` that adds Pleat's `<style data-pleat>` to every page's head.
+/** A Foldkit `renderDocument` that adds Pleat's `<style data-pleat>` to every page's head,
+ *  ahead of `head` and the app's stylesheets, so Pleat's cascade layer order comes first.
  *  Export it from the server entry in place of `Server.renderDocument`. */
 export const renderDocument =
   (options: DocumentOptions = {}): Server.DocumentRenderer =>
@@ -30,9 +31,10 @@ export const renderDocument =
     const style = Sheet.styleTag(isCritical ? application.html : undefined)
     return Server.renderDocument(application, assets, {
       ...documentOptions,
-      head: `${documentOptions.head ?? ''}${style}`,
+      head: `${style}${documentOptions.head ?? ''}`,
     })
   }
 
-/** The `<style data-pleat>` element for a page, for documents a custom renderer builds. */
+/** The `<style data-pleat>` element for a page, for documents a custom renderer builds. Put
+ *  it before every other stylesheet. */
 export const styleTag = (html?: string): string => Sheet.styleTag(html)
