@@ -5,7 +5,8 @@ import { load, pushUrl, UrlRequest } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
 import { toString as urlToString } from 'foldkit/url'
 
-import { Message, Model, type Preset } from './message.ts'
+import { brandPresetSource } from './brandPresets.ts'
+import { Message, Model, type BrandPreset, type Preset } from './message.ts'
 import { presetSource } from './presets.ts'
 import { AppRoute, urlToAppRoute } from './route.ts'
 import { algebraView } from './view/algebra.ts'
@@ -15,12 +16,14 @@ import { homeView } from './view/home.ts'
 import { layoutView } from './view/layout.ts'
 import { notFoundView } from './view/notFound.ts'
 import { referenceView } from './view/reference.ts'
+import { themingView } from './view/theming.ts'
 
 export { Message, Model }
 
 // INIT
 
 const INITIAL_PRESET: Preset = 'Valid'
+const INITIAL_BRAND_PRESET: BrandPreset = 'Valid'
 
 export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
   model: {
@@ -30,6 +33,11 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
     playground: { tone: 'Primary', size: 'Medium', isPending: false },
     preset: Option.some(INITIAL_PRESET),
     specSource: presetSource(INITIAL_PRESET),
+    theming: {
+      scope: { mode: 'Light', brand: 'Harbor', density: 'Comfortable' },
+      brandPreset: Option.some(INITIAL_BRAND_PRESET),
+      brandSource: brandPresetSource(INITIAL_BRAND_PRESET),
+    },
   },
 })
 
@@ -104,6 +112,39 @@ export const update = (model: Model, message: Message) =>
         preset: () => Option.some(preset),
       }),
     }),
+    PickedMode: ({ mode }) => ({
+      model: modifyFields(model, {
+        theming: theming => ({ ...theming, scope: { ...theming.scope, mode } }),
+      }),
+    }),
+    PickedBrand: ({ brand }) => ({
+      model: modifyFields(model, {
+        theming: theming => ({ ...theming, scope: { ...theming.scope, brand } }),
+      }),
+    }),
+    PickedDensity: ({ density }) => ({
+      model: modifyFields(model, {
+        theming: theming => ({ ...theming, scope: { ...theming.scope, density } }),
+      }),
+    }),
+    EditedBrandSource: ({ source }) => ({
+      model: modifyFields(model, {
+        theming: theming => ({
+          ...theming,
+          brandSource: source,
+          brandPreset: Option.none(),
+        }),
+      }),
+    }),
+    ClickedBrandPreset: ({ preset }) => ({
+      model: modifyFields(model, {
+        theming: theming => ({
+          ...theming,
+          brandSource: brandPresetSource(preset),
+          brandPreset: Option.some(preset),
+        }),
+      }),
+    }),
   })
 
 // VIEW
@@ -116,6 +157,7 @@ const routeTitle = (route: AppRoute): string =>
     Guide: () => `Guide | ${TITLE_SUFFIX}`,
     Algebra: () => `The algebra | ${TITLE_SUFFIX}`,
     Generative: () => `Generative interfaces | ${TITLE_SUFFIX}`,
+    Theming: () => `Theming | ${TITLE_SUFFIX}`,
     Reference: () => `Reference | ${TITLE_SUFFIX}`,
     NotFound: () => `Not found | ${TITLE_SUFFIX}`,
   })
@@ -130,6 +172,7 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
       Guide: () => guideView(h),
       Algebra: () => algebraView(h),
       Generative: () => generativeView(model, h),
+      Theming: () => themingView(model, h),
       Reference: () => referenceView(h),
       NotFound: () => notFoundView(h),
     }),

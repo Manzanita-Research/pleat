@@ -11,6 +11,7 @@ import {
   guideRouter,
   homeRouter,
   referenceRouter,
+  themingRouter,
 } from '../route.ts'
 
 const { color, font, radius, space, text } = Design.tokens
@@ -317,7 +318,10 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
   },
   {
     title: 'Concepts',
-    links: [['The algebra', algebraRouter(), 'Algebra']],
+    links: [
+      ['The algebra', algebraRouter(), 'Algebra'],
+      ['Theming', themingRouter(), 'Theming'],
+    ],
   },
   {
     title: 'Integrations',
