@@ -38,14 +38,10 @@ const TypeId = '~@pleat/core/Style'
  *    border and its sides, aspects, and logical forms, borderRadius, borderImage, outline,
  *    background, backgroundPosition, mask, font, flex, flexFlow, grid, gridTemplate,
  *    gridArea, gridRow, gridColumn, columns, columnRule, listStyle, textDecoration,
- *    textEmphasis, transition, animation, container, containIntrinsicSize, the place
- *    shorthands, and scrollMargin and scrollPadding. Every other property is treated as a
- *    longhand.
- *  - Some longhands are only reset by their shorthand and aren't in that list yet: font's
- *    `fontKerning`, `fontFeatureSettings`, `fontVariationSettings`, `fontOpticalSizing`,
- *    `fontSizeAdjust`, `fontLanguageOverride`, and the `fontVariant*` longhands, and
- *    animation's `animationTimeline`, `animationRangeStart`, and `animationRangeEnd`. Write
- *    them after the shorthand.
+ *    textEmphasis, transition, animation, animationRange, fontVariant, container,
+ *    containIntrinsicSize, the place shorthands, and scrollMargin and scrollPadding,
+ *    including longhands a shorthand only resets, such as font's `fontKerning` and
+ *    animation's `animationTimeline`. Every other property is treated as a longhand.
  *  - Shorthands that share only some longhands (`borderTop` and `borderColor`), and logical
  *    and physical properties for one side, are ordered by property priority rather than by
  *    when they were written. Pleat warns about the first in development. */
