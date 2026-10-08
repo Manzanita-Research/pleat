@@ -116,7 +116,9 @@ const segmentName = (segment: string): string => {
 }
 
 /** Creates tokens from a spec. Each leaf becomes `--<prefix><path>`: with no prefix,
- *  `color.onAccent` is `--color-on-accent`.
+ *  `color.onAccent` is `--color-on-accent`. Throws when two paths make the same name, such
+ *  as `fooBar` and `foo.bar`. Separate trees can still share names; {@link Theme.merge}
+ *  catches that, and a `prefix` per tree avoids it.
  *
  *  ```ts
  *  const tokens = Token.make({
@@ -128,17 +130,30 @@ const segmentName = (segment: string): string => {
 export const make = <const S extends Spec>(
   spec: S,
   options: Readonly<{ prefix?: string }> = {},
-): Tokens<S> => build(spec, [], options.prefix ?? '') as Tokens<S>
+): Tokens<S> => build(spec, [], options.prefix ?? '', new Map()) as Tokens<S>
 
-const build = (spec: Spec, path: ReadonlyArray<string>, prefix: string): unknown => {
+const build = (
+  spec: Spec,
+  path: ReadonlyArray<string>,
+  prefix: string,
+  named: Map<string, ReadonlyArray<string>>,
+): unknown => {
   if (isKind(spec)) {
     const name = `--${prefix}${path.map(segmentName).join('-')}`
+    const existing = named.get(name)
+    if (existing !== undefined) {
+      throw new Error(
+        `[pleat] Token paths ${existing.join('.')} and ${path.join('.')} both name ${name}. ` +
+          'Rename one of them.',
+      )
+    }
+    named.set(name, path)
     return makeRef(name, { kind: spec, path })
   }
   return Object.fromEntries(
     Object.entries(spec).map(([key, child]) => [
       key,
-      build(child, [...path, key], prefix),
+      build(child, [...path, key], prefix, named),
     ]),
   )
 }

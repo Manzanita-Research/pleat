@@ -24,6 +24,49 @@ describe('Token', () => {
     )
     expect(Token.leaves(tokens)).toHaveLength(7)
   })
+
+  test('rejects two paths that name the same custom property', () => {
+    expect(() => Token.make({ fooBar: Token.color, foo: { bar: Token.length } })).toThrow(
+      'Token paths fooBar and foo.bar both name --foo-bar',
+    )
+  })
+})
+
+describe('Theme.merge', () => {
+  const palette = Token.make({ blue: { 500: Token.color }, space: { 2: Token.length } })
+  const semantic = Token.make({ accent: Token.color, inkSoft: Token.color })
+  const base = Theme.make(palette, { blue: { 500: '#1d4ed8' }, space: { 2: '0.5rem' } })
+  const roles = Theme.make(semantic, { accent: palette.blue[500], inkSoft: 'gray' })
+
+  test('composes themes for independent token sets', () => {
+    expect(Theme.css(Theme.merge(base, roles))).toBe(
+      ':root{--blue-500:#1d4ed8;--space-2:0.5rem;--accent:var(--blue-500);--ink-soft:gray}',
+    )
+    expect(Theme.merge(base, Theme.empty)).toEqual(base)
+    expect(Theme.merge(base, base)).toEqual(base)
+  })
+
+  test('rejects two token trees that name the same custom property', () => {
+    const spacing = Token.make({ space: { 2: Token.length } })
+    const other = Theme.make(spacing, { space: { 2: '0.5rem' } })
+    expect(() => Theme.merge(base, other)).toThrow(
+      'Two token trees both name --space-2 (space.2 and space.2)',
+    )
+    const inkBar = Token.make({ ink: { soft: Token.color } })
+    expect(() =>
+      Theme.merge(roles, Theme.make(inkBar, { ink: { soft: 'black' } })),
+    ).toThrow('Two token trees both name --ink-soft (inkSoft and ink.soft)')
+    expect(() => Theme.extend(base, spacing, { space: { 2: '1rem' } })).toThrow(
+      'Two token trees both name --space-2',
+    )
+  })
+
+  test('rejects two values for one token, which is what extend is for', () => {
+    const wide = Theme.extend(base, palette, { space: { 2: '1rem' } })
+    expect(() => Theme.merge(base, wide)).toThrow(
+      'Both themes set --space-2 (0.5rem and 1rem)',
+    )
+  })
 })
 
 describe('Theme', () => {
