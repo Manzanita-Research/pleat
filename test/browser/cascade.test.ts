@@ -1,13 +1,11 @@
-import { fileURLToPath } from 'node:url'
-
 import { Sheet, Style, When } from '@pleat/core'
 import fc from 'fast-check'
 import type { Browser, Page } from 'playwright-core'
-import { build, defaultClientConditions } from 'vite'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { description } from '../../packages/core/test/arbitrary.ts'
 import { type Description, fromDescription } from '../../packages/core/test/universe.ts'
+import { bundle } from './bundle.ts'
 import { launch } from './chromium.ts'
 
 // The claim under test: for any style and any set of active conditions, the browser's
@@ -210,26 +208,7 @@ let fixtureScript: string
 
 beforeAll(async () => {
   browser = await launch()
-  const output = await build({
-    configFile: false,
-    logLevel: 'silent',
-    resolve: { conditions: ['@pleat/source', ...defaultClientConditions] },
-    build: {
-      write: false,
-      minify: false,
-      lib: {
-        entry: fileURLToPath(new URL('./fixture.ts', import.meta.url)),
-        formats: ['iife'],
-        name: 'PleatFixtureBundle',
-      },
-    },
-  })
-  const [result] = Array.isArray(output) ? output : [output]
-  if (result === undefined || !('output' in result)) {
-    throw new Error('The fixture bundle did not build.')
-  }
-  const [chunk] = result.output
-  fixtureScript = chunk.type === 'chunk' ? chunk.code : ''
+  fixtureScript = await bundle(new URL('./fixture.ts', import.meta.url))
 })
 
 afterAll(async () => {

@@ -84,7 +84,8 @@ export const makeAtom = (
   rule: When.renderRule(condition, className, body),
 })
 
-/** @internal Registers a global rule. Registering the same id again replaces its text. */
+/** @internal Registers a global rule. Registering the same id again replaces its text, in
+ *  the same position, in the browser too. */
 export const registerGlobal = (global: Global): void => {
   const existing = globalsById.get(global.id)
   if (existing !== undefined && existing.rule === global.rule) {
@@ -191,7 +192,8 @@ type Mounted = Readonly<{
   atoms: CSSGroupingRule
   insertedAtoms: Array<Atom>
   insertedClassNames: Set<string>
-  insertedGlobalIds: Set<string>
+  /** The browser's rule for each global id, to replace when the global changes. */
+  insertedGlobals: Map<string, CSSRule>
 }>
 
 let mounted: Mounted | undefined
@@ -225,13 +227,26 @@ const createSheet = (target: Document): CSSStyleSheet => {
   return element.sheet
 }
 
+const indexOfRule = (block: CSSGroupingRule, rule: CSSRule): number =>
+  Array.prototype.indexOf.call(block.cssRules, rule)
+
 const insertGlobal = (target: Mounted, global: Global): void => {
-  if (target.insertedGlobalIds.has(global.id)) {
-    return
-  }
   const block = global.layer === 'globals' ? target.globals : target.themes
-  block.insertRule(global.rule, block.cssRules.length)
-  target.insertedGlobalIds.add(global.id)
+  const existing = target.insertedGlobals.get(global.id)
+  const existingIndex = existing === undefined ? -1 : indexOfRule(block, existing)
+  // NOTE: the new rule goes in before the old one comes out, so a rule the browser rejects
+  // leaves the old one in place.
+  const index = block.insertRule(
+    global.rule,
+    existingIndex >= 0 ? existingIndex : block.cssRules.length,
+  )
+  if (existingIndex >= 0) {
+    block.deleteRule(existingIndex + 1)
+  }
+  const inserted = block.cssRules.item(index)
+  if (inserted !== null) {
+    target.insertedGlobals.set(global.id, inserted)
+  }
 }
 
 const insertAtom = (target: Mounted, atom: Atom): void => {
@@ -269,7 +284,7 @@ export const mount = (target: Document = document): void => {
     atoms: groupingRule(sheet, 3),
     insertedAtoms: [],
     insertedClassNames: new Set(),
-    insertedGlobalIds: new Set(),
+    insertedGlobals: new Map(),
   }
   mounted = state
   for (const global of globalsById.values()) {
