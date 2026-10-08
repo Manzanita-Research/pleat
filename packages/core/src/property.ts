@@ -187,7 +187,10 @@ const borderEntries = (): ReadonlyArray<readonly [string, ReadonlyArray<string>]
   ],
 ]
 
-// NOTE: each entry lists what a shorthand resets directly. Nesting (border →
+// NOTE: each entry lists what a shorthand resets directly, including longhands
+// it can't set but resets to their initial values (font resets fontKerning).
+// The browser test in test/browser/programs.test.ts checks entries against
+// Chromium. Nesting (border →
 // borderTop → borderTopColor) is resolved by `leavesOf`. Logical and physical
 // properties are separate families, as they are in the CSS cascade's own
 // bookkeeping; mixing them on one box side resolves by property priority.
@@ -203,8 +206,11 @@ const SHORTHAND_ENTRIES: ReadonlyArray<readonly [string, ReadonlyArray<string>]>
       'animationDirection',
       'animationFillMode',
       'animationPlayState',
+      'animationTimeline',
+      'animationRange',
     ],
   ],
+  ['animationRange', ['animationRangeStart', 'animationRangeEnd']],
   [
     'background',
     [
@@ -221,7 +227,7 @@ const SHORTHAND_ENTRIES: ReadonlyArray<readonly [string, ReadonlyArray<string>]>
   ['backgroundPosition', ['backgroundPositionX', 'backgroundPositionY']],
   ...borderEntries(),
   ['columnRule', ['columnRuleWidth', 'columnRuleStyle', 'columnRuleColor']],
-  ['columns', ['columnWidth', 'columnCount']],
+  ['columns', ['columnWidth', 'columnCount', 'columnHeight', 'columnWrap']],
   ['containIntrinsicSize', ['containIntrinsicWidth', 'containIntrinsicHeight']],
   ['container', ['containerName', 'containerType']],
   ['flex', ['flexGrow', 'flexShrink', 'flexBasis']],
@@ -236,6 +242,24 @@ const SHORTHAND_ENTRIES: ReadonlyArray<readonly [string, ReadonlyArray<string>]>
       'fontSize',
       'lineHeight',
       'fontFamily',
+      'fontOpticalSizing',
+      'fontSizeAdjust',
+      'fontKerning',
+      'fontFeatureSettings',
+      'fontVariationSettings',
+      'fontLanguageOverride',
+    ],
+  ],
+  [
+    'fontVariant',
+    [
+      'fontVariantLigatures',
+      'fontVariantCaps',
+      'fontVariantAlternates',
+      'fontVariantNumeric',
+      'fontVariantEastAsian',
+      'fontVariantPosition',
+      'fontVariantEmoji',
     ],
   ],
   ['gap', ['rowGap', 'columnGap']],

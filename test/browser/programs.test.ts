@@ -41,6 +41,12 @@ const UNIVERSE: ReadonlyArray<readonly [string, ReadonlyArray<string>]> = [
   ['lineHeight', ['19px']],
   ['fontFamily', ['sans-serif']],
   ['fontStyle', ['oblique']],
+  ['fontVariant', ['small-caps', 'oldstyle-nums']],
+  ['fontVariantCaps', ['all-small-caps']],
+  ['fontKerning', ['none']],
+  ['fontFeatureSettings', ['"liga" 0']],
+  ['columns', ['3 10em']],
+  ['columnCount', ['2']],
   ['flex', ['2 3 10px', 'none']],
   ['flexGrow', ['5']],
   ['flexBasis', ['20px']],
@@ -54,6 +60,7 @@ const UNIVERSE: ReadonlyArray<readonly [string, ReadonlyArray<string>]> = [
   ['transitionDuration', ['3s']],
   ['animation', ['spin 1s linear 2s infinite']],
   ['animationDuration', ['4s']],
+  ['animationTimeline', ['none']],
 ]
 
 const kebab = (property: string): string =>
@@ -170,6 +177,9 @@ const probedProperties = (): ReadonlyArray<string> => [
       'line-height',
       'font-family',
       'font-variant-caps',
+      'font-variant-numeric',
+      'column-width',
+      'column-count',
       'font-stretch',
       'font-kerning',
       'font-feature-settings',
