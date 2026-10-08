@@ -8,7 +8,8 @@ import * as Style from './style.ts'
 // TYPES
 
 /** One variant dimension: option name to style. Options named `true` and `false` make a
- *  boolean dimension. */
+ *  boolean dimension, which takes both booleans even when it names only one of them: the
+ *  branch it leaves out is the empty style. A dimension needs at least one option. */
 export type Options = Readonly<Record<string, Style.Style | Declarations>>
 
 /** Every variant dimension of a recipe. */
@@ -110,11 +111,20 @@ export const isRecipe = (value: unknown): value is Any =>
 const RESULT = Symbol('result')
 type CacheNode = Map<string | typeof RESULT, CacheNode | Style.Style>
 
-const BOOLEAN_OPTIONS: ReadonlySet<string> = new Set(['true', 'false'])
+const BOOLEAN_OPTIONS: ReadonlyArray<string> = ['true', 'false']
 
 const isBooleanDimension = (options: Options): boolean =>
   Object.keys(options).length > 0 &&
-  Object.keys(options).every(option => BOOLEAN_OPTIONS.has(option))
+  Object.keys(options).every(option => BOOLEAN_OPTIONS.includes(option))
+
+// NOTE: a boolean dimension takes both booleans, as its props type and schema
+// say, so the branch it leaves out is listed after the ones it names.
+const optionNames = (options: Options): ReadonlyArray<string> => {
+  const names = Object.keys(options)
+  return isBooleanDimension(options)
+    ? [...names, ...BOOLEAN_OPTIONS.filter(option => !names.includes(option))]
+    : names
+}
 
 const toStyle = (input: Style.Style | Declarations): Style.Style =>
   Style.isStyle(input) ? input : Style.make(input)
@@ -142,16 +152,28 @@ export const make = <const V extends Variants, const D extends Partial<ShapeOf<V
   const dimensionNames = Object.keys(config.variants)
   const defaults: Readonly<Record<string, unknown>> = config.defaults ?? {}
 
+  for (const dimension of dimensionNames) {
+    if (Object.keys(config.variants[dimension] ?? {}).length === 0) {
+      throw new Error(
+        `[pleat] Recipe ${config.name ?? ''}: dimension ${dimension} has no options. ` +
+          'Give it at least one, or leave it out.',
+      )
+    }
+  }
+
   const optionStyles = new Map<string, ReadonlyMap<string, Style.Style>>(
-    dimensionNames.map(dimension => [
-      dimension,
-      new Map(
-        Object.entries(config.variants[dimension] ?? {}).map(([option, input]) => [
-          option,
-          toStyle(input),
-        ]),
-      ),
-    ]),
+    dimensionNames.map(dimension => {
+      const options = config.variants[dimension] ?? {}
+      return [
+        dimension,
+        new Map(
+          optionNames(options).map(option => {
+            const input = options[option]
+            return [option, input === undefined ? Style.empty : toStyle(input)]
+          }),
+        ),
+      ]
+    }),
   )
   const compounds = (config.compounds ?? []).map(compound => ({
     when: Object.entries(compound.when).map(
@@ -237,7 +259,7 @@ export const make = <const V extends Variants, const D extends Partial<ShapeOf<V
   const dimensions = Object.fromEntries(
     dimensionNames.map(dimension => {
       const options = config.variants[dimension] ?? {}
-      const names = Object.keys(options)
+      const names = optionNames(options)
       return [
         dimension,
         isBooleanDimension(options) ? names.map(option => option === 'true') : names,

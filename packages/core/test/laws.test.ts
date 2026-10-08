@@ -1,8 +1,8 @@
-import { Equal } from 'effect'
+import { Equal, Exit, Schema } from 'effect'
 import fc from 'fast-check'
 import { describe, expect, test } from 'vitest'
 
-import { Calc, Sheet, Style, When } from '../src/index.ts'
+import { Calc, Recipe, Sheet, Style, When } from '../src/index.ts'
 import { condition, style } from './arbitrary.ts'
 
 const RUNS = 400
@@ -162,6 +162,75 @@ describe('class names', () => {
         )
         expect(rebuilt.className).toBe(a.className)
       }),
+      { numRuns: RUNS },
+    )
+  })
+})
+
+// NOTE: dimensions are boolean (one or both of `true` and `false`) or named,
+// and inputs mix every kind of value, so most of them fail to decode and the
+// rest cover each dimension's whole domain, including absent boolean branches.
+const recipeConfig = fc
+  .uniqueArray(
+    fc.tuple(
+      fc.constantFrom('tone', 'size', 'isBusy', 'isOpen'),
+      fc.oneof(
+        fc.subarray(['true', 'false'], { minLength: 1 }),
+        fc.subarray(['Small', 'Medium', 'Large'], { minLength: 1 }),
+      ),
+      fc.option(fc.constantFrom<string | boolean>(true, false, 'Small', 'Large'), {
+        nil: undefined,
+      }),
+    ),
+    { selector: ([dimension]) => dimension, minLength: 1 },
+  )
+  .map(dimensions => {
+    const variants: Record<string, Record<string, Style.Style>> = {}
+    const defaults: Record<string, string | boolean> = {}
+    for (const [dimension, options, fallback] of dimensions) {
+      variants[dimension] = Object.fromEntries(
+        options.map((option, index) => [
+          option,
+          Style.make({ opacity: String(index / 4) }),
+        ]),
+      )
+      const isBoolean = options[0] === 'true' || options[0] === 'false'
+      if (
+        fallback !== undefined &&
+        (isBoolean ? typeof fallback === 'boolean' : options.includes(String(fallback)))
+      ) {
+        defaults[dimension] = fallback
+      }
+    }
+    // NOTE: a generated recipe has no literal shape, so its defaults are typed loosely.
+    return { variants, defaults: defaults as Record<string, string> }
+  })
+
+const recipeInput = fc.dictionary(
+  fc.constantFrom('tone', 'size', 'isBusy', 'isOpen'),
+  fc.constantFrom<unknown>(true, false, 'true', 'Small', 'Medium', 'Large', 'Huge'),
+)
+
+describe('Recipe', () => {
+  test('every selection its Schema decodes renders', () => {
+    fc.assert(
+      fc.property(
+        recipeConfig,
+        fc.array(recipeInput, { maxLength: 20 }),
+        (config, inputs) => {
+          const recipe = Recipe.make(config)
+          const decode = Schema.decodeUnknownExit(recipe.schema)
+          for (const input of inputs) {
+            const decoded = decode(input)
+            if (Exit.isSuccess(decoded)) {
+              expect(Style.isStyle(recipe(decoded.value as never))).toBe(true)
+            }
+          }
+          for (const { props } of Recipe.combinations(recipe)) {
+            expect(Exit.isSuccess(decode(props))).toBe(true)
+          }
+        },
+      ),
       { numRuns: RUNS },
     )
   })
