@@ -102,6 +102,35 @@ describe('When', () => {
     ])
   })
 
+  // NOTE: these selectors are what @foldkit/ui 0.167 sets on its parts. They are also
+  // condition keys, so changing one changes every class name that uses it.
+  test('selects the attributes @foldkit/ui sets', () => {
+    expect(When.label(When.open)).toBe('[data-open], [aria-expanded="true"]')
+    expect(When.label(When.selected)).toBe('[data-selected], [aria-selected="true"]')
+    expect(When.label(When.checked)).toBe(
+      ':checked, [data-checked], [aria-checked="true"]',
+    )
+    expect(When.label(When.indeterminate)).toBe(
+      ':indeterminate, [data-indeterminate], [aria-checked="mixed"]',
+    )
+    expect(When.label(When.highlighted)).toBe('[data-active]')
+    expect(When.label(When.disabled)).toBe(
+      ':disabled, [data-disabled], [aria-disabled="true"]',
+    )
+    expect(When.label(When.invalid)).toBe('[data-invalid], [aria-invalid="true"]')
+    expect(When.label(When.readonly)).toBe('[data-readonly], [aria-readonly="true"]')
+    expect(When.label(When.closed)).toBe('[data-closed]')
+    expect(When.label(When.entering)).toBe('[data-enter]')
+    expect(When.label(When.leaving)).toBe('[data-leave]')
+    expect(When.label(When.transitioning)).toBe('[data-transition]')
+  })
+
+  test('ranks a mixed checkbox with checked, below interaction and disabled', () => {
+    expect(When.compare(When.indeterminate, When.open)).toBeGreaterThan(0)
+    expect(When.compare(When.indeterminate, When.hover)).toBeLessThan(0)
+    expect(When.compare(When.indeterminate, When.disabled)).toBeLessThan(0)
+  })
+
   test('rejects selectors and queries that could escape a rule', () => {
     expect(() => When.data('open"]{}')).toThrow()
     expect(() => When.media('(min-width: 1px) { body { color: red }')).toThrow()

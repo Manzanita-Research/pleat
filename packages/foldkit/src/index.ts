@@ -6,6 +6,9 @@
  *  h.button([...attributes.button, ...css(button({ tone: 'Primary' }))], ['Save'])
  *  ```
  *
+ *  For APIs that take a class name instead of attributes, such as the `className` fields of
+ *  `@foldkit/ui`'s Menu, Listbox, and Combobox, use {@link cssClass}.
+ *
  *  @packageDocumentation */
 
 import { Style, Var } from '@pleat/core'
@@ -119,4 +122,36 @@ export const css = (...parts: ReadonlyArray<Part>): ReadonlyArray<CssAttribute> 
     attributes.push(inertHtml.Style(bindings))
   }
   return attributes
+}
+
+// CLASS NAMES
+
+/** The class names that apply Pleat styles, as one string, for APIs that take a class name
+ *  rather than attributes. `@foldkit/ui`'s Menu, Listbox, and Combobox are the main case:
+ *  their parts take `buttonClassName`, `itemsClassName`, and an item's `className`, and an
+ *  item has no field for attributes at all.
+ *
+ *  Styles merge left to right, the same as in {@link css}. A variable binding needs an inline
+ *  style, which a class name can't carry, so pass bindings to {@link css} on an element you
+ *  render yourself.
+ *
+ *  ```ts
+ *  itemToConfig: item => ({ className: cssClass(menuItem), content: h.span([], [item]) })
+ *  ``` */
+export const cssClass = (...parts: ReadonlyArray<Style.Style | ClassName>): string => {
+  let style = Style.empty
+  let extraClasses = ''
+  for (const part of parts) {
+    if (Style.isStyle(part)) {
+      style = Style.merge(style, part)
+    } else {
+      extraClasses = extraClasses === '' ? part.value : `${extraClasses} ${part.value}`
+    }
+  }
+  const styleClasses = Style.use(style)
+  return styleClasses === ''
+    ? extraClasses
+    : extraClasses === ''
+      ? styleClasses
+      : `${styleClasses} ${extraClasses}`
 }
