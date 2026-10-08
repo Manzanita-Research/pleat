@@ -29,6 +29,7 @@ export type Playground = typeof Playground.Type
 export const Model = Schema.Struct({
   route: AppRoute,
   theme: ThemeChoice,
+  isMenuOpen: Schema.Boolean,
   playground: Playground,
   preset: Schema.Option(Preset),
   specSource: Schema.String,
@@ -43,6 +44,7 @@ export const Message = defineMessageUnion({
   CompletedNavigateInternal: {},
   CompletedLoadExternal: {},
   ClickedTheme: { theme: ThemeChoice },
+  ClickedMenuToggle: {},
   PickedTone: { tone: Tone },
   PickedSize: { size: Size },
   PickedPending: { isPending: Schema.Boolean },

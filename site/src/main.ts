@@ -26,6 +26,7 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
   model: {
     route: urlToAppRoute(url),
     theme: 'System',
+    isMenuOpen: false,
     playground: { tone: 'Primary', size: 'Medium', isPending: false },
     preset: Option.some(INITIAL_PRESET),
     specSource: presetSource(INITIAL_PRESET),
@@ -65,11 +66,17 @@ export const update = (model: Model, message: Message) =>
         External: ({ href }) => ({ model, commands: [LoadExternal({ href })] }),
       }),
     ChangedUrl: ({ url }) => ({
-      model: modifyFields(model, { route: () => urlToAppRoute(url) }),
+      model: modifyFields(model, {
+        route: () => urlToAppRoute(url),
+        isMenuOpen: () => false,
+      }),
     }),
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
     ClickedTheme: ({ theme }) => ({ model: modifyFields(model, { theme: () => theme }) }),
+    ClickedMenuToggle: () => ({
+      model: modifyFields(model, { isMenuOpen: isMenuOpen => !isMenuOpen }),
+    }),
     PickedTone: ({ tone }) => ({
       model: modifyFields(model, {
         playground: playground => ({ ...playground, tone }),

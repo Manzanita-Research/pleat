@@ -4,7 +4,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import { codeBlock } from '../code.ts'
 import type { Message } from '../message.ts'
 import { articleStyle, pageIntro } from './guide.ts'
-import { bullets, paragraph, section, subsection } from './prose.ts'
+import { bullets, onThisPage, paragraph, section, subsection } from './prose.ts'
 
 const LAWS = `// Style is an idempotent monoid (a band) under merge.
 merge(merge(a, b), c) === merge(a, merge(b, c))   // associative
@@ -30,7 +30,7 @@ const PRECEDENCE = `// Weakest to strongest. A condition is as strong as its str
   <  invalid  <  disabled
   <  pseudo-elements (a different box, so they never compete)`
 
-const SELECTIVE = `// Further (2017): a monad. The next style depends on props at run time,
+const SELECTIVE = `// A monad: the next style depends on props at run time,
 // so nothing can know the CSS before render.
 chain: (Style a, a -> Style b) -> Style b
 
@@ -46,10 +46,22 @@ darkenText(Style.make({ color: tokens.color.accent }))
 // The browser evaluates it after the theme sets --color-accent, so
 // transform-then-theme equals theme-then-transform for every theme.`
 
+const CONTENTS: ReadonlyArray<readonly [id: string, title: string]> = [
+  ['band', 'Styles form a band'],
+  ['meaning', 'What a style means'],
+  ['conditions', 'Conditions and precedence'],
+  ['recipes', 'Recipes are selective functors'],
+  ['staging', 'Variables stage the rest'],
+  ['transforms', 'Transforms commute with themes'],
+  ['checked', 'How it is checked'],
+  ['limits', 'Limits'],
+]
+
 export const algebraView = (h: HtmlBuilder<Message>): Html =>
   h.article(
     [...css(articleStyle)],
     [
+      onThisPage(h, CONTENTS),
       pageIntro(
         h,
         'The algebra',
@@ -100,7 +112,7 @@ export const algebraView = (h: HtmlBuilder<Message>): Html =>
       section(h, 'recipes', 'Recipes are selective functors', [
         paragraph(
           h,
-          'Further, the 2017 ancestor of Pleat, made styles a monad over props. A monad lets the next step depend on a value computed at run time, which is exactly what keeps the CSS unknown until render. Applicative functors are the opposite: the structure is fixed, so it can be analyzed, but nothing can branch.',
+          'The obvious way to vary a style by props is to make styles a monad over them, so each step can read the props. But a monad lets the next step depend on a value computed at run time, which is exactly what keeps the CSS unknown until render. Applicative functors are the opposite: the structure is fixed, so it can be analyzed, but nothing can branch.',
         ),
         paragraph(
           h,

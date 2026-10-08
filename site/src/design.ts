@@ -1,4 +1,17 @@
-import { Color, Global, Recipe, Style, Theme, Token, When } from '@pleat/core'
+import geistMonoUrl from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url'
+import geistUrl from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url'
+import instrumentItalicUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url'
+import instrumentUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url'
+import {
+  Color,
+  type Declarations,
+  Global,
+  Recipe,
+  Style,
+  Theme,
+  Token,
+  When,
+} from '@pleat/core'
 
 // TOKENS
 
@@ -12,6 +25,7 @@ export const tokens = Token.make({
     muted: Token.color,
     accent: Token.color,
     onAccent: Token.color,
+    brand: Token.color,
     accentSoft: Token.color,
     indigo: Token.color,
     green: Token.color,
@@ -36,21 +50,60 @@ export const tokens = Token.make({
     xl: Token.length,
     xxl: Token.length,
     display: Token.length,
+    hero: Token.length,
   },
   radius: { sm: Token.length, md: Token.length, lg: Token.length },
-  shadow: { raised: Token.value },
+  shadow: { raised: Token.value, overlay: Token.value },
 })
 
 const { color, font, space, text, radius, shadow } = tokens
+
+// FONTS
+
+/** The fonts this site ships, preloaded by the server entry. */
+export const FONT_URLS: ReadonlyArray<string> = [geistUrl, instrumentUrl]
+
+// NOTE: Global.fontFace takes style Declarations, which have no `src` or
+// `fontDisplay`, so the descriptors are cast. Reported as API friction.
+const fontFace = (descriptors: Readonly<Record<string, string>>): void =>
+  Global.fontFace(descriptors as Declarations)
+
+fontFace({
+  fontFamily: 'Geist',
+  fontStyle: 'normal',
+  fontWeight: '100 900',
+  fontDisplay: 'swap',
+  src: `url(${geistUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'Geist Mono',
+  fontStyle: 'normal',
+  fontWeight: '100 900',
+  fontDisplay: 'swap',
+  src: `url(${geistMonoUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'Instrument Serif',
+  fontStyle: 'normal',
+  fontWeight: '400',
+  fontDisplay: 'swap',
+  src: `url(${instrumentUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'Instrument Serif',
+  fontStyle: 'italic',
+  fontWeight: '400',
+  fontDisplay: 'swap',
+  src: `url(${instrumentItalicUrl}) format("woff2")`,
+})
 
 // THEMES
 
 const shared = {
   font: {
-    serif:
-      '"Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif',
-    sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-    mono: 'ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace',
+    serif: '"Instrument Serif", "Iowan Old Style", Georgia, serif',
+    sans: 'Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+    mono: '"Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   },
   space: {
     1: '0.25rem',
@@ -68,50 +121,58 @@ const shared = {
     sm: '0.875rem',
     md: '1rem',
     lg: '1.125rem',
-    xl: '1.375rem',
-    xxl: '2rem',
-    display: 'clamp(2.75rem, 7vw, 5.25rem)',
+    xl: '1.3125rem',
+    xxl: '2.25rem',
+    display: 'clamp(2.75rem, 6vw, 4rem)',
+    hero: 'clamp(3.25rem, 9vw, 7rem)',
   },
-  radius: { sm: '4px', md: '8px', lg: '14px' },
+  radius: { sm: '5px', md: '8px', lg: '12px' },
 } as const
 
+// NOTE: `brand` only fills the pleats, never text. Every text pair here clears
+// APCA Lc 75 for body text (ink) and Lc 60 for secondary text (muted, accent),
+// and `line` clears Lc 15 for dividers, on canvas, surface, and sunken.
 export const linen = Theme.make(tokens, {
   ...shared,
   color: {
-    canvas: 'oklch(97.4% 0.009 80)',
-    surface: 'oklch(99.3% 0.004 85)',
-    sunken: 'oklch(94.6% 0.012 78)',
-    line: 'oklch(88.5% 0.016 72)',
-    ink: 'oklch(24% 0.022 50)',
-    muted: 'oklch(49% 0.022 58)',
-    accent: 'oklch(52% 0.155 34)',
-    onAccent: 'oklch(98.5% 0.008 80)',
-    accentSoft: 'oklch(93.5% 0.035 42)',
-    indigo: 'oklch(45% 0.13 272)',
-    green: 'oklch(47% 0.1 150)',
+    canvas: 'oklch(98.8% 0.003 90)',
+    surface: 'oklch(100% 0 0)',
+    sunken: 'oklch(96.6% 0.005 90)',
+    line: 'oklch(88.5% 0.007 90)',
+    ink: 'oklch(20.5% 0.015 265)',
+    muted: 'oklch(46% 0.014 265)',
+    accent: 'oklch(52% 0.19 33)',
+    onAccent: 'oklch(99% 0.005 90)',
+    brand: 'oklch(52% 0.19 33)',
+    accentSoft: 'oklch(95.5% 0.028 38)',
+    indigo: 'oklch(46% 0.17 268)',
+    green: 'oklch(47% 0.12 155)',
   },
   shadow: {
     raised:
-      '0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 12px 32px -18px oklch(30% 0.05 45 / 0.35)',
+      '0 1px 2px oklch(20% 0.02 265 / 0.06), 0 8px 24px -16px oklch(20% 0.02 265 / 0.18)',
+    overlay: '0 24px 48px -24px oklch(20% 0.02 265 / 0.3)',
   },
 })
 
 export const indigoNight = Theme.extend(linen, tokens, {
   color: {
-    canvas: 'oklch(17.5% 0.022 272)',
-    surface: 'oklch(21.5% 0.027 272)',
-    sunken: 'oklch(14.5% 0.02 272)',
-    line: 'oklch(31% 0.03 272)',
-    ink: 'oklch(93% 0.012 82)',
-    muted: 'oklch(71% 0.02 80)',
-    accent: 'oklch(71% 0.14 42)',
-    onAccent: 'oklch(18% 0.022 272)',
-    accentSoft: 'oklch(29% 0.06 36)',
-    indigo: 'oklch(78% 0.09 272)',
-    green: 'oklch(80% 0.1 150)',
+    canvas: 'oklch(15.5% 0.014 268)',
+    surface: 'oklch(19% 0.016 268)',
+    sunken: 'oklch(12.5% 0.012 268)',
+    line: 'oklch(46% 0.016 268)',
+    ink: 'oklch(95% 0.006 90)',
+    muted: 'oklch(82% 0.012 268)',
+    accent: 'oklch(81% 0.13 45)',
+    onAccent: 'oklch(16% 0.03 35)',
+    brand: 'oklch(60% 0.19 36)',
+    accentSoft: 'oklch(26% 0.06 38)',
+    indigo: 'oklch(82% 0.1 275)',
+    green: 'oklch(84% 0.13 155)',
   },
   shadow: {
-    raised: '0 1px 0 oklch(100% 0 0 / 0.05) inset, 0 16px 40px -20px oklch(0% 0 0 / 0.7)',
+    raised: '0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 12px 32px -18px oklch(0% 0 0 / 0.8)',
+    overlay: '0 24px 48px -16px oklch(0% 0 0 / 0.7)',
   },
 })
 
@@ -121,6 +182,8 @@ Global.theme(indigoNight, {
   selector: ':root:has([data-theme="System"])',
   when: When.dark,
 })
+Global.rule(':root:has([data-theme="Dark"])', { colorScheme: 'dark' })
+Global.rule(':root:has([data-theme="Light"])', { colorScheme: 'light' })
 
 // GLOBALS
 
@@ -136,22 +199,24 @@ Global.rule('body', {
   color: color.ink,
   fontFamily: font.sans,
   fontSize: text.md,
-  lineHeight: 1.6,
+  lineHeight: 1.65,
   WebkitFontSmoothing: 'antialiased',
+  MozOsxFontSmoothing: 'grayscale',
 })
-Global.rule('::selection', { backgroundColor: color.accentSoft })
+Global.rule('::selection', { backgroundColor: Color.alpha(color.accent, 0.22) })
 Global.rule('a', { color: 'inherit' })
-Global.rule('h1, h2, h3, p, pre, figure, ul, ol', { margin: 0 })
+Global.rule('h1, h2, h3, h4, p, pre, figure, ul, ol, dl, dd', { margin: 0 })
 
 // PLEATS
 
 // NOTE: each pleat is a lit face, a crease, and a face turned away from the
-// light, drawn as one repeating gradient so it scales with the token color.
+// light, drawn as one repeating gradient so it follows the token color in
+// every theme.
 const pleated = (base: string, width: number) => {
-  const lit = Color.mix(base, 'white', 22)
+  const lit = Color.mix(base, 'white', 24)
   const face = Color.mix(base, 'white', 6)
-  const crease = Color.mix(base, 'black', 42)
-  const turned = Color.mix(base, 'black', 16)
+  const crease = Color.mix(base, 'black', 45)
+  const turned = Color.mix(base, 'black', 18)
   const half = width / 2
   return [
     `repeating-linear-gradient(90deg, ${lit} 0px, ${face} ${half - 1}px, ${crease} ${half}px,`,
@@ -160,24 +225,25 @@ const pleated = (base: string, width: number) => {
 }
 
 export const pleatBand = Style.make({
-  height: 112,
+  height: 'clamp(4.5rem, 10vw, 8rem)',
   borderRadius: radius.lg,
-  backgroundImage: pleated(String(color.accent), 48),
+  backgroundImage: pleated(String(color.brand), 44),
   backgroundSize: '100% 100%',
   boxShadow: shadow.raised,
 }).pipe(
   Style.when(When.motionSafe, {
-    transition: 'background-size 700ms cubic-bezier(0.2, 0.7, 0.2, 1)',
+    transition: 'background-size 900ms cubic-bezier(0.2, 0.7, 0.2, 1)',
   }),
-  Style.when(When.all(When.canHover, When.hover), { backgroundSize: '62% 100%' }),
+  Style.when(When.all(When.canHover, When.hover), { backgroundSize: '58% 100%' }),
 )
 
 export const pleatMark = Style.make({
   display: 'inline-block',
-  width: 22,
-  height: 22,
+  width: 20,
+  height: 20,
   borderRadius: 5,
-  backgroundImage: pleated(String(color.accent), 7),
+  backgroundImage: pleated(String(color.brand), 6.5),
+  boxShadow: `0 0 0 1px ${Color.alpha(color.ink, 0.08)}`,
   flexShrink: 0,
 })
 
@@ -191,13 +257,13 @@ export const page = Style.make({
 
 export const container = Style.make({
   width: '100%',
-  maxWidth: '72rem',
+  maxWidth: '88rem',
   marginInline: 'auto',
   paddingInline: space[5],
-})
+}).pipe(Style.when(When.minWidth('48rem'), { paddingInline: space[6] }))
 
 export const prose = Style.make({
-  maxWidth: '44rem',
+  maxWidth: '46rem',
   display: 'flex',
   flexDirection: 'column',
   gap: space[4],
@@ -227,9 +293,13 @@ export const row = memoizeByToken(gap =>
 // TYPE
 
 export const eyebrow = Style.make({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: space[2],
   fontFamily: font.mono,
   fontSize: text.xs,
-  letterSpacing: '0.08em',
+  fontWeight: 500,
+  letterSpacing: '0.06em',
   textTransform: 'uppercase',
   color: color.accent,
 })
@@ -237,35 +307,44 @@ export const eyebrow = Style.make({
 export const display = Style.make({
   fontFamily: font.serif,
   fontSize: text.display,
-  fontWeight: 500,
+  fontWeight: 400,
   lineHeight: 1.02,
-  letterSpacing: '-0.02em',
+  letterSpacing: '-0.015em',
   textWrap: 'balance',
 })
+
+export const hero = Style.merge(
+  display,
+  Style.make({ fontSize: text.hero, lineHeight: 0.94, letterSpacing: '-0.025em' }),
+)
+
+/** Italic serif for a word or two of emphasis inside a heading. */
+export const flourish = Style.make({ fontStyle: 'italic', color: color.accent })
 
 export const heading = Style.make({
   fontFamily: font.serif,
   fontSize: text.xxl,
-  fontWeight: 500,
-  lineHeight: 1.15,
+  fontWeight: 400,
+  lineHeight: 1.08,
   letterSpacing: '-0.01em',
   textWrap: 'balance',
 })
 
 export const subheading = Style.make({
-  fontFamily: font.serif,
-  fontSize: text.xl,
+  fontFamily: font.sans,
+  fontSize: text.lg,
   fontWeight: 600,
-  lineHeight: 1.25,
+  lineHeight: 1.3,
+  letterSpacing: '-0.01em',
 })
 
 export const lede = Style.make({
-  fontSize: text.xl,
-  lineHeight: 1.5,
+  fontSize: text.lg,
+  lineHeight: 1.55,
   color: color.muted,
-  maxWidth: '40rem',
+  maxWidth: '42rem',
   textWrap: 'pretty',
-})
+}).pipe(Style.when(When.minWidth('48rem'), { fontSize: text.xl, lineHeight: 1.5 }))
 
 export const body = Style.make({ textWrap: 'pretty' })
 
@@ -274,26 +353,35 @@ export const muted = Style.make({ color: color.muted })
 export const small = Style.make({ fontSize: text.sm })
 
 export const link = Style.make({
-  color: color.accent,
+  color: color.ink,
+  fontWeight: 500,
+  textDecorationLine: 'underline',
+  textDecorationColor: color.accent,
   textDecorationThickness: '1px',
-  textUnderlineOffset: '0.18em',
+  textUnderlineOffset: '0.22em',
 }).pipe(Style.when(When.hover, { textDecorationThickness: '2px' }))
 
 export const inlineCode = Style.make({
   fontFamily: font.mono,
-  fontSize: '0.88em',
-  backgroundColor: color.sunken,
+  fontSize: '0.875em',
+  backgroundColor: Color.alpha(color.ink, 0.07),
   borderRadius: radius.sm,
-  paddingBlock: '0.1em',
-  paddingInline: '0.35em',
+  paddingBlock: '0.05em',
+  paddingInline: '0.3em',
+  overflowWrap: 'anywhere',
 })
 
 export const list = Style.make({
   display: 'flex',
   flexDirection: 'column',
-  gap: space[2],
+  gap: space[3],
   paddingInlineStart: space[5],
 })
+
+/** A list item; colors its marker with the accent. */
+export const listItem = Style.make({ paddingInlineStart: space[1] }).pipe(
+  Style.when(When.pseudoElement('::marker'), { color: color.accent }),
+)
 
 // SURFACES
 
@@ -312,6 +400,9 @@ export const rule = Style.make({
 })
 
 // CONTROLS
+
+/** A hover and selection wash that lifts in dark themes and dips in light ones. */
+export const tint = Color.alpha(color.ink, 0.06)
 
 export const focusRing = Style.empty.pipe(
   Style.when(When.focusVisible, {
@@ -333,6 +424,7 @@ export const button = Recipe.make({
     fontFamily: font.sans,
     fontWeight: 600,
     lineHeight: 1,
+    letterSpacing: '-0.005em',
     textDecoration: 'none',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
@@ -340,29 +432,34 @@ export const button = Recipe.make({
     Style.merge(focusRing),
     Style.when(When.motionSafe, {
       transition:
-        'background-color 140ms ease, border-color 140ms ease, transform 140ms ease',
+        'background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease',
     }),
     Style.when(When.active, { transform: 'translateY(1px)' }),
     Style.when(When.disabled, { opacity: 0.5, cursor: 'not-allowed', transform: 'none' }),
   ),
   variants: {
     tone: {
-      Primary: Style.make({ backgroundColor: color.accent, color: color.onAccent }).pipe(
-        Style.when(When.hover, { backgroundColor: Color.darken(color.accent, 0.06) }),
+      Primary: Style.make({
+        backgroundColor: color.accent,
+        color: color.onAccent,
+        boxShadow: `0 1px 0 ${Color.alpha('white', 0.2)} inset, 0 1px 2px ${Color.alpha(color.ink, 0.2)}`,
+      }).pipe(
+        Style.when(When.hover, { backgroundColor: Color.darken(color.accent, 0.05) }),
       ),
       Neutral: Style.make({
         backgroundColor: color.surface,
         color: color.ink,
         borderColor: color.line,
+        boxShadow: `0 1px 2px ${Color.alpha(color.ink, 0.06)}`,
       }).pipe(Style.when(When.hover, { borderColor: color.muted })),
       Quiet: Style.make({ backgroundColor: 'transparent', color: color.ink }).pipe(
-        Style.when(When.hover, { backgroundColor: color.sunken }),
+        Style.when(When.hover, { backgroundColor: tint }),
       ),
     },
     size: {
       Small: { paddingBlock: space[2], paddingInline: space[3], fontSize: text.sm },
-      Medium: { paddingBlock: space[3], paddingInline: space[4], fontSize: text.md },
-      Large: { paddingBlock: space[4], paddingInline: space[5], fontSize: text.lg },
+      Medium: { paddingBlock: '0.6875rem', paddingInline: space[4], fontSize: text.md },
+      Large: { paddingBlock: '0.875rem', paddingInline: space[5], fontSize: text.md },
     },
     isPending: {
       true: Style.make({ cursor: 'progress', opacity: 0.7 }),
@@ -387,13 +484,18 @@ export const segment = Style.make({
 })
 
 export const segmentButton = Style.make({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: space[1],
   border: 'none',
-  borderRadius: 6,
+  borderRadius: radius.sm,
   paddingBlock: space[1],
   paddingInline: space[3],
   fontFamily: font.sans,
   fontSize: text.sm,
   fontWeight: 500,
+  lineHeight: 1.4,
   color: color.muted,
   backgroundColor: 'transparent',
   cursor: 'pointer',
@@ -403,6 +505,6 @@ export const segmentButton = Style.make({
   Style.when(When.aria('pressed', 'true'), {
     backgroundColor: color.surface,
     color: color.ink,
-    boxShadow: `0 1px 2px ${Color.alpha(color.ink, 0.12)}`,
+    boxShadow: `0 1px 2px ${Color.alpha(color.ink, 0.14)}, 0 0 0 1px ${Color.alpha(color.ink, 0.04)}`,
   }),
 )

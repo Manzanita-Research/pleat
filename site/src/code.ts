@@ -1,4 +1,4 @@
-import { Style, When } from '@pleat/core'
+import { Color, Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
@@ -10,6 +10,7 @@ const { color, font, radius, space, text } = tokens
 
 const frame = Style.make({
   position: 'relative',
+  minWidth: 0,
   backgroundColor: color.sunken,
   border: `1px solid ${color.line}`,
   borderRadius: radius.lg,
@@ -18,29 +19,46 @@ const frame = Style.make({
 
 const caption = Style.make({
   display: 'flex',
+  alignItems: 'center',
   justifyContent: 'space-between',
   gap: space[3],
   paddingBlock: space[2],
   paddingInline: space[4],
   borderBottom: `1px solid ${color.line}`,
+  backgroundColor: Color.mix(color.sunken, color.surface, 50),
   fontFamily: font.mono,
-  fontSize: text.xs,
+  fontSize: '0.75rem',
   color: color.muted,
 })
+
+const fileName = Style.make({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: space[2],
+  color: color.ink,
+}).pipe(
+  Style.when(When.before, {
+    content: '""',
+    width: 7,
+    height: 7,
+    borderRadius: 2,
+    backgroundColor: color.accent,
+  }),
+)
 
 const block = Style.make({
   margin: 0,
   padding: space[4],
   overflowX: 'auto',
   fontFamily: font.mono,
-  fontSize: text.sm,
-  lineHeight: 1.65,
+  fontSize: '0.8125rem',
+  lineHeight: 1.7,
   tabSize: 2,
   fontVariantLigatures: 'none',
-}).pipe(Style.when(When.minWidth('48rem'), { padding: space[5] }))
+}).pipe(Style.when(When.minWidth('48rem'), { padding: space[5], fontSize: text.sm }))
 
 const TOKEN_STYLES = {
-  Comment: Style.make({ color: color.muted, fontStyle: 'italic' }),
+  Comment: Style.make({ color: color.muted }),
   String: Style.make({ color: color.green }),
   Keyword: Style.make({ color: color.accent }),
   Type: Style.make({ color: color.indigo }),
@@ -157,7 +175,7 @@ export const codeBlock = <Message>(
         : [
             h.figcaption(
               [...css(caption)],
-              [h.span([], [title]), h.span([], ['TypeScript'])],
+              [h.span([...css(fileName)], [title]), h.span([], ['TypeScript'])],
             ),
           ]),
       h.pre(
