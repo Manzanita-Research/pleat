@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+.pnpm-store
+.alchemy
+.env
+*.tsbuildinfo
+.DS_Store
+.claude/

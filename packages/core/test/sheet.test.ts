@@ -1,0 +1,110 @@
+import { describe, expect, test } from 'vitest'
+
+import { Global, Sheet, Style, Theme, Token, When } from '../src/index.ts'
+
+describe('Sheet.render', () => {
+  const base = Style.make({ color: 'rgb(10, 20, 30)', paddingTop: 3, padding: 5 })
+  const states = Style.empty.pipe(
+    Style.when(When.disabled, { color: 'rgb(40, 50, 60)' }),
+    Style.when(When.hover, { color: 'rgb(70, 80, 90)' }),
+    Style.when(When.minWidth('64rem'), { color: 'rgb(1, 2, 3)' }),
+    Style.when(When.minWidth('40rem'), { color: 'rgb(4, 5, 6)' }),
+  )
+  const both = Style.merge(base, states)
+
+  test('declares layers so unlayered CSS wins over Pleat', () => {
+    expect(Sheet.render().split('\n')[0]).toBe(
+      '@layer pleat.globals, pleat.themes, pleat.atoms;',
+    )
+  })
+
+  test('emits atoms in precedence order', () => {
+    const css = Sheet.render({ classNames: both.className.split(' ') })
+    const order = [
+      'padding:5px',
+      'color:rgb(10, 20, 30)',
+      'min-width: 40rem',
+      'min-width: 64rem',
+      ':hover',
+      ':disabled',
+    ].map(fragment => css.indexOf(fragment))
+    expect(order.every(index => index >= 0)).toBe(true)
+    expect([...order].sort((left, right) => left - right)).toEqual(order)
+  })
+
+  test('renderFor keeps only the atoms a page uses', () => {
+    const unused = Style.make({ color: 'rgb(123, 123, 123)' })
+    const html = `<main class="${base.className}"><p class='x'>hi</p></main>`
+    const css = Sheet.renderFor(html)
+    expect(css).toContain('padding:5px')
+    expect(css).not.toContain(unused.className)
+    expect(Sheet.classNamesIn(html)).toEqual(new Set([...base.className.split(' '), 'x']))
+  })
+
+  test('nothing that could close the style element gets into the sheet', () => {
+    expect(() => Global.rule('.prose a[href^="</"]', { color: 'blue' })).toThrow()
+    expect(() => Style.make({ content: '"</style>"' })).toThrow()
+    expect(() => Style.make({ fontFamily: 'a</style><script>' })).toThrow()
+    const tag = Sheet.styleTag()
+    expect(tag.startsWith('<style data-pleat>')).toBe(true)
+    expect(tag.slice(0, -'</style>'.length)).not.toContain('</')
+  })
+})
+
+describe('Global', () => {
+  test('themes, rules, font faces, and keyframes land in their layers', () => {
+    const tokens = Token.make({ surface: Token.color })
+    Global.theme(Theme.make(tokens, { surface: 'white' }))
+    Global.theme(Theme.make(tokens, { surface: 'black' }), {
+      selector: ':root:not([data-theme])',
+      when: When.dark,
+    })
+    Global.rule('body', { margin: 0, backgroundColor: tokens.surface })
+    const spin = Global.keyframes('spin', { to: { rotate: '1turn' } })
+    const css = Sheet.render()
+    expect(css).toContain('@layer pleat.themes{:root{--surface:white}')
+    expect(css).toContain(
+      '@media (prefers-color-scheme: dark){:root:not([data-theme]){--surface:black}}',
+    )
+    expect(css).toContain('body{margin:0;background-color:var(--surface)}')
+    expect(spin).toMatch(/^spin-[0-9a-z]{8}$/)
+    expect(css).toContain(`@keyframes ${spin}{to{rotate:1turn}}`)
+  })
+
+  test('global rules refuse element conditions', () => {
+    expect(() => Global.rule('a', { color: 'red' }, { when: When.hover })).toThrow(
+      /environment conditions only/,
+    )
+  })
+})
+
+describe('When', () => {
+  test('orders conditions by their strongest atom, then by extension', () => {
+    const sorted = [
+      When.disabled,
+      When.all(When.dark, When.hover),
+      When.hover,
+      When.dark,
+      When.always,
+      When.focusVisible,
+      When.open,
+      When.within(When.data('theme', 'night')),
+    ].sort(When.compare)
+    expect(sorted).toEqual([
+      When.always,
+      When.dark,
+      When.within(When.data('theme', 'night')),
+      When.open,
+      When.hover,
+      When.all(When.dark, When.hover),
+      When.focusVisible,
+      When.disabled,
+    ])
+  })
+
+  test('rejects selectors and queries that could escape a rule', () => {
+    expect(() => When.data('open"]{}')).toThrow()
+    expect(() => When.media('(min-width: 1px) { body { color: red }')).toThrow()
+    expect(() => When.pseudo(':hover{')).toThrow()
+  })
+})
