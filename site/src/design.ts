@@ -129,15 +129,16 @@ const shared = {
   radius: { sm: '5px', md: '8px', lg: '12px' },
 } as const
 
-// NOTE: `brand` only fills the pleats, never text. Every text pair here clears APCA Lc 75 for body text (ink) and Lc 60
-// for secondary text (muted, accent) on canvas, surface, and sunken.
+// NOTE: `brand` only fills the pleats, never text. Every text pair here clears
+// APCA Lc 75 for body text (ink) and Lc 60 for secondary text (muted, accent),
+// and `line` clears Lc 15 for dividers, on canvas, surface, and sunken.
 export const linen = Theme.make(tokens, {
   ...shared,
   color: {
     canvas: 'oklch(98.8% 0.003 90)',
     surface: 'oklch(100% 0 0)',
     sunken: 'oklch(96.6% 0.005 90)',
-    line: 'oklch(90.5% 0.007 90)',
+    line: 'oklch(88.5% 0.007 90)',
     ink: 'oklch(20.5% 0.015 265)',
     muted: 'oklch(46% 0.014 265)',
     accent: 'oklch(52% 0.19 33)',
@@ -159,7 +160,7 @@ export const indigoNight = Theme.extend(linen, tokens, {
     canvas: 'oklch(15.5% 0.014 268)',
     surface: 'oklch(19% 0.016 268)',
     sunken: 'oklch(12.5% 0.012 268)',
-    line: 'oklch(28% 0.018 268)',
+    line: 'oklch(46% 0.016 268)',
     ink: 'oklch(95% 0.006 90)',
     muted: 'oklch(82% 0.012 268)',
     accent: 'oklch(81% 0.13 45)',
@@ -363,8 +364,7 @@ export const link = Style.make({
 export const inlineCode = Style.make({
   fontFamily: font.mono,
   fontSize: '0.875em',
-  backgroundColor: color.sunken,
-  border: `1px solid ${color.line}`,
+  backgroundColor: Color.alpha(color.ink, 0.07),
   borderRadius: radius.sm,
   paddingBlock: '0.05em',
   paddingInline: '0.3em',
