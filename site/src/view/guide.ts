@@ -11,16 +11,25 @@ import stylesSource from '../snippet/styles.ts?raw'
 import tokensSource from '../snippet/tokens.ts?raw'
 import varSource from '../snippet/var.ts?raw'
 import viewSource from '../snippet/view.ts?raw'
-import { bullets, paragraph, section } from './prose.ts'
+import { bullets, onThisPage, paragraph, rich, section } from './prose.ts'
 
-const { space } = Design.tokens
+const { color, space } = Design.tokens
 
-const article = Style.merge(
-  Design.container,
-  Style.make({ display: 'flex', flexDirection: 'column', gap: space[8] }),
+const article = Style.make({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: space[8],
+  minWidth: 0,
+})
+
+const intro = Style.merge(
+  Design.prose,
+  Style.make({
+    gap: space[4],
+    paddingBlockEnd: space[7],
+    borderBottom: `1px solid ${color.line}`,
+  }),
 )
-
-const intro = Style.merge(Design.prose, Style.make({ gap: space[5] }))
 
 export const pageIntro = <Message>(
   h: HtmlBuilder<Message>,
@@ -33,16 +42,28 @@ export const pageIntro = <Message>(
     [
       h.span([...css(Design.eyebrow)], [eyebrow]),
       h.h1([...css(Design.display)], [title]),
-      h.p([...css(Design.lede)], [lede]),
+      h.p([...css(Design.lede)], rich(h, lede)),
     ],
   )
 
 export const articleStyle = article
 
+const CONTENTS: ReadonlyArray<readonly [id: string, title: string]> = [
+  ['install', 'Install'],
+  ['tokens', 'Tokens and themes'],
+  ['styles', 'Styles'],
+  ['views', 'Use styles in views'],
+  ['recipes', 'Variants with recipes'],
+  ['variables', 'Continuous values'],
+  ['server', 'Server rendering and static pages'],
+  ['tailwind', 'Alongside Tailwind'],
+]
+
 export const guideView = (h: HtmlBuilder<Message>): Html =>
   h.article(
     [...css(article)],
     [
+      onThisPage(h, CONTENTS),
       pageIntro(
         h,
         'Guide',

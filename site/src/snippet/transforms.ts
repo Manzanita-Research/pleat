@@ -1,24 +1,24 @@
 import { Calc, Color, Recipe, Style } from '@pleat/core'
 import { Option } from 'effect'
 
-// The same transforms as 2017. They now compile to CSS functions.
+// Transforms are functions from style to style. They compile to
+// CSS functions, so they hold under every theme.
 const bumpFontSize = Style.evolve({
   fontSize: size => Calc.add(size, 4),
 })
 const darkenText = Style.evolve({
   color: color => Color.darken(color, 0.1),
 })
-const brandify = Style.merge(
-  Style.make({ fontFamily: '"Circular Air Pro"' }),
+const withBrandFont = Style.merge(
+  Style.make({ fontFamily: '"Instrument Serif", serif' }),
 )
-const boxShadow = Style.make({
+const raised = Style.make({
   boxShadow: '0 2px 3px rgb(0 0 0 / 0.25)',
 })
 
-// 2017's chain read props at render time. Here the outline is
-// derived from the style where it is defined, and props only pick a
-// finished branch.
-const outlineify = (style: Style.Style) =>
+// An outline derived from a finished style. Props never reach it;
+// they only pick which finished branch applies.
+const outlined = (style: Style.Style) =>
   Style.make({
     border: '1px solid currentColor',
     backgroundColor: 'transparent',
@@ -39,8 +39,8 @@ export const myButton = Recipe.make({
   }).pipe(
     bumpFontSize,
     darkenText,
-    brandify,
-    Style.merge(boxShadow),
+    withBrandFont,
+    Style.merge(raised),
   ),
   variants: {
     isPrimary: { true: primary, false: secondary },
@@ -50,11 +50,11 @@ export const myButton = Recipe.make({
   compounds: [
     {
       when: { isPrimary: true, isOutline: true },
-      style: outlineify(primary),
+      style: outlined(primary),
     },
     {
       when: { isPrimary: false, isOutline: true },
-      style: outlineify(secondary),
+      style: outlined(secondary),
     },
   ],
 })

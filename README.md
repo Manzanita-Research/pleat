@@ -78,10 +78,6 @@ pnpm check           # all of the above that CI runs
 
 Deploying the site needs Cloudflare credentials: locally, `pnpm --dir infra exec alchemy profile edit` once, then `pnpm --dir infra deploy`. In CI, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as repository secrets and run the Deploy workflow.
 
-## Where it came from
-
-Pleat started in 2017 as Further, a library where a style was a function of props composed with Fantasy Land `map`, `concat`, and `chain`. Treating styles as values was the right idea. The monad was too strong: `chain` let a style depend on props in ways nothing could see before render. Pleat keeps the values and the transforms and replaces the monad with structure that can be inspected ahead of time, a monoid for merging and selective choice among finished branches for props. The [algebra page](site/src/view/algebra.ts) of the docs explains the rest.
-
 ## License
 
 MIT

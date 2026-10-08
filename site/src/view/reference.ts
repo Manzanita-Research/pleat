@@ -5,7 +5,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import * as Design from '../design.ts'
 import type { Message } from '../message.ts'
 import { articleStyle, pageIntro } from './guide.ts'
-import { paragraph, rich } from './prose.ts'
+import { onThisPage, rich } from './prose.ts'
 
 const { color, font, space, text } = Design.tokens
 
@@ -233,16 +233,36 @@ const MODULES: ReadonlyArray<Module> = [
 
 // STYLES
 
-const moduleCard = Style.merge(
-  Design.card,
-  Style.make({ display: 'flex', flexDirection: 'column', gap: space[4] }),
-)
+const moduleSection = Style.make({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: space[4],
+  scrollMarginTop: '6rem',
+})
+
+const moduleHeader = Style.make({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: space[2],
+  maxWidth: '46rem',
+})
+
+const moduleTitle = Style.make({
+  fontFamily: font.serif,
+  fontSize: '2rem',
+  fontWeight: 400,
+  lineHeight: 1.1,
+})
+
+const entryTable = Style.make({
+  borderTop: `1px solid ${color.line}`,
+})
 
 const entryRow = Style.make({
   display: 'grid',
   gap: space[1],
   paddingBlock: space[3],
-  borderTop: `1px solid ${color.line}`,
+  borderBottom: `1px solid ${color.line}`,
 }).pipe(
   Style.when(When.minWidth('52rem'), {
     gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
@@ -252,24 +272,29 @@ const entryRow = Style.make({
 
 const signature = Style.make({
   fontFamily: font.mono,
-  fontSize: text.sm,
+  fontSize: '0.8125rem',
+  lineHeight: 1.6,
   color: color.indigo,
   overflowWrap: 'anywhere',
 })
 
 const description = Style.make({ fontSize: text.sm, color: color.muted })
 
-const modules = Style.merge(
-  Design.container,
-  Style.make({ display: 'flex', flexDirection: 'column', gap: space[5] }),
-)
+const modules = Style.make({ display: 'flex', flexDirection: 'column', gap: space[8] })
 
 // VIEW
+
+const moduleId = (name: string): string => name.toLowerCase().replace(/[^a-z]+/g, '-')
+
+const CONTENTS: ReadonlyArray<readonly [id: string, title: string]> = MODULES.map(
+  module => [moduleId(module.name), module.name] as const,
+)
 
 export const referenceView = (h: HtmlBuilder<Message>): Html =>
   h.article(
     [...css(articleStyle)],
     [
+      onThisPage(h, CONTENTS),
       pageIntro(
         h,
         'Reference',
@@ -280,20 +305,17 @@ export const referenceView = (h: HtmlBuilder<Message>): Html =>
         [...css(modules)],
         MODULES.map(module =>
           h.section(
-            [
-              h.Id(module.name.toLowerCase().replace(/[^a-z]+/g, '-')),
-              ...css(moduleCard),
-            ],
+            [h.Id(moduleId(module.name)), ...css(moduleSection)],
             [
               h.div(
-                [...css(Design.stack(space[1]))],
+                [...css(moduleHeader)],
                 [
-                  h.h2([...css(Design.subheading)], [module.name]),
-                  paragraph(h, module.summary),
+                  h.h2([...css(moduleTitle)], [module.name]),
+                  h.p([...css(Design.muted)], rich(h, module.summary)),
                 ],
               ),
               h.div(
-                [],
+                [...css(entryTable)],
                 module.entries.map(([name, text]) =>
                   h.div(
                     [...css(entryRow)],

@@ -10,7 +10,7 @@ import * as Design from '../design.ts'
 import { Message, type Model, type Preset } from '../message.ts'
 import generativeSource from '../snippet/generative.ts?raw'
 import { articleStyle, pageIntro } from './guide.ts'
-import { bullets, paragraph, section } from './prose.ts'
+import { bullets, onThisPage, paragraph, section } from './prose.ts'
 
 const { color, font, radius, space, text } = Design.tokens
 
@@ -201,10 +201,18 @@ const workbenchView = (model: Model, h: HtmlBuilder<Message>): Html =>
     ],
   )
 
+const CONTENTS: ReadonlyArray<readonly [id: string, title: string]> = [
+  ['closed-world', 'Closed-world styling'],
+  ['schema', 'Describe the menu'],
+  ['ask', 'Ask a model'],
+  ['try', 'Try it'],
+]
+
 export const generativeView = (model: Model, h: HtmlBuilder<Message>): Html =>
   h.article(
     [...css(articleStyle)],
     [
+      onThisPage(h, CONTENTS),
       pageIntro(
         h,
         'Generative interfaces',
