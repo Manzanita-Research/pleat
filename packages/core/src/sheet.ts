@@ -62,6 +62,9 @@ export const registerAtom = (atom: Atom): Atom => {
   }
   atomsByClassName.set(atom.className, atom)
   version += 1
+  if (mounted?.pendingClassNames.has(atom.className) === true) {
+    adoptPending(mounted, atom)
+  }
   return atom
 }
 
@@ -190,8 +193,16 @@ type Mounted = Readonly<{
   globals: CSSGroupingRule
   themes: CSSGroupingRule
   atoms: CSSGroupingRule
+  /** The class of each rule in `atoms`, in sheet order. */
+  ruleClassNames: Array<string>
+  /** The atoms in `atoms` this page has defined, sorted. Every rule is one of these, or a
+   *  rule the server sent for a class this page hasn't defined yet. */
   insertedAtoms: Array<Atom>
+  /** Every class with a rule in `atoms`, including the server's. */
   insertedClassNames: Set<string>
+  /** Classes the server sent rules for that this page hasn't defined yet, such as those of
+   *  a module that loads later. */
+  pendingClassNames: Set<string>
   /** The browser's rule for each global id, to replace when the global changes. */
   insertedGlobals: Map<string, CSSRule>
 }>
@@ -201,30 +212,69 @@ let mounted: Mounted | undefined
 const hasDocument = (): boolean =>
   typeof document !== 'undefined' && typeof CSSStyleSheet !== 'undefined'
 
-const groupingRule = (sheet: CSSStyleSheet, index: number): CSSGroupingRule => {
-  const rule = sheet.cssRules.item(index)
-  if (!(rule instanceof CSSGroupingRule)) {
-    throw new Error('[pleat] This browser does not support cascade layers.')
+type LayerBlocks = Readonly<{
+  globals: CSSGroupingRule
+  themes: CSSGroupingRule
+  atoms: CSSGroupingRule
+}>
+
+const layerBlock = (sheet: CSSStyleSheet, name: string): CSSGroupingRule | undefined => {
+  for (const rule of sheet.cssRules) {
+    if (rule instanceof CSSGroupingRule && 'name' in rule && rule.name === name) {
+      return rule
+    }
   }
-  return rule
+  return undefined
 }
 
-const createSheet = (target: Document): CSSStyleSheet => {
+const layerBlocks = (sheet: CSSStyleSheet): LayerBlocks | undefined => {
+  const globals = layerBlock(sheet, 'pleat.globals')
+  const themes = layerBlock(sheet, 'pleat.themes')
+  const atoms = layerBlock(sheet, 'pleat.atoms')
+  return globals === undefined || themes === undefined || atoms === undefined
+    ? undefined
+    : { globals, themes, atoms }
+}
+
+const createSheet = (target: Document): LayerBlocks => {
   const shell = `${LAYER_ORDER}@layer pleat.globals{}@layer pleat.themes{}@layer pleat.atoms{}`
+  let sheet: CSSStyleSheet | null
   if ('adoptedStyleSheets' in target && 'replaceSync' in CSSStyleSheet.prototype) {
-    const sheet = new CSSStyleSheet()
+    sheet = new CSSStyleSheet()
     sheet.replaceSync(shell)
     target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet]
-    return sheet
+  } else {
+    const element = target.createElement('style')
+    element.setAttribute(`${STYLE_ATTRIBUTE}-client`, '')
+    element.textContent = shell
+    target.head.append(element)
+    sheet = element.sheet
   }
-  const element = target.createElement('style')
-  element.setAttribute(`${STYLE_ATTRIBUTE}-client`, '')
-  element.textContent = shell
-  target.head.append(element)
-  if (element.sheet === null) {
-    throw new Error('[pleat] Could not create a stylesheet.')
+  const blocks = sheet === null ? undefined : layerBlocks(sheet)
+  if (blocks === undefined) {
+    throw new Error('[pleat] Could not create a stylesheet with cascade layers.')
   }
-  return element.sheet
+  return blocks
+}
+
+const serverSheet = (target: Document): LayerBlocks | undefined => {
+  const element = target.querySelector(`style[${STYLE_ATTRIBUTE}]`)
+  const sheet = element instanceof HTMLStyleElement ? element.sheet : null
+  return sheet === null ? undefined : layerBlocks(sheet)
+}
+
+const CLASS_SELECTOR = /^\.([\w-]+)/
+
+/** The class an atom rule applies to: the first class of its innermost style rule. */
+const classOfRule = (rule: CSSRule): string => {
+  if (rule instanceof CSSStyleRule) {
+    return CLASS_SELECTOR.exec(rule.selectorText)?.[1] ?? ''
+  }
+  if (rule instanceof CSSGroupingRule) {
+    const inner = rule.cssRules.item(0)
+    return inner === null ? '' : classOfRule(inner)
+  }
+  return ''
 }
 
 const indexOfRule = (block: CSSGroupingRule, rule: CSSRule): number =>
@@ -249,54 +299,149 @@ const insertGlobal = (target: Mounted, global: Global): void => {
   }
 }
 
-const insertAtom = (target: Mounted, atom: Atom): void => {
-  if (atom._tag === 'Marker' || target.insertedClassNames.has(atom.className)) {
-    return
-  }
+/** Where `atom` goes among the sorted atoms. */
+const sortedIndex = (atoms: ReadonlyArray<Atom>, atom: Atom): number => {
   let low = 0
-  let high = target.insertedAtoms.length
+  let high = atoms.length
   while (low < high) {
     const middle = (low + high) >>> 1
-    const candidate = target.insertedAtoms[middle]
+    const candidate = atoms[middle]
     if (candidate !== undefined && compareAtoms(candidate, atom) < 0) {
       low = middle + 1
     } else {
       high = middle
     }
   }
-  target.atoms.insertRule(atom.rule, low)
-  target.insertedAtoms.splice(low, 0, atom)
+  return low
+}
+
+/** The sheet index of the rule for `insertedAtoms[index]`, or the end of the sheet. */
+const ruleIndex = (target: Mounted, index: number): number => {
+  const atom = target.insertedAtoms[index]
+  if (atom === undefined) {
+    return target.ruleClassNames.length
+  }
+  // NOTE: with no pending server rules, the sheet holds exactly the sorted atoms.
+  return target.ruleClassNames.length === target.insertedAtoms.length
+    ? index
+    : target.ruleClassNames.indexOf(atom.className)
+}
+
+const insertAtom = (target: Mounted, atom: Atom): void => {
+  if (atom._tag === 'Marker' || target.insertedClassNames.has(atom.className)) {
+    return
+  }
+  const index = sortedIndex(target.insertedAtoms, atom)
+  const at = ruleIndex(target, index)
+  target.atoms.insertRule(atom.rule, at)
+  target.ruleClassNames.splice(at, 0, atom.className)
+  target.insertedAtoms.splice(index, 0, atom)
   target.insertedClassNames.add(atom.className)
 }
 
-/** Creates Pleat's browser stylesheet in `target` and inserts every global and theme rule.
- *  Atoms are inserted later, the first time a style is used. Calling it again does nothing.
+/** Takes in a server rule whose atom this page has just defined, moving the rule if atoms
+ *  inserted since mounting put it out of order. */
+const adoptPending = (target: Mounted, atom: Atom): void => {
+  target.pendingClassNames.delete(atom.className)
+  const at = target.ruleClassNames.indexOf(atom.className)
+  const index = sortedIndex(target.insertedAtoms, atom)
+  const before = target.insertedAtoms[index - 1]
+  const after = target.insertedAtoms[index]
+  const isInOrder =
+    (before === undefined || target.ruleClassNames.indexOf(before.className) < at) &&
+    (after === undefined || target.ruleClassNames.indexOf(after.className) > at)
+  if (!isInOrder) {
+    target.atoms.deleteRule(at)
+    target.ruleClassNames.splice(at, 1)
+    const moved =
+      after === undefined
+        ? target.ruleClassNames.length
+        : target.ruleClassNames.indexOf(after.className)
+    target.atoms.insertRule(atom.rule, moved)
+    target.ruleClassNames.splice(moved, 0, atom.className)
+  }
+  target.insertedAtoms.splice(index, 0, atom)
+}
+
+const adoptServerAtoms = (target: Mounted): void => {
+  for (const rule of target.atoms.cssRules) {
+    const className = classOfRule(rule)
+    target.ruleClassNames.push(className)
+    target.insertedClassNames.add(className)
+    const atom = atomsByClassName.get(className)
+    if (atom === undefined) {
+      target.pendingClassNames.add(className)
+    } else {
+      target.insertedAtoms.push(atom)
+    }
+  }
+}
+
+/** Inserts every global, reusing the server's rule for a global when it has the same text,
+ *  so the page holds one rule per global. */
+const insertGlobals = (target: Mounted): void => {
+  const serverRules = new Map<CSSGroupingRule, Map<string, Array<CSSRule>>>()
+  for (const block of [target.globals, target.themes]) {
+    const byText = new Map<string, Array<CSSRule>>()
+    for (const rule of block.cssRules) {
+      byText.set(rule.cssText, [...(byText.get(rule.cssText) ?? []), rule])
+    }
+    serverRules.set(block, byText)
+  }
+  for (const global of globalsById.values()) {
+    insertGlobal(target, global)
+    const block = global.layer === 'globals' ? target.globals : target.themes
+    const inserted = target.insertedGlobals.get(global.id)
+    const twin =
+      inserted === undefined
+        ? undefined
+        : serverRules.get(block)?.get(inserted.cssText)?.shift()
+    if (inserted !== undefined && twin !== undefined) {
+      block.deleteRule(indexOfRule(block, inserted))
+      target.insertedGlobals.set(global.id, twin)
+    }
+  }
+}
+
+/** Connects Pleat to the browser stylesheet in `target` and inserts every global and theme
+ *  rule. Atoms are inserted later, the first time a style is used. Calling it again does
+ *  nothing.
+ *
+ *  Hydration: when the page has a server-rendered `<style data-pleat>`, from
+ *  {@link styleTag} or `@pleat/foldkit/server`, Pleat adopts that stylesheet rather than
+ *  adding another. It indexes the atoms the server sent and inserts every new atom into the
+ *  same sheet at its sorted position, so server-rendered elements keep their cascade while
+ *  the client renders others, whether or not the client ever touches them. That covers
+ *  partial hydration and widgets mounted on their own. Server rules for styles the client
+ *  defines later, such as in a lazily loaded module, are put in order when they are
+ *  defined. The supported model is one `<style data-pleat>` per document, rendered from the
+ *  same style definitions the client loads, and left in place once the client mounts.
+ *  Without one, Pleat creates its own stylesheet.
  *
  *  {@link use} mounts on first call, so most applications never call this directly. */
 export const mount = (target: Document = document): void => {
   if (mounted !== undefined) {
     return
   }
-  const sheet = createSheet(target)
+  const server = serverSheet(target)
   const state: Mounted = {
-    globals: groupingRule(sheet, 1),
-    themes: groupingRule(sheet, 2),
-    atoms: groupingRule(sheet, 3),
+    ...(server ?? createSheet(target)),
+    ruleClassNames: [],
     insertedAtoms: [],
     insertedClassNames: new Set(),
+    pendingClassNames: new Set(),
     insertedGlobals: new Map(),
   }
   mounted = state
-  for (const global of globalsById.values()) {
-    insertGlobal(state, global)
-  }
+  adoptServerAtoms(state)
+  insertGlobals(state)
 }
 
 /** Makes sure every rule for `atoms` is in the browser stylesheet. On the server, does nothing.
  *
- *  Each element's atoms are inserted together, at their sorted position, so the rules an
- *  element depends on are always ordered correctly relative to each other, even next to a
- *  server-rendered `<style data-pleat>`. */
+ *  Each atom is inserted at its sorted position among every atom already in the sheet,
+ *  including the ones a server-rendered `<style data-pleat>` sent, so rules are ordered
+ *  correctly for every element on the page. See {@link mount} for the hydration model. */
 export const insert = (atoms: Iterable<Atom>): void => {
   if (mounted === undefined) {
     if (!hasDocument()) {
