@@ -1,7 +1,7 @@
-import { Cause, Effect, Exit } from 'effect'
+import { Cause, Effect, Exit, Schema } from 'effect'
 import { describe, expect, test } from 'vitest'
 
-import { Theme, Token } from '../src/index.ts'
+import { Theme, Token, Var } from '../src/index.ts'
 
 const tokens = Token.make({
   color: { canvas: Token.color, ink: Token.color, onAccent: Token.color },
@@ -137,5 +137,100 @@ describe('Theme', () => {
   test('describes values with JSON Schema patterns', () => {
     const decode = Theme.schema(tokens)
     expect(decode.ast._tag).toBe('Objects')
+  })
+})
+
+describe('aliases', () => {
+  const values = {
+    color: { canvas: '#ffffff', ink: '#111111', onAccent: 'white' },
+    space: { 1: '0.25rem', 2: '0.5rem' },
+    font: { body: 'serif', weight: 400 },
+  }
+
+  test('an alias holds the same kind as its token', () => {
+    expect(() =>
+      Theme.extend(light, tokens, {
+        // @ts-expect-error a length is not a color
+        color: { canvas: tokens.space[2] },
+      }),
+    ).toThrow('color.canvas aliases space.2, which holds a Length, not a Color')
+    const shadows = Token.make({ shadow: Token.value, tint: Token.color })
+    const theme = Theme.make(shadows, { shadow: tokens.space[1], tint: tokens.color.ink })
+    expect(Theme.css(theme)).toBe(
+      ':root{--shadow:var(--space-1);--tint:var(--color-ink)}',
+    )
+    const hue = Var.string('hue')
+    expect(Theme.css(Theme.extend(light, tokens, { color: { ink: hue } }))).toContain(
+      '--color-ink:var(--hue)',
+    )
+  })
+
+  test('aliases that form a cycle are rejected', () => {
+    expect(() =>
+      Theme.extend(light, tokens, {
+        color: { canvas: tokens.color.onAccent, onAccent: tokens.color.canvas },
+      }),
+    ).toThrow(
+      'Theme aliases form a cycle: --color-canvas → --color-on-accent → --color-canvas',
+    )
+    expect(() =>
+      Theme.extend(light, tokens, {
+        color: { ink: 'color-mix(in oklch, var(--color-ink), white)' },
+      }),
+    ).toThrow('Theme aliases form a cycle: --color-ink → --color-ink')
+    const roles = Token.make({ accent: Token.color })
+    const accented = Theme.make(roles, { accent: tokens.color.ink })
+    expect(() =>
+      Theme.merge(
+        accented,
+        Theme.extend(light, tokens, { color: { ink: roles.accent } }),
+      ),
+    ).toThrow('Theme aliases form a cycle: --accent → --color-ink → --accent')
+  })
+
+  test('a complete theme sets every token, so its aliases have targets', () => {
+    expect(() =>
+      Theme.make(tokens, {
+        ...values,
+        color: { ink: '#111111', onAccent: tokens.color.canvas },
+      } as never),
+    ).toThrow('Theme.make has no value for color.canvas')
+  })
+
+  test('decoded values are literals, never aliases', () => {
+    const schema = Theme.schema(tokens)
+    const decoded: typeof schema.Type = Schema.decodeUnknownSync(schema)(values)
+    expect(decoded.color.canvas).toBe('#ffffff')
+    const aliased = { ...values, color: { ...values.color, ink: tokens.color.canvas } }
+    // @ts-expect-error a decoded theme holds values, not tokens
+    const typed: typeof schema.Type = aliased
+    expect(Exit.isFailure(Schema.decodeUnknownExit(schema)(typed))).toBe(true)
+  })
+})
+
+describe('Token.color', () => {
+  const decode = Schema.decodeUnknownExit(Token.color.schema)
+
+  test('accepts hex of 3, 4, 6, or 8 digits, named and system colors, and color functions', () => {
+    for (const color of [
+      '#abc',
+      '#abcd',
+      '#aabbcc',
+      '#aabbccdd',
+      'rebeccapurple',
+      'transparent',
+      'currentColor',
+      'Canvas',
+      'oklch(62% 0.19 255)',
+      'var(--brand)',
+    ]) {
+      expect(Exit.isSuccess(decode(color)), color).toBe(true)
+    }
+  })
+
+  test('rejects words that are not colors and hex of other lengths', () => {
+    for (const color of ['bananas', 'tealish', '#12345', '#1234567', '#ab', 'inherit']) {
+      expect(Exit.isFailure(decode(color)), color).toBe(true)
+    }
   })
 })
