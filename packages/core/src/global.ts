@@ -44,8 +44,15 @@ export const rule = (
   registerGlobal({ id: `rule:${digest(text)}`, layer: 'globals', rule: text })
 }
 
+const tokenValuesByScope = new Map<string, Map<string, string>>()
+
 /** Applies a theme's token values at `selector` (default `:root`), optionally only under an
  *  environment condition, in the `pleat.themes` layer.
+ *
+ *  Themes applied at the same selector and condition merge into one rule, so independent
+ *  token sets, such as primitives and semantics, can each be applied at `:root`. When two
+ *  of them set the same token, the one applied later wins. Applying a theme again, in a
+ *  browser too, updates the rule in place.
  *
  *  ```ts
  *  Global.theme(light)
@@ -59,12 +66,15 @@ export const theme = (
   const selector = options.selector ?? ':root'
   assertSelector(selector)
   const condition = options.when ?? When.always
-  const text = wrapInAtRules(condition, Theme.css(value, selector))
-  registerGlobal({
-    id: `theme:${selector}:${condition.key}`,
-    layer: 'themes',
-    rule: text,
-  })
+  const id = `theme:${selector}:${condition.key}`
+  const tokenValues = new Map(tokenValuesByScope.get(id))
+  for (const [name, tokenValue] of value.declarations) {
+    tokenValues.set(name, tokenValue)
+  }
+  const merged: Theme.Theme = { _tag: 'Theme', declarations: [...tokenValues] }
+  const text = wrapInAtRules(condition, Theme.css(merged, selector))
+  tokenValuesByScope.set(id, tokenValues)
+  registerGlobal({ id, layer: 'themes', rule: text })
 }
 
 /** Adds an `@font-face` rule. */

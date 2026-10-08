@@ -71,6 +71,38 @@ describe('Global', () => {
     expect(css).toContain(`@keyframes ${spin}{to{rotate:1turn}}`)
   })
 
+  test('themes at one selector and condition merge, and the later value wins', () => {
+    const primitives = Token.make(
+      { ink: Token.color, paper: Token.color },
+      { prefix: 'p-' },
+    )
+    const semantics = Token.make({ ink: Token.color }, { prefix: 's-' })
+    const selector = '[data-merge-test]'
+    Global.theme(Theme.make(primitives, { ink: 'red', paper: 'white' }), { selector })
+    Global.theme(Theme.make(semantics, { ink: 'blue' }), { selector })
+    Global.theme(Theme.make(primitives, { ink: 'maroon', paper: 'white' }), { selector })
+    Global.theme(Theme.make(semantics, { ink: 'navy' }), { selector, when: When.dark })
+    const css = Sheet.render()
+    expect(css).toContain(`${selector}{--p-ink:maroon;--p-paper:white;--s-ink:blue}`)
+    expect(css).toContain(
+      `@media (prefers-color-scheme: dark){${selector}{--s-ink:navy}}`,
+    )
+    expect(css.split(`${selector}{`)).toHaveLength(3)
+  })
+
+  test('a rejected theme leaves its scope unchanged', () => {
+    const tokens = Token.make({ ink: Token.color }, { prefix: 'rejected-' })
+    const selector = '[data-rejected-test]'
+    Global.theme(Theme.make(tokens, { ink: 'red' }), { selector })
+    expect(() =>
+      Global.theme(Theme.make(tokens, { ink: 'blue' }), { selector, when: When.hover }),
+    ).toThrow(/environment conditions only/)
+    Global.theme(Theme.make(Token.make({ other: Token.color }), { other: 'green' }), {
+      selector,
+    })
+    expect(Sheet.render()).toContain(`${selector}{--rejected-ink:red;--other:green}`)
+  })
+
   test('global rules refuse element conditions', () => {
     expect(() => Global.rule('a', { color: 'red' }, { when: When.hover })).toThrow(
       /environment conditions only/,
