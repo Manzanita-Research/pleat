@@ -16,6 +16,7 @@
     "@fontsource/instrument-serif": "5.3.0",
     "@pleat/core": "workspace:^",
     "@pleat/foldkit": "workspace:^",
+    "colorjs.io": "0.7.1",
     "effect": "4.0.0",
     "foldkit": "0.167.0"
   },
