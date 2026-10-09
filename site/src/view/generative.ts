@@ -19,7 +19,12 @@ const { color, font, radius, space, text } = Design.tokens
 
 const workbench = Style.merge(
   Design.card,
-  Style.make({ display: 'grid', gap: space[5], padding: space[5] }),
+  Style.make({
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr)',
+    gap: space[5],
+    padding: space[5],
+  }),
 ).pipe(
   Style.when(When.minWidth('60rem'), {
     gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
@@ -45,9 +50,8 @@ const label = Style.make({ fontFamily: font.mono, fontSize: text.xs, color: colo
 const result = Style.make({ display: 'flex', flexDirection: 'column', gap: space[3] })
 
 const cardTitle = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xl,
-  fontWeight: 600,
   lineHeight: 1.2,
 })
 

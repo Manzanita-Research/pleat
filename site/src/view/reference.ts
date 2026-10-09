@@ -249,9 +249,8 @@ const moduleHeader = Style.make({
 })
 
 const moduleTitle = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: '2rem',
-  fontWeight: 400,
   lineHeight: 1.1,
 })
 
@@ -275,7 +274,7 @@ const signature = Style.make({
   fontFamily: font.mono,
   fontSize: '0.8125rem',
   lineHeight: 1.6,
-  color: color.indigo,
+  color: color.teal,
   overflowWrap: 'anywhere',
 })
 

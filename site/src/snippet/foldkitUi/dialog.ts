@@ -62,7 +62,7 @@ const dialogPanel = Style.make({
 )
 
 const dialogTitle = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xl,
   fontWeight: 600,
 })

@@ -1,6 +1,6 @@
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
-import { Color, Style, When } from '@pleat/core'
+import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
 
 import { tokens } from './design.ts'
@@ -13,7 +13,6 @@ const frame = Style.make({
   position: 'relative',
   minWidth: 0,
   backgroundColor: color.sunken,
-  border: `1px solid ${color.line}`,
   borderRadius: radius.lg,
   overflow: 'hidden',
 })
@@ -24,28 +23,14 @@ const caption = Style.make({
   justifyContent: 'space-between',
   gap: space[3],
   paddingBlock: space[2],
-  paddingInline: space[4],
+  paddingInline: space[5],
   borderBottom: `1px solid ${color.line}`,
-  backgroundColor: Color.mix(color.sunken, color.surface, 50),
   fontFamily: font.mono,
   fontSize: '0.75rem',
   color: color.muted,
 })
 
-const fileName = Style.make({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: space[2],
-  color: color.ink,
-}).pipe(
-  Style.when(When.before, {
-    content: '""',
-    width: 7,
-    height: 7,
-    borderRadius: 2,
-    backgroundColor: color.accent,
-  }),
-)
+const fileName = Style.make({ color: color.ink })
 
 const block = Style.make({
   margin: 0,
@@ -56,15 +41,21 @@ const block = Style.make({
   lineHeight: 1.7,
   tabSize: 2,
   fontVariantLigatures: 'none',
-}).pipe(Style.when(When.minWidth('48rem'), { padding: space[5], fontSize: text.sm }))
+}).pipe(
+  Style.when(When.minWidth('48rem'), {
+    paddingBlock: space[5],
+    paddingInline: space[5],
+    fontSize: text.xs,
+  }),
+)
 
 const TOKEN_STYLES = {
   Comment: Style.make({ color: color.muted }),
-  String: Style.make({ color: color.green }),
+  String: Style.make({ color: color.madder }),
   Keyword: Style.make({ color: color.accent }),
-  Type: Style.make({ color: color.indigo }),
+  Type: Style.make({ color: color.teal }),
   Call: Style.make({ color: color.ink, fontWeight: 600 }),
-  Number: Style.make({ color: color.accent }),
+  Number: Style.make({ color: color.madder }),
   Plain: Style.empty,
 } as const
 

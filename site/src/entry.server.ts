@@ -9,7 +9,7 @@ import { init, view } from './main.ts'
 import { NOT_FOUND_PATH, PATHS, urlToAppRoute } from './route.ts'
 
 const ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23bd2703'/%3E%3Cpath d='M4 3v10M8 3v10M12 3v10' stroke='%23fdf8f3' stroke-width='1.5'/%3E%3C/svg%3E"
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' rx='4' fill='%232f45c9'/%3E%3Cpath d='M3 15 6.5 5.5 10 15l3.5-9.5L17 15' fill='none' stroke='%23f7f3ec' stroke-width='1.9' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E"
 
 /** Renders the docs document with its fonts, metadata, and Pleat styles. */
 export const renderDocument = renderWithPleat({

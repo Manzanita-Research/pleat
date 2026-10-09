@@ -1,6 +1,6 @@
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
-import { Color, Style, When } from '@pleat/core'
+import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
 
 import * as Design from '../design.ts'
@@ -20,11 +20,10 @@ const { color, font, radius, space, text } = Design.tokens
 
 export const REPOSITORY_URL = 'https://github.com/Manzanita-Research/pleat'
 
-const VERSION = '0.1'
-
 const HEADER_HEIGHT = '3.75rem'
 
 const wide = When.minWidth('64rem')
+const showTopNav = When.minWidth('60rem')
 
 // STYLES
 
@@ -39,7 +38,6 @@ const skipLink = Style.make({
   backgroundColor: color.ink,
   color: color.canvas,
   fontSize: text.sm,
-  fontWeight: 600,
   textDecoration: 'none',
   transform: 'translateY(-200%)',
 }).pipe(Style.when(When.focus, { transform: 'none' }))
@@ -48,9 +46,8 @@ const header = Style.make({
   position: 'sticky',
   top: 0,
   zIndex: 20,
-  backgroundColor: Color.alpha(color.canvas, 0.82),
+  backgroundColor: color.canvas,
   borderBottom: `1px solid ${color.line}`,
-  backdropFilter: 'saturate(1.6) blur(12px)',
 })
 
 const headerInner = Style.merge(
@@ -59,75 +56,86 @@ const headerInner = Style.merge(
     height: HEADER_HEIGHT,
     display: 'flex',
     alignItems: 'center',
-    gap: space[4],
+    gap: space[5],
   }),
 )
 
-const brand = Style.make({
+const wordmark = Style.make({
   display: 'inline-flex',
   alignItems: 'center',
   gap: space[2],
   textDecoration: 'none',
-  fontFamily: font.serif,
+  fontFamily: font.outline,
   fontSize: '1.625rem',
   lineHeight: 1,
-  letterSpacing: '-0.01em',
   borderRadius: radius.sm,
 }).pipe(Style.merge(Design.focusRing))
 
-const versionTag = Style.make({
-  display: 'none',
-  paddingBlock: 2,
-  paddingInline: space[2],
-  borderRadius: 999,
-  border: `1px solid ${color.line}`,
-  fontFamily: font.mono,
-  fontSize: '0.6875rem',
-  lineHeight: 1.4,
-  color: color.muted,
-}).pipe(Style.when(When.minWidth('30rem'), { display: 'inline-block' }))
+const markStyle = Style.make({
+  width: 22,
+  height: 22,
+  color: color.accent,
+  flexShrink: 0,
+})
 
 const topNav = Style.make({
   display: 'none',
   alignItems: 'center',
   gap: space[1],
   marginInlineStart: 'auto',
-}).pipe(Style.when(When.minWidth('44rem'), { display: 'flex' }))
+}).pipe(Style.when(showTopNav, { display: 'flex' }))
 
 const topLink = Style.make({
+  position: 'relative',
   paddingBlock: space[2],
   paddingInline: space[3],
   borderRadius: radius.md,
   textDecoration: 'none',
   fontSize: text.sm,
-  fontWeight: 500,
   color: color.muted,
 }).pipe(
   Style.merge(Design.focusRing),
   Style.when(When.hover, { color: color.ink }),
   Style.when(When.current, { color: color.ink }),
+  Style.when(When.all(When.current, When.after), {
+    content: '""',
+    position: 'absolute',
+    insetInline: space[3],
+    bottom: 3,
+    height: 1.5,
+    backgroundColor: color.accent,
+  }),
 )
 
 const headerTools = Style.make({
   display: 'flex',
   alignItems: 'center',
-  gap: space[2],
+  gap: space[3],
   marginInlineStart: 'auto',
-}).pipe(Style.when(When.minWidth('44rem'), { marginInlineStart: 0 }))
+}).pipe(Style.when(showTopNav, { marginInlineStart: space[2] }))
 
-const iconSegment = Style.merge(
-  Design.segment,
-  Style.make({ padding: 2, borderRadius: 999 }),
-)
+const iconSegment = Style.make({ display: 'inline-flex', gap: 2 })
 
-const iconSegmentButton = Style.merge(
-  Design.segmentButton,
-  Style.make({
-    width: 30,
-    height: 28,
-    paddingBlock: 0,
-    paddingInline: 0,
-    borderRadius: 999,
+const iconButton = Style.make({
+  display: 'inline-grid',
+  placeItems: 'center',
+  width: 30,
+  height: 30,
+  border: 'none',
+  borderRadius: 999,
+  padding: 0,
+  color: color.muted,
+  backgroundColor: 'transparent',
+  cursor: 'pointer',
+}).pipe(
+  Style.merge(Design.focusRing),
+  Style.when(When.motionSafe, {
+    transition: 'background-color 140ms ease, color 140ms ease',
+  }),
+  Style.when(When.hover, { color: color.ink }),
+  Style.when(When.aria('pressed', 'true'), {
+    backgroundColor: color.ink,
+    color: color.canvas,
   }),
 )
 
@@ -136,18 +144,19 @@ const icon = Style.make({ width: 16, height: 16, flexShrink: 0 })
 const menuButton = Style.merge(
   Design.button({ tone: 'Neutral', size: 'Small' }),
   Style.make({ borderRadius: 999 }),
-).pipe(Style.when(wide, { display: 'none' }))
+).pipe(Style.when(showTopNav, { display: 'none' }))
 
 const menuPanel = Style.make({
   borderBottom: `1px solid ${color.line}`,
   backgroundColor: color.canvas,
   boxShadow: Design.tokens.shadow.overlay,
-}).pipe(Style.when(wide, { display: 'none' }))
+}).pipe(Style.when(showTopNav, { display: 'none' }))
 
 const menuInner = Style.merge(
   Design.container,
   Style.make({
     display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr)',
     gap: space[5],
     paddingBlock: space[5],
   }),
@@ -159,10 +168,10 @@ const menuInner = Style.merge(
 
 const docsShell = Style.merge(
   Design.container,
-  Style.make({ display: 'grid', gap: space[7] }),
+  Style.make({ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: space[7] }),
 ).pipe(
   Style.when(wide, {
-    gridTemplateColumns: '14.5rem minmax(0, 1fr)',
+    gridTemplateColumns: '13rem minmax(0, 1fr)',
     gap: space[8],
   }),
 )
@@ -177,22 +186,12 @@ const sidebar = Style.make({ display: 'none' }).pipe(
     alignSelf: 'start',
     maxHeight: `calc(100vh - ${HEADER_HEIGHT})`,
     overflowY: 'auto',
-    paddingBlock: space[7],
+    paddingBlock: space[8],
     paddingInlineEnd: space[3],
   }),
 )
 
 const navGroup = Style.make({ display: 'flex', flexDirection: 'column', gap: space[2] })
-
-const navGroupTitle = Style.make({
-  fontFamily: font.mono,
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: color.muted,
-  paddingInline: space[3],
-})
 
 const navList = Style.make({
   listStyle: 'none',
@@ -205,24 +204,23 @@ const navList = Style.make({
 
 const navLink = Style.make({
   display: 'block',
-  paddingBlock: '0.4375rem',
-  paddingInline: space[3],
-  borderRadius: radius.md,
+  paddingBlock: '0.3125rem',
+  paddingInlineStart: space[3],
+  marginInlineStart: -1,
+  borderInlineStart: '1px solid transparent',
   textDecoration: 'none',
   fontSize: text.sm,
-  fontWeight: 500,
   color: color.muted,
 }).pipe(
   Style.merge(Design.focusRing),
-  Style.when(When.hover, { color: color.ink, backgroundColor: Design.tint }),
+  Style.when(When.hover, { color: color.ink }),
   Style.when(When.current, {
     color: color.ink,
-    backgroundColor: Design.tint,
-    boxShadow: `inset 2px 0 0 ${color.accent}`,
-    borderStartStartRadius: 0,
-    borderEndStartRadius: 0,
+    borderInlineStartColor: color.accent,
   }),
 )
+
+const navRule = Style.make({ borderInlineStart: `1px solid ${color.line}` })
 
 // NOTE: on the widest screens the docs keep a column free for the fixed
 // "On this page" rail from prose.ts.
@@ -245,7 +243,6 @@ const main = Style.make({ flexGrow: 1 })
 
 const footer = Style.make({
   borderTop: `1px solid ${color.line}`,
-  backgroundColor: color.sunken,
   fontSize: text.sm,
   color: color.muted,
 })
@@ -254,8 +251,9 @@ const footerInner = Style.merge(
   Design.container,
   Style.make({
     display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr)',
     gap: space[6],
-    paddingBlock: space[7],
+    paddingBlock: space[8],
   }),
 ).pipe(
   Style.when(When.minWidth('48rem'), {
@@ -266,11 +264,9 @@ const footerInner = Style.merge(
 const footerBrand = Style.make({
   display: 'flex',
   flexDirection: 'column',
-  gap: space[3],
-  maxWidth: '24rem',
+  gap: space[4],
+  maxWidth: '22rem',
 })
-
-const footerTitle = Style.merge(navGroupTitle, Style.make({ paddingInline: 0 }))
 
 const footerLinks = Style.make({
   listStyle: 'none',
@@ -286,11 +282,11 @@ const footerLink = Style.make({ color: color.ink, textDecoration: 'none' }).pipe
   Style.when(When.hover, {
     textDecorationLine: 'underline',
     textDecorationColor: color.accent,
-    textUnderlineOffset: '0.22em',
+    textUnderlineOffset: '0.2em',
   }),
 )
 
-const footerBase = Style.merge(
+const colophon = Style.merge(
   Design.container,
   Style.make({
     display: 'flex',
@@ -338,27 +334,36 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
   },
 ]
 
-const isDocsRoute = (route: AppRoute): boolean =>
-  route._tag !== 'Home' && route._tag !== 'NotFound'
+const TOP_LINKS: ReadonlyArray<NavLink> = [
+  ['Guide', guideRouter(), 'Guide'],
+  ['Algebra', algebraRouter(), 'Algebra'],
+  ['Theming', themingRouter(), 'Theming'],
+  ['Foldkit UI', foldkitUiRouter(), 'FoldkitUi'],
+  ['Generative', generativeRouter(), 'Generative'],
+  ['Reference', referenceRouter(), 'Reference'],
+]
+
+const currentAttributes = (
+  model: Model,
+  h: HtmlBuilder<Message>,
+  tag: AppRoute['_tag'],
+): ReadonlyArray<ReturnType<typeof h.AriaCurrent>> =>
+  model.route._tag === tag ? [h.AriaCurrent('page')] : []
 
 const navGroupsView = (model: Model, h: HtmlBuilder<Message>): ReadonlyArray<Html> =>
   NAV_GROUPS.map(group =>
     h.div(
       [...css(navGroup)],
       [
-        h.span([...css(navGroupTitle)], [group.title]),
+        h.span([...css(Design.eyebrow)], [group.title]),
         h.ul(
-          [...css(navList)],
+          [...css(navList, navRule)],
           group.links.map(([label, href, tag]) =>
             h.li(
               [],
               [
                 h.a(
-                  [
-                    h.Href(href),
-                    ...(model.route._tag === tag ? [h.AriaCurrent('page')] : []),
-                    ...css(navLink),
-                  ],
+                  [h.Href(href), ...currentAttributes(model, h, tag), ...css(navLink)],
                   [label],
                 ),
               ],
@@ -395,6 +400,28 @@ const iconView = (h: HtmlBuilder<Message>, name: keyof typeof ICON_PATHS): Html 
     [h.path([h.D(ICON_PATHS[name])])],
   )
 
+/** The mark: the profile of a pleat, four creases seen edge on. */
+const markView = (h: HtmlBuilder<Message>): Html =>
+  h.svg(
+    [
+      h.ViewBox('0 0 20 20'),
+      h.Fill('none'),
+      h.Stroke('currentColor'),
+      h.StrokeWidth('1.9'),
+      h.StrokeLinecap('round'),
+      h.StrokeLinejoin('round'),
+      h.AriaHidden(true),
+      ...css(markStyle),
+    ],
+    [h.path([h.D('M2 15 6 5l4 10 4-10 4 10')])],
+  )
+
+export const wordmarkView = (h: HtmlBuilder<Message>): Html =>
+  h.a(
+    [h.Href(homeRouter()), h.AriaLabel('Pleat home'), ...css(wordmark)],
+    [markView(h), 'Pleat'],
+  )
+
 // VIEW
 
 const THEMES: ReadonlyArray<ThemeChoice> = ['System', 'Light', 'Dark']
@@ -416,7 +443,7 @@ export const themeSwitch = (model: Model, h: HtmlBuilder<Message>): Html =>
           h.Title(THEME_LABELS[theme]),
           h.AriaPressed(model.theme === theme ? 'true' : 'false'),
           h.OnClick(Message.ClickedTheme({ theme })),
-          ...css(iconSegmentButton),
+          ...css(iconButton),
         ],
         [iconView(h, theme)],
       ),
@@ -430,31 +457,15 @@ const headerView = (model: Model, h: HtmlBuilder<Message>): Html =>
       h.div(
         [...css(headerInner)],
         [
-          h.a(
-            [h.Href(homeRouter()), h.AriaLabel('Pleat home'), ...css(brand)],
-            [h.span([...css(Design.pleatMark)]), 'Pleat'],
-          ),
-          h.span([...css(versionTag)], [`v${VERSION}`]),
+          wordmarkView(h),
           h.nav(
             [h.AriaLabel('Main'), ...css(topNav)],
             [
-              h.a(
-                [
-                  h.Href(guideRouter()),
-                  ...(isDocsRoute(model.route) && model.route._tag !== 'Reference'
-                    ? [h.AriaCurrent('page')]
-                    : []),
-                  ...css(topLink),
-                ],
-                ['Docs'],
-              ),
-              h.a(
-                [
-                  h.Href(referenceRouter()),
-                  ...(model.route._tag === 'Reference' ? [h.AriaCurrent('page')] : []),
-                  ...css(topLink),
-                ],
-                ['Reference'],
+              ...TOP_LINKS.map(([label, href, tag]) =>
+                h.a(
+                  [h.Href(href), ...currentAttributes(model, h, tag), ...css(topLink)],
+                  [label],
+                ),
               ),
               h.a([h.Href(REPOSITORY_URL), ...css(topLink)], ['GitHub']),
             ],
@@ -496,6 +507,8 @@ const FOOTER_COLUMNS: ReadonlyArray<
     [
       ['Guide', guideRouter()],
       ['The algebra', algebraRouter()],
+      ['Theming', themingRouter()],
+      ['Foldkit UI', foldkitUiRouter()],
       ['Generative interfaces', generativeRouter()],
       ['API reference', referenceRouter()],
     ],
@@ -520,10 +533,7 @@ const footerView = (h: HtmlBuilder<Message>): Html =>
           h.div(
             [...css(footerBrand)],
             [
-              h.a(
-                [h.Href(homeRouter()), ...css(brand)],
-                [h.span([...css(Design.pleatMark)]), 'Pleat'],
-              ),
+              wordmarkView(h),
               h.p(
                 [],
                 [
@@ -536,7 +546,7 @@ const footerView = (h: HtmlBuilder<Message>): Html =>
             h.div(
               [...css(Design.stack(space[3]))],
               [
-                h.span([...css(footerTitle)], [title]),
+                h.span([...css(Design.eyebrow)], [title]),
                 h.ul(
                   [...css(footerLinks)],
                   links.map(([label, href]) =>
@@ -549,9 +559,12 @@ const footerView = (h: HtmlBuilder<Message>): Html =>
         ],
       ),
       h.div(
-        [...css(footerBase)],
+        [...css(colophon)],
         [
-          h.span([], ['Styled only with Pleat.']),
+          h.span(
+            [],
+            ['Set in Terminal Grotesque and Commit Mono. Styled only with Pleat.'],
+          ),
           h.span(
             [],
             ['Built with Foldkit, typed with Effect, deployed by Alchemy to Cloudflare.'],
