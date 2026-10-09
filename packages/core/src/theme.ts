@@ -49,8 +49,9 @@ export type PartialLiteralValues<T> =
  *  descendants inherit the result. So a theme at `:root` that sets `--accent:
  *  var(--blue-500)` gives every descendant the root's blue, even one where `--blue-500` is
  *  set again: re-pointing a primitive doesn't move the semantic tokens built on it. To
- *  retarget them in a scope, apply a whole theme there, such as one from {@link extend},
- *  which declares every alias again. */
+ *  retarget them in a scope, apply a {@link patch} there, which declares the aliases that
+ *  depend on what it overrides, or a whole theme from {@link extend}, which declares every
+ *  token again. {@link resolve} computes what a token ends up as in nested scopes. */
 export interface Theme {
   readonly _tag: 'Theme'
   /** Custom property declarations, in token order. */
@@ -252,6 +253,57 @@ export const extend = <T extends object>(
     merged.set(name, value)
   }
   return makeTheme([...merged], unioned)
+}
+
+/** A theme for a nested scope that overrides some tokens of `base`, such as a section with
+ *  its own brand. Applied inside a scope where `base` applies, it gives every token the value
+ *  `base` extended with the overrides would, without declaring all of `base` again.
+ *
+ *  It declares the overrides, and every alias in `base` that depends on one, directly or
+ *  through other aliases, as `base` declares it. An alias resolves where it is declared, so
+ *  re-declaring it in the scope makes it follow the scope's overrides. Every other token
+ *  keeps what the scope inherits, such as a density set by a scope in between, which a
+ *  whole theme from {@link extend} would reset.
+ *
+ *  Only aliases `base` declares are re-declared, so pass the theme that holds them, merged
+ *  with {@link merge} if they come from several. An alias some other scope declares, between
+ *  the root and this one, is not re-declared and keeps its value. Checks values the way
+ *  {@link make} does.
+ *
+ *  ```ts
+ *  const orchard = Theme.patch(light, tokens, { brand: { 600: '#c2410c' } })
+ *  // declares --brand-600, and --accent and --button-background, which alias it
+ *  ``` */
+export const patch = <T extends object>(
+  base: Theme,
+  tokens: T,
+  values: PartialValues<T> | PartialLiteralValues<T>,
+): Theme => {
+  const unioned = unionTokens(base.tokens, tokensOf(tokens))
+  const overrides: Array<readonly [string, string]> = []
+  collect(tokens, values, [], overrides, false)
+  const overridden = new Map(overrides)
+  const affected = new Set(overridden.keys())
+  for (let isGrowing = true; isGrowing;) {
+    isGrowing = false
+    for (const [name, value] of base.declarations) {
+      if (
+        !affected.has(name) &&
+        [...value.matchAll(REFERENCE)].some(([, target]) => affected.has(target ?? ''))
+      ) {
+        affected.add(name)
+        isGrowing = true
+      }
+    }
+  }
+  const declarations: Array<readonly [string, string]> = []
+  for (const [name, value] of base.declarations) {
+    if (affected.has(name)) {
+      declarations.push([name, overridden.get(name) ?? value])
+      overridden.delete(name)
+    }
+  }
+  return makeTheme([...declarations, ...overridden], unioned)
 }
 
 /** One theme from two that set independent tokens, such as a palette and a component
