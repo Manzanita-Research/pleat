@@ -77,7 +77,7 @@ const MODULES: ReadonlyArray<Module> = [
         'Interaction, weakest to strongest.',
       ],
       [
-        'When.open, selected, checked, current, highlighted',
+        'When.open, selected, checked, indeterminate, current, highlighted',
         'Element state, including `@foldkit/ui`’s `data-*` attributes.',
       ],
       [

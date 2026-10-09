@@ -1,15 +1,17 @@
 import { Effect, Option, Schema } from 'effect'
-import { Command, type Runtime, type Update } from 'foldkit'
+import { Command, type Runtime, Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { load, pushUrl, UrlRequest } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
 import { toString as urlToString } from 'foldkit/url'
 
 import { brandPresetSource } from './brandPresets.ts'
+import * as FoldkitUi from './demo/foldkitUi.ts'
 import { Message, Model, type BrandPreset, type Preset } from './message.ts'
 import { presetSource } from './presets.ts'
 import { AppRoute, urlToAppRoute } from './route.ts'
 import { algebraView } from './view/algebra.ts'
+import { foldkitUiView } from './view/foldkitUi.ts'
 import { generativeView } from './view/generative.ts'
 import { guideView } from './view/guide.ts'
 import { homeView } from './view/home.ts'
@@ -38,6 +40,7 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
       brandPreset: Option.some(INITIAL_BRAND_PRESET),
       brandSource: brandPresetSource(INITIAL_BRAND_PRESET),
     },
+    foldkitUi: FoldkitUi.init(),
   },
 })
 
@@ -62,6 +65,13 @@ const LoadExternal = Command.define('LoadExternal', {
 // UPDATE
 
 type UpdateReturn = Update.Return<Model, Message>
+
+const foldFoldkitUi = Update.foldChild({
+  update: FoldkitUi.update,
+  read: (model: Model) => Option.some(model.foldkitUi),
+  write: (model, foldkitUi) => modifyFields(model, { foldkitUi: () => foldkitUi }),
+  toParentMessage: message => Message.GotFoldkitUiMessage({ message }),
+})
 
 export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
@@ -145,6 +155,7 @@ export const update = (model: Model, message: Message) =>
         }),
       }),
     }),
+    GotFoldkitUiMessage: ({ message }) => foldFoldkitUi(model, message),
   })
 
 // VIEW
@@ -158,6 +169,7 @@ const routeTitle = (route: AppRoute): string =>
     Algebra: () => `The algebra | ${TITLE_SUFFIX}`,
     Generative: () => `Generative interfaces | ${TITLE_SUFFIX}`,
     Theming: () => `Theming | ${TITLE_SUFFIX}`,
+    FoldkitUi: () => `Foldkit UI | ${TITLE_SUFFIX}`,
     Reference: () => `Reference | ${TITLE_SUFFIX}`,
     NotFound: () => `Not found | ${TITLE_SUFFIX}`,
   })
@@ -173,6 +185,13 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
       Algebra: () => algebraView(h),
       Generative: () => generativeView(model, h),
       Theming: () => themingView(model, h),
+      FoldkitUi: () =>
+        h.submodel({
+          slotId: 'foldkit-ui',
+          model: model.foldkitUi,
+          view: foldkitUiView,
+          toParentMessage: message => Message.GotFoldkitUiMessage({ message }),
+        }),
       Reference: () => referenceView(h),
       NotFound: () => notFoundView(h),
     }),

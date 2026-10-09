@@ -8,6 +8,7 @@ export const AppRoute = defineRouteUnion({
   Algebra: {},
   Generative: {},
   Theming: {},
+  FoldkitUi: {},
   Reference: {},
   NotFound: { path: Schema.String },
 })
@@ -21,6 +22,10 @@ export const generativeRouter = pipe(
   Route.mapTo(AppRoute.Generative),
 )
 export const themingRouter = pipe(literal('theming'), Route.mapTo(AppRoute.Theming))
+export const foldkitUiRouter = pipe(
+  literal('foldkit-ui'),
+  Route.mapTo(AppRoute.FoldkitUi),
+)
 export const referenceRouter = pipe(literal('reference'), Route.mapTo(AppRoute.Reference))
 
 const routeParser = Route.oneOf(
@@ -28,6 +33,7 @@ const routeParser = Route.oneOf(
   algebraRouter,
   generativeRouter,
   themingRouter,
+  foldkitUiRouter,
   referenceRouter,
   homeRouter,
 )
@@ -43,6 +49,7 @@ export const PATHS: ReadonlyArray<string> = [
   algebraRouter(),
   generativeRouter(),
   themingRouter(),
+  foldkitUiRouter(),
   referenceRouter(),
   NOT_FOUND_PATH,
 ]

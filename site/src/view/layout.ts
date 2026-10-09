@@ -7,6 +7,7 @@ import { Message, type Model, type ThemeChoice } from '../message.ts'
 import {
   AppRoute,
   algebraRouter,
+  foldkitUiRouter,
   generativeRouter,
   guideRouter,
   homeRouter,
@@ -325,7 +326,10 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
   },
   {
     title: 'Integrations',
-    links: [['Generative interfaces', generativeRouter(), 'Generative']],
+    links: [
+      ['Generative interfaces', generativeRouter(), 'Generative'],
+      ['Foldkit UI', foldkitUiRouter(), 'FoldkitUi'],
+    ],
   },
   {
     title: 'Reference',
