@@ -36,6 +36,12 @@ export type PartialValues<T> =
 export type LiteralValues<T> =
   T extends Token<infer A, string> ? A : { readonly [K in keyof T]: LiteralValues<T[K]> }
 
+/** Literal values for some tokens in a tree: what {@link partialSchema} decodes. */
+export type PartialLiteralValues<T> =
+  T extends Token<infer A, string>
+    ? A
+    : { readonly [K in keyof T]?: PartialLiteralValues<T[K]> }
+
 /** An assignment of values to tokens. Applying a theme to a selector sets its custom
  *  properties there, and every style that uses the tokens follows. Themes nest by selector.
  *
@@ -78,6 +84,15 @@ export const schema = <T extends object>(
 ): Schema.Codec<LiteralValues<T>, unknown> =>
   // NOTE: the Struct is built by walking the token tree, which mirrors LiteralValues<T>.
   schemaFor(tokens, false) as unknown as Schema.Codec<LiteralValues<T>, unknown>
+
+/** The Schema for values that override some tokens in a tree, such as the brand colors a
+ *  customer may set. Every key is optional; each value present is checked like
+ *  {@link schema} checks it. */
+export const partialSchema = <T extends object>(
+  tokens: T,
+): Schema.Codec<PartialLiteralValues<T>, unknown> =>
+  // NOTE: the Struct is built by walking the token tree, which mirrors PartialLiteralValues<T>.
+  schemaFor(tokens, true) as unknown as Schema.Codec<PartialLiteralValues<T>, unknown>
 
 // TOKENS
 
@@ -227,7 +242,7 @@ export const make = <T extends object>(
 export const extend = <T extends object>(
   theme: Theme,
   tokens: T,
-  values: PartialValues<T>,
+  values: PartialValues<T> | PartialLiteralValues<T>,
 ): Theme => {
   const unioned = unionTokens(theme.tokens, tokensOf(tokens))
   const overrides: Array<readonly [string, string]> = []
@@ -274,6 +289,24 @@ export const decode = <T extends object>(
   Effect.map(
     Schema.decodeUnknownEffect(schema(tokens))(input, { errors: 'all' }),
     values => make(tokens, values),
+  )
+
+/** Decodes values for some tokens from unknown input, such as a brand kit from a settings
+ *  form, and extends `base` with them the way {@link extend} does. Tokens the input leaves
+ *  out keep `base`'s values, so `tokens` can be the whole tree. Fails with a `SchemaError`
+ *  that lists every wrong value, as {@link decode} does.
+ *
+ *  ```ts
+ *  Theme.decodePartial(light, tokens, { color: { accent: '#ff6600' } })
+ *  ``` */
+export const decodePartial = <T extends object>(
+  base: Theme,
+  tokens: T,
+  input: unknown,
+): Effect.Effect<Theme, Schema.SchemaError> =>
+  Effect.map(
+    Schema.decodeUnknownEffect(partialSchema(tokens))(input, { errors: 'all' }),
+    values => extend(base, tokens, values),
   )
 
 /** The rule that applies `theme` at `selector`. */
