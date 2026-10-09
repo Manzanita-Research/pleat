@@ -41,7 +41,7 @@ const postView = (post: Post, h: HtmlBuilder<Message>): Html =>
 - **Tokens and themes.** Tokens are custom properties with kinds; themes are checked values for them, swapped by an attribute in your view.
 - **No CSS work in render.** `css()` returns cached, frozen attributes for styles it has seen. The browser inserts a style's rules the first time it is used, at their sorted position.
 - **Server rendering and static pages.** Class names are hashes of their declarations, so the server and the client compute the same ones and hydration matches.
-- **Plays well with Tailwind.** Rules live in the `pleat` cascade layer, so unlayered CSS, Tailwind utilities included, always wins.
+- **Plays well with Tailwind.** Pleat declares the page's layer order as `theme, base, components, pleat, utilities`. A Tailwind v4 utility on an element beats Pleat's styles, Pleat's styles beat Tailwind's preflight reset and its components layer, and unlayered CSS beats both. This holds when Pleat's style is the page's first stylesheet, as `renderDocument` makes it, and in any order once the client mounts. `className` passes any class token through, Tailwind's arbitrary values and variants included.
 
 ## Checked, not just claimed
 
