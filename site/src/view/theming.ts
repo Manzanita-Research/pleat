@@ -6,7 +6,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import { codeBlock } from '../code.ts'
 import * as Components from '../demo/theming/components.ts'
 import componentsSource from '../demo/theming/components.ts?raw'
-import { decodeBrand, themeStyle } from '../demo/theming/decode.ts'
+import { branded, decodeBrand } from '../demo/theming/decode.ts'
 import decodeModuleSource from '../demo/theming/decode.ts?raw'
 import * as Hardcoded from '../demo/theming/hardcoded.ts'
 import hardcodedSource from '../demo/theming/hardcoded.ts?raw'
@@ -443,8 +443,7 @@ const decodedView = (model: Model, h: HtmlBuilder<Message>): Html => {
           h.div(
             [
               ...scopeAttributes(h, model.theming.scope),
-              themeStyle(h, decoded.theme),
-              ...css(Components.scopeRoot, scopeFrame),
+              ...branded(decoded.theme, Components.scopeRoot, scopeFrame),
             ],
             [sampleView(Components, h)],
           ),
@@ -676,7 +675,7 @@ export const themingView = (model: Model, h: HtmlBuilder<Message>): Html => {
       section(h, 'decode', 'Themes from outside the program', [
         paragraph(
           h,
-          'Some themes arrive at runtime: a customer’s brand from a settings API, or a palette a language model proposes. `Theme.decode` checks each value against its token’s kind and fails with a `SchemaError` that names the path, so a bad value never becomes CSS. It is the same closed-world idea as [generative interfaces](/generative): outside input can choose values, never write rules.',
+          'Some themes arrive at runtime: a customer’s brand from a settings API, or a palette a language model proposes. `Theme.decodePartial` checks each value it is given against its token’s kind and fails with a `SchemaError` that names the path, so a bad value never becomes CSS. It is the same closed-world idea as [generative interfaces](/generative): outside input can choose values, never write rules.',
         ),
         codeBlock(h, decodeModuleSource, 'decode.ts'),
         paragraph(
