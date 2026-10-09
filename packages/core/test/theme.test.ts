@@ -140,6 +140,56 @@ describe('Theme', () => {
   })
 })
 
+describe('Theme.decodePartial', () => {
+  test('overrides the tokens the input names and keeps the rest of the base', async () => {
+    const night = Theme.extend(light, tokens, {
+      color: { onAccent: tokens.color.canvas },
+    })
+    const branded = await Effect.runPromise(
+      Theme.decodePartial(night, tokens, { color: { canvas: '#ff6600' }, space: {} }),
+    )
+    expect(branded.declarations).toEqual(
+      night.declarations.map(([name, value]) =>
+        name === '--color-canvas' ? [name, '#ff6600'] : [name, value],
+      ),
+    )
+    expect(Theme.resolve(branded, tokens.color.onAccent)).toEqual(Option.some('#ff6600'))
+    const unchanged = await Effect.runPromise(Theme.decodePartial(night, tokens, {}))
+    expect(unchanged.declarations).toEqual(night.declarations)
+  })
+
+  test('names every wrong value and its kind', async () => {
+    const exit = await Effect.runPromiseExit(
+      Theme.decodePartial(light, tokens, {
+        color: { ink: 'tealish' },
+        space: { 2: 'eight pixels' },
+        font: { weight: '400' },
+      }),
+    )
+    if (!Exit.isFailure(exit)) {
+      throw new Error('expected the decode to fail')
+    }
+    const message = String(Cause.squash(exit.cause))
+    expect(message).toContain('at ["color"]["ink"]')
+    expect(message).toContain('Expected a CSS length, such as 0.75rem or 12px')
+    expect(message).toContain('at ["space"]["2"]')
+    expect(message).toContain('at ["font"]["weight"]')
+    for (const input of [null, 'red', { color: 'red' }, { color: { ink: undefined } }]) {
+      const result = await Effect.runPromiseExit(
+        Theme.decodePartial(light, tokens, input),
+      )
+      expect(Exit.isFailure(result)).toBe(true)
+    }
+  })
+
+  test('has a schema with every key optional', () => {
+    const decode = Schema.decodeUnknownSync(Theme.partialSchema(tokens))
+    expect(decode({ color: { ink: '#111' } })).toEqual({ color: { ink: '#111' } })
+    expect(decode({})).toEqual({})
+    expect(() => decode({ color: { ink: 4 } })).toThrow()
+  })
+})
+
 describe('Theme.bindings', () => {
   test('binds every declaration, in order, for one element', () => {
     const night = Theme.extend(light, tokens, {
