@@ -190,6 +190,67 @@ describe('Theme.decodePartial', () => {
   })
 })
 
+describe('Theme.patch', () => {
+  const system = Token.make({
+    brand: { 500: Token.color, 600: Token.color },
+    accent: Token.color,
+    button: Token.color,
+    ink: Token.color,
+    gap: Token.length,
+  })
+  const base = Theme.make(system, {
+    brand: { 500: '#3b82f6', 600: '#2563eb' },
+    accent: system.brand[600],
+    button: system.accent,
+    ink: '#111111',
+    gap: '1rem',
+  })
+  const orchard = { brand: { 600: '#c2410c' } }
+
+  test('declares the overrides and every alias that depends on them, in base order', () => {
+    expect(Theme.patch(base, system, orchard).declarations).toEqual([
+      ['--brand-600', '#c2410c'],
+      ['--accent', 'var(--brand-600)'],
+      ['--button', 'var(--accent)'],
+    ])
+    expect(
+      Theme.patch(base, system, { accent: system.brand[500], ink: '#000' }).declarations,
+    ).toEqual([
+      ['--accent', 'var(--brand-500)'],
+      ['--button', 'var(--accent)'],
+      ['--ink', '#000'],
+    ])
+    expect(Theme.patch(base, system, {}).declarations).toEqual([])
+  })
+
+  test('inside the base, gives every token the value of the whole extended theme', () => {
+    const patched = [base, Theme.patch(base, system, orchard)]
+    const extended = Theme.extend(base, system, orchard)
+    for (const token of Token.leaves(system)) {
+      expect(Theme.resolve(patched, token)).toEqual(Theme.resolve(extended, token))
+    }
+    expect(Theme.resolve(patched, system.button)).toEqual(Option.some('#c2410c'))
+  })
+
+  test('keeps what a scope in between set, where a whole theme would reset it', () => {
+    const compact = Theme.make({ gap: system.gap }, { gap: '0.5rem' })
+    const patched = [base, compact, Theme.patch(base, system, orchard)]
+    expect(Theme.resolve(patched, system.gap)).toEqual(Option.some('0.5rem'))
+    expect(Theme.resolve(patched, system.button)).toEqual(Option.some('#c2410c'))
+    const extended = [base, compact, Theme.extend(base, system, orchard)]
+    expect(Theme.resolve(extended, system.gap)).toEqual(Option.some('1rem'))
+  })
+
+  test('checks values and aliases the way make does', () => {
+    expect(() => Theme.patch(base, system, { gap: 'wide' })).toThrow(
+      'gap is not a valid Length',
+    )
+    expect(() => Theme.patch(base, system, { brand: { 600: system.button } })).toThrow(
+      /Theme aliases form a cycle/,
+    )
+  })
+})
+
 describe('Theme.bindings', () => {
   test('binds every declaration, in order, for one element', () => {
     const night = Theme.extend(light, tokens, {
