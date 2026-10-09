@@ -8,6 +8,13 @@
     {
       "files": ["site/src/snippet/**", "site/src/demo/**"],
       "options": { "printWidth": 68 }
+    },
+    {
+      "files": [
+        "site/src/demo/theming/components.ts",
+        "site/src/demo/theming/hardcoded.ts"
+      ],
+      "options": { "printWidth": 56 }
     }
   ]
 }

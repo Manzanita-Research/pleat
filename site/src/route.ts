@@ -7,6 +7,7 @@ export const AppRoute = defineRouteUnion({
   Guide: {},
   Algebra: {},
   Generative: {},
+  Theming: {},
   Reference: {},
   NotFound: { path: Schema.String },
 })
@@ -19,12 +20,14 @@ export const generativeRouter = pipe(
   literal('generative'),
   Route.mapTo(AppRoute.Generative),
 )
+export const themingRouter = pipe(literal('theming'), Route.mapTo(AppRoute.Theming))
 export const referenceRouter = pipe(literal('reference'), Route.mapTo(AppRoute.Reference))
 
 const routeParser = Route.oneOf(
   guideRouter,
   algebraRouter,
   generativeRouter,
+  themingRouter,
   referenceRouter,
   homeRouter,
 )
@@ -39,6 +42,7 @@ export const PATHS: ReadonlyArray<string> = [
   guideRouter(),
   algebraRouter(),
   generativeRouter(),
+  themingRouter(),
   referenceRouter(),
   NOT_FOUND_PATH,
 ]

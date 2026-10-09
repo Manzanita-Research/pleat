@@ -3,6 +3,7 @@ import { defineMessageUnion } from 'foldkit/message'
 import { UrlRequest } from 'foldkit/navigation'
 import { Url } from 'foldkit/url'
 
+import { Brand, Density, Mode, Scope } from './demo/theming/scope.ts'
 import { AppRoute } from './route.ts'
 
 // MODEL
@@ -26,6 +27,21 @@ export const Playground = Schema.Struct({
 })
 export type Playground = typeof Playground.Type
 
+export const BrandPreset = Schema.Literals([
+  'Valid',
+  'MissingHash',
+  'Injection',
+  'WrongKind',
+])
+export type BrandPreset = typeof BrandPreset.Type
+
+export const Theming = Schema.Struct({
+  scope: Scope,
+  brandPreset: Schema.Option(BrandPreset),
+  brandSource: Schema.String,
+})
+export type Theming = typeof Theming.Type
+
 export const Model = Schema.Struct({
   route: AppRoute,
   theme: ThemeChoice,
@@ -33,6 +49,7 @@ export const Model = Schema.Struct({
   playground: Playground,
   preset: Schema.Option(Preset),
   specSource: Schema.String,
+  theming: Theming,
 })
 export type Model = typeof Model.Type
 
@@ -50,5 +67,10 @@ export const Message = defineMessageUnion({
   PickedPending: { isPending: Schema.Boolean },
   EditedSpec: { source: Schema.String },
   ClickedPreset: { preset: Preset },
+  PickedMode: { mode: Mode },
+  PickedBrand: { brand: Brand },
+  PickedDensity: { density: Density },
+  EditedBrandSource: { source: Schema.String },
+  ClickedBrandPreset: { preset: BrandPreset },
 })
 export type Message = typeof Message.Type
