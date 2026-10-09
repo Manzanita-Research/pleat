@@ -143,7 +143,7 @@ export const meetsContrast = <T extends object>(
   pairs: ReadonlyArray<Pair>,
   metric: Metric = DEFAULT_METRIC,
 ) =>
-  Schema.makeFilter<Theme.Values<T>>(
+  Schema.makeFilter<Theme.LiteralValues<T>>(
     values =>
       failures(check(Theme.make(tokens, values), pairs, metric)).map(result => ({
         path: result.pair.text.path,

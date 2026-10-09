@@ -95,21 +95,10 @@ describe('checking themes', () => {
 
 // THE SITE
 
-// NOTE: the site's dark theme passes WCAG 2 everywhere but misses APCA on
-// these pairs, and two dividers sit just under the Lc 15 floor. They're
-// pinned here so the list can only shrink: a new failure fails this test,
-// and so does fixing one without taking it off the list.
-const KNOWN_FAILURES: ReadonlyArray<string> = [
-  'Light: Line on canvas',
-  'Dark: Muted on canvas',
-  'Dark: Muted on surface',
-  'Dark: Muted on sunken',
-  'Dark: Accent on canvas',
-  'Dark: Accent on sunken',
-  'Dark: On-accent on accent',
-  'Dark: Line on canvas',
-  'Dark: Line on surface',
-]
+// NOTE: failures that are known and accepted go here, so the list can only
+// shrink: a new failure fails the test, and so does fixing one without
+// taking it off the list. The redesign cleared every entry.
+const KNOWN_FAILURES: ReadonlyArray<string> = []
 
 describe('this site', () => {
   it('meets every contrast target in every theme, apart from the known failures', () => {

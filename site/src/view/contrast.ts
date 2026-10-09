@@ -250,9 +250,14 @@ const previewInput = Style.make({
   paddingInline: space[3],
   border: `1px solid ${demo.border}`,
   borderRadius: radius.md,
-  color: demo.placeholder,
+  backgroundColor: 'transparent',
+  color: demo.text,
+  fontFamily: 'inherit',
   fontSize: text.sm,
-})
+}).pipe(
+  Style.merge(Design.focusRing),
+  Style.when(When.placeholder, { color: demo.placeholder, opacity: 1 }),
+)
 
 const previewButton = Style.make({
   paddingBlock: space[2],
@@ -630,7 +635,12 @@ const previewView = (palette: Palette, h: HtmlBuilder<Message>): Html =>
       h.div(
         [...css(previewActions)],
         [
-          h.span([...css(previewInput)], ['Search reports']),
+          h.input([
+            h.Type('search'),
+            h.Placeholder('Search reports'),
+            h.AriaLabel('Search reports'),
+            ...css(previewInput),
+          ]),
           h.span([...css(previewButton)], ['Share']),
         ],
       ),

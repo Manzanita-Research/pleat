@@ -7,7 +7,8 @@ const { color } = tokens
 
 // NOTE: these point at the site's tokens as design.ts declares them today.
 // When semantic token layers land, point the pairs at those instead; the
-// checker only needs tokens and themes.
+// checker only needs tokens and themes. `brand` only fills the pleats, never
+// text, so it has no pair.
 
 /** Every foreground the site draws on a background, and what it is for. */
 export const SITE_PAIRS: ReadonlyArray<Pair> = [
@@ -23,6 +24,9 @@ export const SITE_PAIRS: ReadonlyArray<Pair> = [
   pair('Ink on accent soft', color.ink, color.accentSoft, 'BodyText'),
   pair('Green on sunken', color.green, color.sunken, 'ContentText'),
   pair('Indigo on sunken', color.indigo, color.sunken, 'ContentText'),
+  pair('Indigo on canvas', color.indigo, color.canvas, 'ContentText'),
+  pair('Green on surface', color.green, color.surface, 'ContentText'),
+  pair('Canvas on ink', color.canvas, color.ink, 'ContentText'),
   pair('Line on canvas', color.line, color.canvas, 'Decoration'),
   pair('Line on surface', color.line, color.surface, 'Decoration'),
 ]
