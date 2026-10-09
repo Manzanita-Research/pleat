@@ -1,4 +1,4 @@
-import { Theme, Token, Var } from '@pleat/core'
+import { Theme, Token } from '@pleat/core'
 import { Option, Schema } from 'effect'
 
 import { decodeTheme, pair, type Pair } from './check.ts'
@@ -182,18 +182,3 @@ export const paletteTheme = (palette: Palette): Theme.Theme =>
 
 /** Decodes demo theme values and rejects them when a pair misses its target. */
 export const decodeDemoTheme = decodeTheme(demoTokens, DEMO_PAIRS)
-
-const bindingVars = new Map<string, Var.Var<string>>()
-
-/** Inline bindings that apply `theme` to one element and its descendants. */
-export const themeBindings = (theme: Theme.Theme): ReadonlyArray<Var.Binding> =>
-  theme.declarations.map(([name, value]) => {
-    let variable = bindingVars.get(name)
-    if (variable === undefined) {
-      // NOTE: a token's custom property is `--<name>`, the same one
-      // Var.string(name) refers to.
-      variable = Var.string(name.slice(2))
-      bindingVars.set(name, variable)
-    }
-    return Var.bind(variable, value)
-  })

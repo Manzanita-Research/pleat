@@ -1,4 +1,4 @@
-import { Recipe, Style, type Theme, Var, When } from '@pleat/core'
+import { Recipe, Style, Theme, Var, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
 import { Cause, Effect, Exit, Option } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
@@ -19,7 +19,6 @@ import {
   oklchCss,
   paletteTheme,
   paletteValues,
-  themeBindings,
 } from '../contrast/demo.ts'
 import {
   type Metric,
@@ -620,7 +619,7 @@ const previewView = (palette: Palette, h: HtmlBuilder<Message>): Html =>
     [
       h.Role('group'),
       h.AriaLabel('Preview of the palette'),
-      ...css(preview, ...themeBindings(paletteTheme(palette))),
+      ...css(preview, ...Theme.bindings(paletteTheme(palette))),
     ],
     [
       h.span([...css(previewTitle)], ['Weekly report']),
@@ -858,12 +857,12 @@ export const contrastView = (model: Model, h: HtmlBuilder<Message>): Html =>
       section(h, 'pairs', 'Declare the pairs', [
         paragraph(
           h,
-          'A pair names a text token, the background token it’s drawn on, and a use case. `check` looks each token up in a theme, follows aliases, maps the colors into sRGB, and scores them. Colors in `oklch(...)` or any other CSS color syntax work.',
+          'A pair names a text token, the background token it’s drawn on, and a use case. `check` looks each token up with `Theme.resolve`, which follows aliases across nested scopes the way CSS does, maps the colors into sRGB, and scores them. Colors in `oklch(...)` or any other CSS color syntax work.',
         ),
         codeBlock(h, pairsSource, 'contrast.ts'),
         paragraph(
           h,
-          'The checker only needs tokens and themes, so it works with whatever token layers a design system has. It sits beside Pleat rather than inside it: the metric is a value you pass, and the default lives in the site’s code.',
+          'The checker only needs tokens and themes, so it works with whatever token layers a design system has. The [theming page](/theming)’s design system lists its pairs in `contrastPairs`, and a test checks them in both brands and all three modes, with a brand’s palette and a mode’s aliases as two scopes. The checker sits beside Pleat rather than inside it: the metric is a value you pass, and the default lives in the site’s code.',
         ),
       ]),
       section(h, 'site', 'This site’s themes', [

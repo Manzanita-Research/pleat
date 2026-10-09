@@ -5,6 +5,7 @@ import { check, describe as describeResult, failures } from '../src/contrast/che
 import { decodeDemoTheme, paletteValues, PRESETS } from '../src/contrast/demo.ts'
 import { apca, DEFAULT_METRIC, toSrgb, wcag2 } from '../src/contrast/metric.ts'
 import { SITE_PAIRS, SITE_THEMES } from '../src/contrast/site.ts'
+import { THEMING_PAIRS, THEMING_SCOPES } from '../src/contrast/theming.ts'
 import { dark, light, pairs } from '../src/snippet/contrastPairs.ts'
 
 const measure = (metric: typeof apca, textColor: string, background: string): number =>
@@ -108,5 +109,35 @@ describe('this site', () => {
       ),
     )
     expect(failing).toEqual(KNOWN_FAILURES)
+  })
+})
+
+// NOTE: the theming page's dark mode passes WCAG 2 on every pair but misses
+// APCA on these, in both brands. Pinned so the list can only shrink.
+const THEMING_KNOWN_FAILURES: ReadonlyArray<string> = [
+  'Harbor, dark: textMuted on surface',
+  'Harbor, dark: textMuted on surfaceRaised',
+  'Harbor, dark: onAccent on accent',
+  'Harbor, dark: onDanger on danger',
+  'Orchard, dark: textMuted on surface',
+  'Orchard, dark: textMuted on surfaceRaised',
+  'Orchard, dark: onAccent on accent',
+  'Orchard, dark: onDanger on danger',
+]
+
+describe('the theming page’s design system', () => {
+  it('meets every contrast target in every brand and mode, apart from the known failures', () => {
+    const failing = THEMING_SCOPES.flatMap(([name, scopes]) =>
+      failures(check(scopes, THEMING_PAIRS, DEFAULT_METRIC)).map(
+        result => `${name}: ${result.pair.name}`,
+      ),
+    )
+    expect(failing).toEqual(THEMING_KNOWN_FAILURES)
+  })
+
+  it('passes WCAG 2 everywhere', () => {
+    for (const [, scopes] of THEMING_SCOPES) {
+      expect(failures(check(scopes, THEMING_PAIRS, wcag2))).toEqual([])
+    }
   })
 })

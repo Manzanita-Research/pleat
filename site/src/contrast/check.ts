@@ -27,33 +27,6 @@ export const pair = (
   useCase: UseCase,
 ): Pair => ({ name, text, background, useCase })
 
-// RESOLVING
-
-const VAR = /^var\((--[A-Za-z0-9-]+)\)$/
-
-/** The value `theme` gives `token`, following aliases to other tokens. None when the theme
- *  leaves the token out. */
-export const valueOf = (
-  theme: Theme.Theme,
-  token: Token.Token,
-): Option.Option<string> => {
-  const values = new Map(theme.declarations)
-  const seen = new Set<string>()
-  let name = token.name
-  for (;;) {
-    const value = values.get(name)
-    if (value === undefined || seen.has(name)) {
-      return Option.none()
-    }
-    seen.add(name)
-    const alias = VAR.exec(value)
-    if (alias === null) {
-      return Option.some(value)
-    }
-    name = alias[1] ?? ''
-  }
-}
-
 // CHECKING
 
 /** Pass, Fail, or Unknown when a color can't be scored, such as a translucent one. Unknown
@@ -94,15 +67,17 @@ export const score = (
   }
 }
 
-/** Scores every pair in `theme` with `metric`. */
+/** Scores every pair with `metric` in `scopes`: one theme, or themes applied from the outside
+ *  in, such as a brand's palette and then a mode that aliases it. `Theme.resolve` follows the
+ *  aliases the way CSS does. */
 export const check = (
-  theme: Theme.Theme,
+  scopes: Theme.Theme | ReadonlyArray<Theme.Theme>,
   pairs: ReadonlyArray<Pair>,
   metric: Metric = DEFAULT_METRIC,
 ): ReadonlyArray<Result> =>
   pairs.map(pair => {
-    const text = valueOf(theme, pair.text)
-    const background = valueOf(theme, pair.background)
+    const text = Theme.resolve(scopes, pair.text)
+    const background = Theme.resolve(scopes, pair.background)
     const scored = Option.match(Option.all([text, background]), {
       onNone: () => ({
         score: Option.none<number>(),
