@@ -1,7 +1,7 @@
 import { Theme, Token } from '@pleat/core'
 import { Option, Schema } from 'effect'
 
-import { decodeTheme, pair, type Pair } from './check.ts'
+import { meetsContrast, pair, type Pair } from './check.ts'
 
 // MODEL
 
@@ -181,4 +181,5 @@ export const paletteTheme = (palette: Palette): Theme.Theme =>
   Theme.make(demoTokens, paletteValues(palette))
 
 /** Decodes demo theme values and rejects them when a pair misses its target. */
-export const decodeDemoTheme = decodeTheme(demoTokens, DEMO_PAIRS)
+export const decodeDemoTheme = (input: unknown) =>
+  Theme.decode(demoTokens, input, { checks: [meetsContrast(DEMO_PAIRS)] })

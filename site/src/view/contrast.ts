@@ -787,8 +787,8 @@ const decodeView = (palette: Palette, h: HtmlBuilder<Message>): Html => {
         [...css(label)],
         [
           isAccepted
-            ? 'decodeTheme accepts these values'
-            : 'decodeTheme rejects these values',
+            ? 'Theme.decode accepts these values'
+            : 'Theme.decode rejects these values',
         ],
       ),
       h.pre(
@@ -886,7 +886,7 @@ export const contrastView = (model: Model, h: HtmlBuilder<Message>): Html =>
       section(h, 'decode', 'Reject a theme that fails', [
         paragraph(
           h,
-          '`Theme.decode` already rejects a theme from outside the program, such as a language model’s structured output, when a value isn’t a valid color or length. Contrast is one more check on the same Schema, so a palette with unreadable text fails the same way, with the failure at the token that caused it.',
+          '`Theme.decode` already rejects a theme from outside the program, such as a language model’s structured output, when a value isn’t a valid color or length. Its `checks` option takes rules about the whole theme, and contrast is one of them: `meetsContrast(pairs)` scores the built theme, so a palette with unreadable text fails the same way, with the failure at the token that caused it.',
         ),
         codeBlock(h, decodeSource, 'decode.ts'),
       ]),

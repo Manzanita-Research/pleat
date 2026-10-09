@@ -1,5 +1,5 @@
 import { Theme, type Token } from '@pleat/core'
-import { Effect, Option, Schema } from 'effect'
+import { Option } from 'effect'
 
 import {
   DEFAULT_METRIC,
@@ -111,30 +111,17 @@ export const describe = (result: Result, metric: Metric = DEFAULT_METRIC): strin
 
 // DECODING
 
-/** A Schema check on theme values that fails when a pair misses its target. Each failure is
- *  reported at the text token's path, next to any invalid values. */
-export const meetsContrast = <T extends object>(
-  tokens: T,
-  pairs: ReadonlyArray<Pair>,
-  metric: Metric = DEFAULT_METRIC,
-) =>
-  Schema.makeFilter<Theme.LiteralValues<T>>(
-    values =>
-      failures(check(Theme.make(tokens, values), pairs, metric)).map(result => ({
-        path: result.pair.text.path,
-        issue: describe(result, metric),
-      })),
-    { title: `${metric.name} contrast` },
-  )
-
-/** Like `Theme.decode`, and also rejects values whose pairs miss their contrast targets. */
-export const decodeTheme =
-  <T extends object>(
-    tokens: T,
-    pairs: ReadonlyArray<Pair>,
-    metric: Metric = DEFAULT_METRIC,
-  ) =>
-  (input: unknown): Effect.Effect<Theme.Theme, Schema.SchemaError> =>
-    Schema.decodeUnknownEffect(
-      Theme.schema(tokens).check(meetsContrast(tokens, pairs, metric)),
-    )(input).pipe(Effect.map(values => Theme.make(tokens, values)))
+/** A whole-theme check for `Theme.decode` and `Theme.decodePartial` that fails when a pair
+ *  misses its target. Each failure is reported at the text token's path, next to any invalid
+ *  values.
+ *
+ *  ```ts
+ *  Theme.decode(tokens, input, { checks: [meetsContrast(pairs)] })
+ *  ``` */
+export const meetsContrast =
+  (pairs: ReadonlyArray<Pair>, metric: Metric = DEFAULT_METRIC): Theme.Check =>
+  theme =>
+    failures(check(theme, pairs, metric)).map(result => ({
+      path: result.pair.text.path,
+      issue: describe(result, metric),
+    }))

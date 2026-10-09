@@ -1,9 +1,12 @@
-import { decodeTheme } from '../contrast/check.ts'
+import { Theme } from '@pleat/core'
+
+import { meetsContrast } from '../contrast/check.ts'
 import { pairs, tokens } from './contrastPairs.ts'
 
-// Theme.decode's checks, plus every pair's contrast target. Inside,
-// it is Theme.schema(tokens) with one more Schema check.
-const decodeBrandTheme = decodeTheme(tokens, pairs)
+// Each value is checked against its token's kind, then the built
+// theme against every pair's contrast target.
+const decodeBrandTheme = (input: unknown) =>
+  Theme.decode(tokens, input, { checks: [meetsContrast(pairs)] })
 
 // A model's palette with pale muted text fails the way a malformed
 // color would, with the failure at the token's path:
