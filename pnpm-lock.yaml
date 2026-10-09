@@ -275,6 +275,9 @@ importers:
       '@effect/platform-browser':
         specifier: 4.0.0
         version: 4.0.0(effect@4.0.0)
+      '@foldkit/devtools':
+        specifier: 0.167.0
+        version: 0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(@foldkit/ui@0.167.0(effect@4.0.0)(foldkit@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0)))(effect@4.0.0)(foldkit@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))
       '@foldkit/ui':
         specifier: 0.167.0
         version: 0.167.0(effect@4.0.0)(foldkit@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))
@@ -588,6 +591,15 @@ packages:
     peerDependencies:
       effect: 4.0.0
       foldkit: '>=0.165.0'
+
+  '@foldkit/devtools@0.167.0':
+    resolution: {integrity: sha512-Yfy8uzZytstI6ixWj/QqYUX15CKI1eZMefMBkAD2VlipAQ/fbkxHqV54az4sRWzwb5rugyrvzOHRWDtPd8iD+A==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@effect/platform-browser': 4.0.0
+      '@foldkit/ui': '>=0.167.0'
+      effect: 4.0.0
+      foldkit: '>=0.167.0'
 
   '@foldkit/oxlint-plugin@0.15.3':
     resolution: {integrity: sha512-LprfdZcR4uIqzTqHhJWT9bjJiS1km4MsN9Yyqk8JcKAEHpAxwgneG3MvA7p5aPXVDpZE/zh5FCGzhRIz1MnscQ==}
@@ -2852,6 +2864,14 @@ snapshots:
       - supports-color
       - utf-8-validate
       - zod
+
+  '@foldkit/devtools@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(@foldkit/ui@0.167.0(effect@4.0.0)(foldkit@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0)))(effect@4.0.0)(foldkit@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))':
+    dependencies:
+      '@effect/platform-browser': 4.0.0(effect@4.0.0)
+      '@foldkit/ui': 0.167.0(effect@4.0.0)(foldkit@0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0))
+      clsx: 2.1.1
+      effect: 4.0.0
+      foldkit: 0.167.0(@effect/platform-browser@4.0.0(effect@4.0.0))(effect@4.0.0)
 
   '@foldkit/oxlint-plugin@0.15.3(effect@4.0.0)':
     dependencies:
