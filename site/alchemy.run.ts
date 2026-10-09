@@ -8,6 +8,8 @@ const SITE_ROOT = fileURLToPath(new URL('.', import.meta.url))
 
 /** The docs site, built and deployed through Alchemy’s Foldkit integration. */
 export const Docs = Cloudflare.Website.Foldkit('Docs', {
+  name: 'pleat-docs',
+  domain: 'pleat.manzanita.dev',
   rootDir: SITE_ROOT,
   memo: {
     include: [

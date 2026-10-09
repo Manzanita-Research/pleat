@@ -206,6 +206,10 @@ Alchemy’s local profile; nothing goes in the repository. Setup is only needed
 once per machine. The deploy command explicitly selects `prod`, matching the
 Deploy workflow.
 
+The stack names the Worker `pleat-docs` and serves it at
+[`pleat.manzanita.dev`](https://pleat.manzanita.dev). Alchemy manages the custom
+domain’s DNS record and TLS certificate in the existing `manzanita.dev` zone.
+
 For CI, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as repository
 secrets and run the Deploy workflow.
 
