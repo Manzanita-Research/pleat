@@ -14,7 +14,7 @@ Pleat is a styling library for Foldkit and Effect v4. Read `README.md` first, th
 - `packages/core`: the algebra. Depends only on `effect` (peer) and `csstype` (types).
 - `packages/foldkit`: the Foldkit adapter. `src/server.ts` is a separate entry so server code stays out of client bundles.
 - `site`: the docs site, a Foldkit SSG app styled only with Pleat. Snippets shown on the site live in `site/src/snippet` and are typechecked; import them with `?raw`.
-- `infra`: the Alchemy stack that deploys the site. It has its own lockfile and its own Effect version, because Foldkit pins the site's.
+- `infra`: the private workspace package containing the Alchemy stack that deploys the site. It shares the root lockfile and tooling, with its own Effect dependency matching Alchemy.
 - `test/browser`: a private workspace for the Chromium test that the compiled cascade matches `Style.resolve`.
 - `bench`: a private workspace for the render benchmark and its comparison dependencies. Update `bench/RESULTS.md` when the numbers move.
 
@@ -31,9 +31,9 @@ Pleat is a styling library for Foldkit and Effect v4. Read `README.md` first, th
 
 - Root devDependencies are shared workspace tooling only. Declare a dependency in the workspace that imports it.
 - Benchmark comparisons belong in `bench`; Tailwind belongs only in `test/browser` for interoperability tests. Do not add either to the libraries or site.
-- Keep `infra` separate: its Effect version follows Alchemy, while the rest follows Foldkit. Both workspaces pin the same pnpm release.
+- Keep one pnpm workspace and lockfile. Alchemy dependencies belong in `infra/package.json`; pnpm can resolve its Effect version separately from Foldkit’s.
 - Keep `repos/` out of workspace globs, formatting, linting, builds, and application imports.
 
 ## Commands
 
-`pnpm check` runs what CI runs: formatting, linting, typecheck, unit tests, build, the browser test, and the site build. The browser test needs Chromium: Playwright's (`pnpm chromium:install`) or `CHROMIUM_PATH`. CI also installs and typechecks `infra` separately.
+`pnpm check` runs what CI runs: formatting, linting, typecheck, unit tests, build, the browser test, and the site build. The browser test needs Chromium: Playwright's (`pnpm chromium:install`) or `CHROMIUM_PATH`. A root install covers infra, and recursive typechecking checks it too. `pnpm site:deploy` runs its Alchemy stack.

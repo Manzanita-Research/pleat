@@ -1,13 +1,8 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2024",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
+    "lib": ["ES2024"],
     "noEmit": true,
-    "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
-    "erasableSyntaxOnly": true,
     "types": ["node"]
   },
   "include": ["alchemy.run.ts"]

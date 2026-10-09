@@ -19,9 +19,7 @@ jobs:
           runtime: node@24
           install: false
           cache: true
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            infra/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
@@ -32,5 +30,3 @@ jobs:
         run: pnpm --dir test/browser exec playwright-core install --with-deps chromium
       - run: pnpm test:browser
       - run: pnpm site:build
-      - run: pnpm --dir infra install --frozen-lockfile
-      - run: pnpm --dir infra typecheck

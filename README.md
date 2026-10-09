@@ -65,21 +65,21 @@ From [`bench/RESULTS.md`](bench/RESULTS.md), on an AMD Ryzen 5 7640HS with Node 
 
 ## Development
 
-Use Node 22.18 or newer and the pnpm 12.10.1 release pinned in both root and
-`infra/package.json`. Install that version with `npm install --global pnpm@12.10.1`
-if needed.
+Use Node 22.18 or newer and the pnpm 12.10.1 release pinned in `package.json`.
+Install that version with `npm install --global pnpm@12.10.1` if needed.
 
 ```sh
 pnpm install
 pnpm format          # oxfmt, including displayed snippets
 pnpm lint            # oxlint across the repo, plus Foldkit rules for the site
-pnpm typecheck       # every package, the site, and the browser tests
+pnpm typecheck       # libraries, site, benchmark, browser tests, and infra
 pnpm test            # unit and property tests
 pnpm chromium:install # download Playwright's Chromium once
 pnpm test:browser    # the Chromium cascade test (set CHROMIUM_PATH if Playwright's isn't installed)
 pnpm bench           # the render benchmark
 pnpm site:dev        # the docs site with hot reload
 pnpm site:build      # the static site in site/dist/client
+pnpm site:deploy     # the Alchemy deployment, after configuring credentials
 pnpm check           # all of the above that CI runs
 ```
 
@@ -87,11 +87,11 @@ The root owns shared tooling: oxfmt, oxlint, TypeScript, Vite, and Vitest.
 Formatting and linting run in `pnpm check` and CI. The formatter preserves the
 narrower widths of displayed snippets and uses Foldkit’s import ordering.
 
-`bench` and `test/browser` are private workspaces with their own manifests and
+`bench` and `test/browser` are private packages with their own manifests and
 TypeScript configs, so comparison and browser-fixture packages stay with the code
-that uses them. `infra` remains a separate workspace
-with its own lockfile and Effect version; CI additionally runs
-`pnpm --dir infra install --frozen-lockfile` and `pnpm --dir infra typecheck`.
+that uses them. `infra` is another private package in the same workspace, so
+one root install and lockfile cover everything. Its Effect version follows Alchemy
+and is resolved separately from Foldkit’s version. Root typechecking includes infra.
 
 ### Agent setup
 
@@ -123,7 +123,7 @@ The skill symlinks follow the updated subtree automatically. `repos/` is exclude
 from workspace package discovery, formatting, and the editor file tree. Import
 framework code through the installed npm packages.
 
-Deploying the site needs Cloudflare credentials: locally, `pnpm --dir infra exec alchemy profile edit` once, then `pnpm --dir infra deploy`. In CI, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as repository secrets and run the Deploy workflow.
+Deploying the site needs Cloudflare credentials: locally, `pnpm --dir infra exec alchemy profile edit` once, then `pnpm site:deploy`. In CI, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as repository secrets and run the Deploy workflow.
 
 ## License
 

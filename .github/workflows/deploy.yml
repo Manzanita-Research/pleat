@@ -28,9 +28,7 @@ jobs:
           runtime: node@24
           install: false
           cache: true
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            infra/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
       - name: Check that Cloudflare credentials are set
         run: |
           if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
@@ -38,5 +36,4 @@ jobs:
             exit 1
           fi
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --dir infra install --frozen-lockfile
-      - run: pnpm --dir infra exec alchemy deploy --stage prod
+      - run: pnpm site:deploy --stage prod

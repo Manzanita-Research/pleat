@@ -19,7 +19,8 @@
     "format": "oxfmt --disable-nested-config",
     "format:check": "oxfmt --check --disable-nested-config",
     "lint": "oxlint --deny-warnings --disable-nested-config . && pnpm --dir site lint",
-    "chromium:install": "pnpm --dir test/browser exec playwright-core install chromium"
+    "chromium:install": "pnpm --dir test/browser exec playwright-core install chromium",
+    "site:deploy": "pnpm --dir infra run deploy"
   },
   "devDependencies": {
     "@types/node": "24.19.1",
