@@ -1,4 +1,4 @@
-import { Recipe, Sheet, Style, Var, When } from '@pleat/core'
+import { Recipe, Sheet, Style, Theme, Token, Var, When } from '@pleat/core'
 import { Effect } from 'effect'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { Server } from 'foldkit/experimental'
@@ -52,6 +52,32 @@ describe('css', () => {
   test('binds variables in one inline style', async () => {
     const { html } = await render({ isSelected: false, percent: 42 })
     expect(html).toContain(`class="${bar.className}" style="--progress: 42"`)
+  })
+
+  test('applies a theme to one element in the same inline style as other bindings', async () => {
+    const brand = Token.make(
+      { accent: Token.color, onAccent: Token.color },
+      { prefix: 'b-' },
+    )
+    const theme = Theme.make(brand, { accent: '#ff6600', onAccent: brand.accent })
+    const { html } = await Effect.runPromise(
+      Server.renderToString(
+        {
+          init: () => ({ model: {} }),
+          view: (_model: object, h: HtmlBuilder<never>): Document => ({
+            title: 'Pleat',
+            body: h.div(
+              [...css(bar, Var.bind(progress, 42), ...Theme.bindings(theme))],
+              [],
+            ),
+          }),
+        },
+        { isHydratable: false },
+      ),
+    )
+    expect(html).toContain(
+      `class="${bar.className}" style="--progress: 42; --b-accent: #ff6600; --b-on-accent: var(--b-accent)"`,
+    )
   })
 
   test('returns the same attributes for the same style without allocating', () => {
