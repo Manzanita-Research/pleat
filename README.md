@@ -219,22 +219,41 @@ The stack names the Worker `pleat-docs` and serves it at
 domain’s DNS record and TLS certificate in the existing `manzanita.dev` zone.
 
 The Deploy workflow runs the same stack from GitHub Actions. It needs
-`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as repository or organization
-secrets. With `CI=true`, Alchemy reads those two variables and never touches a
-profile. The workflow runs `alchemy provider check-env` first, so a missing secret
-fails in seconds with its name, then `pnpm --dir site run deploy:ci`, which is the
-deploy with `--yes`. The flag matters: Alchemy keeps its state in a Worker it
-deploys to the account, the Cloudflare State Store, and without a terminal it
-refuses to bootstrap or upgrade that Worker unless told yes.
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as Actions secrets. With
+`CI=true`, Alchemy reads those two variables and never touches a profile. The
+workflow runs `alchemy provider check-env` first, so a missing secret fails in
+seconds with its name, then `pnpm --dir site run deploy:ci`, which is the deploy
+with `--yes`. The flag matters: Alchemy keeps its state in a Worker it deploys to
+the account, the Cloudflare State Store, and without a terminal it refuses to
+bootstrap or upgrade that Worker unless told yes.
 
-The token has to be allowed to do what the local OAuth login can. On the
-account: Workers Scripts Write, Secrets Store Write, and Account Settings Read,
-which the state store needs. On the `manzanita.dev` zone: Workers Routes Write,
-DNS Write, and SSL and Certificates Write, which the custom domain needs. A 403
-in the deploy log means the token is missing one of these. Alchemy's
-[CI guide](https://alchemy.run/environments/ci/) shows minting the token from a
-stack with `Cloudflare.ApiToken.AccountApiToken` and writing it to the repository
-with `GitHub.Secret`.
+#### CI credentials
+
+[`site/github.run.ts`](site/github.run.ts) is a second stack that mints the
+token and writes both secrets, following Alchemy's
+[CI guide](https://alchemy.run/environments/ci/). The token is scoped to what the
+deploy does: on the account, Workers Scripts Write, Secrets Store Write, Account
+Settings Read, and Workers Tail Read, for the docs Worker and the state store; on
+the `manzanita.dev` zone only, Zone Read, Workers Routes Write, DNS Write, and SSL
+and Certificates Write, for the custom domain.
+
+Minting a token needs more than the everyday profile has, and Alchemy's Cloudflare
+OAuth login has no scope for it, so the stack deploys from a separate `admin`
+profile backed by the Global API Key:
+
+```sh
+pnpm --dir site exec alchemy profile create admin
+pnpm --dir site exec alchemy profile edit --profile admin --add Cloudflare
+GITHUB_TOKEN="$(gh auth token)" pnpm site:secrets
+```
+
+In the second command choose "API Token or API Key" and paste the Global API Key
+with the account email. The third command writes `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` as repository secrets through the `gh` login, which needs
+the `repo` scope and admin rights on the repository. Repository secrets take
+precedence over organization secrets of the same name. Run `pnpm site:secrets`
+again to rotate the token or change its permissions, then run the Deploy
+workflow.
 
 The workspace applies a one-line patch to Alchemy 2.0.0-beta.81’s published
 profile dashboard, restoring the JSX runtime specified by its source. React is
