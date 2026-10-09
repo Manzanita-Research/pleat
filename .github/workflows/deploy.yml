@@ -1,6 +1,6 @@
 name: Deploy
 
-# Deploys the docs site to Cloudflare with the Alchemy stack in infra/.
+# Deploys the docs site to Cloudflare with site/alchemy.run.ts.
 # Needs the repository secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.
 on:
   workflow_dispatch:
@@ -36,4 +36,4 @@ jobs:
             exit 1
           fi
       - run: pnpm install --frozen-lockfile
-      - run: pnpm site:deploy --stage prod
+      - run: pnpm site:deploy
