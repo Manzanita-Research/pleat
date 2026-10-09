@@ -140,6 +140,19 @@ describe('Theme', () => {
   })
 })
 
+describe('Theme.bindings', () => {
+  test('binds every declaration, in order, for one element', () => {
+    const night = Theme.extend(light, tokens, {
+      color: { onAccent: tokens.color.canvas },
+    })
+    expect(Theme.bindings(night)).toEqual(
+      night.declarations.map(([name, value]) => ({ _tag: 'Binding', name, value })),
+    )
+    expect(Theme.bindings(night).every(Var.isBinding)).toBe(true)
+    expect(Theme.bindings(Theme.empty)).toEqual([])
+  })
+})
+
 describe('aliases', () => {
   const values = {
     color: { canvas: '#ffffff', ink: '#111111', onAccent: 'white' },

@@ -9,7 +9,7 @@ import {
   type Token,
   type Tokens,
 } from './token.ts'
-import { isRef, type Var } from './var.ts'
+import { type Binding, isRef, type Var } from './var.ts'
 
 // TYPES
 
@@ -279,5 +279,18 @@ export const decode = <T extends object>(
 /** The rule that applies `theme` at `selector`. */
 export const css = (theme: Theme, selector: string = ':root'): string =>
   `${selector}{${theme.declarations.map(([name, value]) => `${name}:${value}`).join(';')}}`
+
+/** The theme's declarations as {@link Var.Binding}s, to apply it to one element through an
+ *  inline style, next to the element's other bindings. With `@pleat/foldkit`:
+ *
+ *  ```ts
+ *  h.div([...css(card, Var.bind(progress, model.percent), ...Theme.bindings(theme))], children)
+ *  ```
+ *
+ *  Its values were checked when the theme was made, so a theme decoded from outside the
+ *  program is safe to bind. Like a theme applied at a selector, its aliases resolve on this
+ *  element, and descendants inherit the results. */
+export const bindings = (theme: Theme): ReadonlyArray<Binding> =>
+  theme.declarations.map(([name, value]) => ({ _tag: 'Binding', name, value }))
 
 export type { Kind, Spec, Tokens }
