@@ -8,6 +8,7 @@
     "preview": "vite preview --outDir dist/client",
     "setup": "alchemy profile edit --add Cloudflare",
     "deploy": "alchemy deploy --stage prod",
+    "deploy:ci": "alchemy deploy --stage prod --yes",
     "destroy": "alchemy destroy",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --deny-warnings src"
