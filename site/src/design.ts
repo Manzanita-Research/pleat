@@ -1,7 +1,7 @@
-import geistMonoUrl from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url'
-import geistUrl from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url'
-import instrumentItalicUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url'
-import instrumentUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url'
+import frauncesItalicUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-italic.woff2?url'
+import frauncesUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2?url'
+import plexMonoUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url'
+import plexMonoMediumUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url'
 import {
   Color,
   type Declarations,
@@ -27,8 +27,8 @@ export const tokens = Token.make({
     onAccent: Token.color,
     brand: Token.color,
     accentSoft: Token.color,
-    indigo: Token.color,
-    green: Token.color,
+    teal: Token.color,
+    madder: Token.color,
   },
   font: { serif: Token.fontFamily, sans: Token.fontFamily, mono: Token.fontFamily },
   space: {
@@ -56,54 +56,57 @@ export const tokens = Token.make({
   shadow: { raised: Token.value, overlay: Token.value },
 })
 
-const { color, font, space, text, radius, shadow } = tokens
+const { color, font, space, text, radius } = tokens
 
 // FONTS
 
 /** The fonts this site ships, preloaded by the server entry. */
-export const FONT_URLS: ReadonlyArray<string> = [geistUrl, instrumentUrl]
+export const FONT_URLS: ReadonlyArray<string> = [frauncesUrl, plexMonoUrl]
 
 // NOTE: Global.fontFace takes style Declarations, which have no `src` or
 // `fontDisplay`, so the descriptors are cast. Reported as API friction.
 const fontFace = (descriptors: Readonly<Record<string, string>>): void =>
   Global.fontFace(descriptors as Declarations)
 
+// NOTE: one serif carries the whole site. Fraunces has an optical size axis,
+// so the browser picks the text cut for prose and the display cut for titles
+// from the same file.
 fontFace({
-  fontFamily: 'Geist',
+  fontFamily: 'Fraunces',
   fontStyle: 'normal',
   fontWeight: '100 900',
   fontDisplay: 'swap',
-  src: `url(${geistUrl}) format("woff2")`,
+  src: `url(${frauncesUrl}) format("woff2")`,
 })
 fontFace({
-  fontFamily: 'Geist Mono',
-  fontStyle: 'normal',
-  fontWeight: '100 900',
-  fontDisplay: 'swap',
-  src: `url(${geistMonoUrl}) format("woff2")`,
-})
-fontFace({
-  fontFamily: 'Instrument Serif',
-  fontStyle: 'normal',
-  fontWeight: '400',
-  fontDisplay: 'swap',
-  src: `url(${instrumentUrl}) format("woff2")`,
-})
-fontFace({
-  fontFamily: 'Instrument Serif',
+  fontFamily: 'Fraunces',
   fontStyle: 'italic',
+  fontWeight: '100 900',
+  fontDisplay: 'swap',
+  src: `url(${frauncesItalicUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'IBM Plex Mono',
+  fontStyle: 'normal',
   fontWeight: '400',
   fontDisplay: 'swap',
-  src: `url(${instrumentItalicUrl}) format("woff2")`,
+  src: `url(${plexMonoUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'IBM Plex Mono',
+  fontStyle: 'normal',
+  fontWeight: '500',
+  fontDisplay: 'swap',
+  src: `url(${plexMonoMediumUrl}) format("woff2")`,
 })
 
 // THEMES
 
 const shared = {
   font: {
-    serif: '"Instrument Serif", "Iowan Old Style", Georgia, serif',
-    sans: 'Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
-    mono: '"Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+    serif: 'Fraunces, "Iowan Old Style", "Palatino Linotype", Georgia, serif',
+    sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+    mono: '"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   },
   space: {
     1: '0.25rem',
@@ -118,67 +121,67 @@ const shared = {
   },
   text: {
     xs: '0.8125rem',
-    sm: '0.875rem',
-    md: '1rem',
-    lg: '1.125rem',
-    xl: '1.3125rem',
+    sm: '0.9375rem',
+    md: '1.0625rem',
+    lg: '1.25rem',
+    xl: '1.5rem',
     xxl: '2.25rem',
-    display: 'clamp(2.75rem, 6vw, 4rem)',
-    hero: 'clamp(3.25rem, 9vw, 7rem)',
+    display: 'clamp(2.75rem, 5.5vw, 4rem)',
+    hero: 'clamp(3.25rem, 8.6vw, 7.75rem)',
   },
-  radius: { sm: '5px', md: '8px', lg: '12px' },
+  radius: { sm: '3px', md: '5px', lg: '8px' },
 } as const
 
-// NOTE: `brand` only fills the pleats, never text. Every text pair here clears
-// APCA Lc 75 for body text (ink) and Lc 60 for secondary text (muted, accent),
-// and `line` clears Lc 15 for dividers, on canvas, surface, and sunken.
-export const linen = Theme.make(tokens, {
+// NOTE: paper, ink, and one dye. `brand` is the dye and only ever fills the
+// pleat; `accent` is the same hue at a text-safe lightness. Every text pair
+// clears APCA Lc 75 for body text (ink) and Lc 60 for secondary text (muted,
+// accent) on canvas, surface, and sunken.
+export const paper = Theme.make(tokens, {
   ...shared,
   color: {
-    canvas: 'oklch(98.8% 0.003 90)',
-    surface: 'oklch(100% 0 0)',
-    sunken: 'oklch(96.6% 0.005 90)',
-    line: 'oklch(88.5% 0.007 90)',
-    ink: 'oklch(20.5% 0.015 265)',
-    muted: 'oklch(46% 0.014 265)',
-    accent: 'oklch(52% 0.19 33)',
-    onAccent: 'oklch(99% 0.005 90)',
-    brand: 'oklch(52% 0.19 33)',
-    accentSoft: 'oklch(95.5% 0.028 38)',
-    indigo: 'oklch(46% 0.17 268)',
-    green: 'oklch(47% 0.12 155)',
+    canvas: 'oklch(98.3% 0.005 80)',
+    surface: 'oklch(99.4% 0.003 80)',
+    sunken: 'oklch(95.6% 0.008 80)',
+    line: 'oklch(86% 0.009 75)',
+    ink: 'oklch(21% 0.012 60)',
+    muted: 'oklch(45% 0.016 60)',
+    accent: 'oklch(45% 0.21 266)',
+    onAccent: 'oklch(98.5% 0.008 80)',
+    brand: 'oklch(50% 0.235 265)',
+    accentSoft: 'oklch(93.5% 0.035 265)',
+    teal: 'oklch(46% 0.1 195)',
+    madder: 'oklch(49% 0.17 28)',
   },
   shadow: {
-    raised:
-      '0 1px 2px oklch(20% 0.02 265 / 0.06), 0 8px 24px -16px oklch(20% 0.02 265 / 0.18)',
-    overlay: '0 24px 48px -24px oklch(20% 0.02 265 / 0.3)',
+    raised: '0 1px 2px oklch(20% 0.02 60 / 0.06)',
+    overlay: '0 24px 48px -24px oklch(20% 0.02 60 / 0.3)',
   },
 })
 
-export const indigoNight = Theme.extend(linen, tokens, {
+export const night = Theme.extend(paper, tokens, {
   color: {
-    canvas: 'oklch(15.5% 0.014 268)',
-    surface: 'oklch(19% 0.016 268)',
-    sunken: 'oklch(12.5% 0.012 268)',
-    line: 'oklch(46% 0.016 268)',
-    ink: 'oklch(95% 0.006 90)',
-    muted: 'oklch(82% 0.012 268)',
-    accent: 'oklch(81% 0.13 45)',
-    onAccent: 'oklch(16% 0.03 35)',
-    brand: 'oklch(60% 0.19 36)',
-    accentSoft: 'oklch(26% 0.06 38)',
-    indigo: 'oklch(82% 0.1 275)',
-    green: 'oklch(84% 0.13 155)',
+    canvas: 'oklch(16% 0.007 70)',
+    surface: 'oklch(19.5% 0.008 70)',
+    sunken: 'oklch(13% 0.006 70)',
+    line: 'oklch(33% 0.012 70)',
+    ink: 'oklch(94% 0.008 80)',
+    muted: 'oklch(74% 0.012 80)',
+    accent: 'oklch(78% 0.13 262)',
+    onAccent: 'oklch(16% 0.03 265)',
+    brand: 'oklch(57% 0.225 265)',
+    accentSoft: 'oklch(27% 0.07 265)',
+    teal: 'oklch(80% 0.09 195)',
+    madder: 'oklch(78% 0.13 35)',
   },
   shadow: {
-    raised: '0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 12px 32px -18px oklch(0% 0 0 / 0.8)',
+    raised: '0 1px 0 oklch(100% 0 0 / 0.04) inset',
     overlay: '0 24px 48px -16px oklch(0% 0 0 / 0.7)',
   },
 })
 
-Global.theme(linen)
-Global.theme(indigoNight, { selector: ':root:has([data-theme="Dark"])' })
-Global.theme(indigoNight, {
+Global.theme(paper)
+Global.theme(night, { selector: ':root:has([data-theme="Dark"])' })
+Global.theme(night, {
   selector: ':root:has([data-theme="System"])',
   when: When.dark,
 })
@@ -197,55 +200,19 @@ Global.rule('body', {
   margin: 0,
   backgroundColor: color.canvas,
   color: color.ink,
-  fontFamily: font.sans,
+  fontFamily: font.serif,
   fontSize: text.md,
-  lineHeight: 1.65,
+  lineHeight: 1.6,
+  fontOpticalSizing: 'auto',
   WebkitFontSmoothing: 'antialiased',
   MozOsxFontSmoothing: 'grayscale',
 })
-Global.rule('::selection', { backgroundColor: Color.alpha(color.accent, 0.22) })
+Global.rule('::selection', {
+  backgroundColor: Color.alpha(color.accent, 0.22),
+})
 Global.rule('a', { color: 'inherit' })
 Global.rule('h1, h2, h3, h4, p, pre, figure, ul, ol, dl, dd', { margin: 0 })
-
-// PLEATS
-
-// NOTE: each pleat is a lit face, a crease, and a face turned away from the
-// light, drawn as one repeating gradient so it follows the token color in
-// every theme.
-const pleated = (base: string, width: number) => {
-  const lit = Color.mix(base, 'white', 24)
-  const face = Color.mix(base, 'white', 6)
-  const crease = Color.mix(base, 'black', 45)
-  const turned = Color.mix(base, 'black', 18)
-  const half = width / 2
-  return [
-    `repeating-linear-gradient(90deg, ${lit} 0px, ${face} ${half - 1}px, ${crease} ${half}px,`,
-    `${turned} ${half + 1}px, ${face} ${width}px)`,
-  ].join(' ')
-}
-
-export const pleatBand = Style.make({
-  height: 'clamp(4.5rem, 10vw, 8rem)',
-  borderRadius: radius.lg,
-  backgroundImage: pleated(String(color.brand), 44),
-  backgroundSize: '100% 100%',
-  boxShadow: shadow.raised,
-}).pipe(
-  Style.when(When.motionSafe, {
-    transition: 'background-size 900ms cubic-bezier(0.2, 0.7, 0.2, 1)',
-  }),
-  Style.when(When.all(When.canHover, When.hover), { backgroundSize: '58% 100%' }),
-)
-
-export const pleatMark = Style.make({
-  display: 'inline-block',
-  width: 20,
-  height: 20,
-  borderRadius: 5,
-  backgroundImage: pleated(String(color.brand), 6.5),
-  boxShadow: `0 0 0 1px ${Color.alpha(color.ink, 0.08)}`,
-  flexShrink: 0,
-})
+Global.rule('button, input, textarea, select', { font: 'inherit' })
 
 // LAYOUT
 
@@ -257,13 +224,16 @@ export const page = Style.make({
 
 export const container = Style.make({
   width: '100%',
-  maxWidth: '88rem',
+  maxWidth: '84rem',
   marginInline: 'auto',
   paddingInline: space[5],
-}).pipe(Style.when(When.minWidth('48rem'), { paddingInline: space[6] }))
+}).pipe(
+  Style.when(When.minWidth('48rem'), { paddingInline: space[7] }),
+  Style.when(When.minWidth('80rem'), { paddingInline: space[8] }),
+)
 
 export const prose = Style.make({
-  maxWidth: '46rem',
+  maxWidth: '42rem',
   display: 'flex',
   flexDirection: 'column',
   gap: space[4],
@@ -292,59 +262,62 @@ export const row = memoizeByToken(gap =>
 
 // TYPE
 
+/** A small tracked-caps label, for a figure's parts or a navigation group. */
 export const eyebrow = Style.make({
   display: 'inline-flex',
   alignItems: 'center',
   gap: space[2],
-  fontFamily: font.mono,
-  fontSize: text.xs,
+  fontFamily: font.serif,
+  fontSize: '0.75rem',
   fontWeight: 500,
-  letterSpacing: '0.06em',
+  letterSpacing: '0.14em',
   textTransform: 'uppercase',
-  color: color.accent,
+  color: color.muted,
 })
 
 export const display = Style.make({
   fontFamily: font.serif,
   fontSize: text.display,
   fontWeight: 400,
-  lineHeight: 1.02,
+  lineHeight: 1.0,
   letterSpacing: '-0.015em',
   textWrap: 'balance',
 })
 
 export const hero = Style.merge(
   display,
-  Style.make({ fontSize: text.hero, lineHeight: 0.94, letterSpacing: '-0.025em' }),
+  Style.make({
+    fontSize: text.hero,
+    fontWeight: 380,
+    lineHeight: 0.94,
+    letterSpacing: '-0.025em',
+  }),
 )
-
-/** Italic serif for a word or two of emphasis inside a heading. */
-export const flourish = Style.make({ fontStyle: 'italic', color: color.accent })
 
 export const heading = Style.make({
   fontFamily: font.serif,
   fontSize: text.xxl,
   fontWeight: 400,
-  lineHeight: 1.08,
-  letterSpacing: '-0.01em',
+  lineHeight: 1.1,
+  letterSpacing: '-0.012em',
   textWrap: 'balance',
 })
 
 export const subheading = Style.make({
-  fontFamily: font.sans,
+  fontFamily: font.serif,
   fontSize: text.lg,
   fontWeight: 600,
-  lineHeight: 1.3,
-  letterSpacing: '-0.01em',
+  lineHeight: 1.25,
+  letterSpacing: '-0.005em',
 })
 
 export const lede = Style.make({
   fontSize: text.lg,
-  lineHeight: 1.55,
+  lineHeight: 1.5,
   color: color.muted,
-  maxWidth: '42rem',
+  maxWidth: '40rem',
   textWrap: 'pretty',
-}).pipe(Style.when(When.minWidth('48rem'), { fontSize: text.xl, lineHeight: 1.5 }))
+}).pipe(Style.when(When.minWidth('48rem'), { fontSize: text.xl, lineHeight: 1.45 }))
 
 export const body = Style.make({ textWrap: 'pretty' })
 
@@ -353,21 +326,20 @@ export const muted = Style.make({ color: color.muted })
 export const small = Style.make({ fontSize: text.sm })
 
 export const link = Style.make({
-  color: color.ink,
-  fontWeight: 500,
+  color: color.accent,
   textDecorationLine: 'underline',
-  textDecorationColor: color.accent,
+  textDecorationColor: Color.alpha(color.accent, 0.4),
   textDecorationThickness: '1px',
-  textUnderlineOffset: '0.22em',
-}).pipe(Style.when(When.hover, { textDecorationThickness: '2px' }))
+  textUnderlineOffset: '0.2em',
+}).pipe(Style.when(When.hover, { textDecorationColor: color.accent }))
 
 export const inlineCode = Style.make({
   fontFamily: font.mono,
-  fontSize: '0.875em',
-  backgroundColor: Color.alpha(color.ink, 0.07),
+  fontSize: '0.84em',
+  backgroundColor: Color.alpha(color.ink, 0.065),
   borderRadius: radius.sm,
-  paddingBlock: '0.05em',
-  paddingInline: '0.3em',
+  paddingBlock: '0.08em',
+  paddingInline: '0.35em',
   overflowWrap: 'anywhere',
 })
 
@@ -385,12 +357,12 @@ export const listItem = Style.make({ paddingInlineStart: space[1] }).pipe(
 
 // SURFACES
 
+/** A quiet bordered surface. The site prefers hairlines to boxes; use sparingly. */
 export const card = Style.make({
   backgroundColor: color.surface,
   border: `1px solid ${color.line}`,
   borderRadius: radius.lg,
   padding: space[5],
-  boxShadow: shadow.raised,
 })
 
 export const rule = Style.make({
@@ -421,10 +393,9 @@ export const button = Recipe.make({
     gap: space[2],
     border: '1px solid transparent',
     borderRadius: radius.md,
-    fontFamily: font.sans,
-    fontWeight: 600,
+    fontFamily: font.serif,
+    fontWeight: 500,
     lineHeight: 1,
-    letterSpacing: '-0.005em',
     textDecoration: 'none',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
@@ -432,34 +403,31 @@ export const button = Recipe.make({
     Style.merge(focusRing),
     Style.when(When.motionSafe, {
       transition:
-        'background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease',
+        'background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease',
     }),
     Style.when(When.active, { transform: 'translateY(1px)' }),
     Style.when(When.disabled, { opacity: 0.5, cursor: 'not-allowed', transform: 'none' }),
   ),
   variants: {
     tone: {
-      Primary: Style.make({
-        backgroundColor: color.accent,
-        color: color.onAccent,
-        boxShadow: `0 1px 0 ${Color.alpha('white', 0.2)} inset, 0 1px 2px ${Color.alpha(color.ink, 0.2)}`,
-      }).pipe(
-        Style.when(When.hover, { backgroundColor: Color.darken(color.accent, 0.05) }),
+      Primary: Style.make({ backgroundColor: color.ink, color: color.canvas }).pipe(
+        Style.when(When.hover, {
+          backgroundColor: Color.mix(color.ink, color.accent, 30),
+        }),
       ),
       Neutral: Style.make({
-        backgroundColor: color.surface,
+        backgroundColor: 'transparent',
         color: color.ink,
         borderColor: color.line,
-        boxShadow: `0 1px 2px ${Color.alpha(color.ink, 0.06)}`,
-      }).pipe(Style.when(When.hover, { borderColor: color.muted })),
+      }).pipe(Style.when(When.hover, { borderColor: color.ink })),
       Quiet: Style.make({ backgroundColor: 'transparent', color: color.ink }).pipe(
         Style.when(When.hover, { backgroundColor: tint }),
       ),
     },
     size: {
-      Small: { paddingBlock: space[2], paddingInline: space[3], fontSize: text.sm },
-      Medium: { paddingBlock: '0.6875rem', paddingInline: space[4], fontSize: text.md },
-      Large: { paddingBlock: '0.875rem', paddingInline: space[5], fontSize: text.md },
+      Small: { paddingBlock: '0.4375rem', paddingInline: space[3], fontSize: text.sm },
+      Medium: { paddingBlock: '0.6875rem', paddingInline: space[4], fontSize: '1rem' },
+      Large: { paddingBlock: '0.9375rem', paddingInline: space[5], fontSize: text.md },
     },
     isPending: {
       true: Style.make({ cursor: 'progress', opacity: 0.7 }),
@@ -476,11 +444,10 @@ export const button = Recipe.make({
 
 export const segment = Style.make({
   display: 'inline-flex',
-  padding: 3,
+  padding: 2,
   gap: 2,
   borderRadius: radius.md,
-  backgroundColor: color.sunken,
-  border: `1px solid ${color.line}`,
+  backgroundColor: Color.alpha(color.ink, 0.05),
 })
 
 export const segmentButton = Style.make({
@@ -490,21 +457,23 @@ export const segmentButton = Style.make({
   gap: space[1],
   border: 'none',
   borderRadius: radius.sm,
-  paddingBlock: space[1],
-  paddingInline: space[3],
-  fontFamily: font.sans,
+  paddingBlock: '0.3125rem',
+  paddingInline: '0.625rem',
+  fontFamily: font.serif,
   fontSize: text.sm,
   fontWeight: 500,
-  lineHeight: 1.4,
+  lineHeight: 1.3,
   color: color.muted,
   backgroundColor: 'transparent',
   cursor: 'pointer',
 }).pipe(
   Style.merge(focusRing),
+  Style.when(When.motionSafe, {
+    transition: 'background-color 140ms ease, color 140ms ease',
+  }),
   Style.when(When.hover, { color: color.ink }),
   Style.when(When.aria('pressed', 'true'), {
-    backgroundColor: color.surface,
-    color: color.ink,
-    boxShadow: `0 1px 2px ${Color.alpha(color.ink, 0.14)}, 0 0 0 1px ${Color.alpha(color.ink, 0.04)}`,
+    backgroundColor: color.ink,
+    color: color.canvas,
   }),
 )

@@ -19,7 +19,12 @@ const { color, font, radius, space, text } = Design.tokens
 
 const workbench = Style.merge(
   Design.card,
-  Style.make({ display: 'grid', gap: space[5], padding: space[5] }),
+  Style.make({
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr)',
+    gap: space[5],
+    padding: space[5],
+  }),
 ).pipe(
   Style.when(When.minWidth('60rem'), {
     gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',

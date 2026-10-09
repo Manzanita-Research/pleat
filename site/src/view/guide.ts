@@ -14,7 +14,7 @@ import varSource from '../snippet/var.ts?raw'
 import viewSource from '../snippet/view.ts?raw'
 import { bullets, onThisPage, paragraph, rich, section } from './prose.ts'
 
-const { color, space } = Design.tokens
+const { space } = Design.tokens
 
 const article = Style.make({
   display: 'flex',
@@ -25,11 +25,7 @@ const article = Style.make({
 
 const intro = Style.merge(
   Design.prose,
-  Style.make({
-    gap: space[4],
-    paddingBlockEnd: space[7],
-    borderBottom: `1px solid ${color.line}`,
-  }),
+  Style.make({ gap: space[4], paddingBlockEnd: space[6] }),
 )
 
 export const pageIntro = <Message>(

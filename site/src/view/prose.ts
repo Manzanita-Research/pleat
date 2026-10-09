@@ -5,6 +5,8 @@ import { css } from '@pleat/foldkit'
 
 import * as Design from '../design.ts'
 
+const { color, space, text, radius } = Design.tokens
+
 const INLINE = /(`[^`]+`|\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*)/g
 
 /** Text with `code`, [links](/path), and **bold**. */
@@ -42,18 +44,34 @@ export const bullets = <Message>(
     items.map(item => h.li([...css(Design.listItem)], rich(h, item))),
   )
 
-const sectionStyle = Style.merge(Design.prose, Style.make({ scrollMarginTop: '6rem' }))
+// NOTE: sections are separated by hairlines rather than boxes, and the
+// heading sits a little closer to its own text than to the rule above it.
+const sectionStyle = Style.merge(
+  Design.prose,
+  Style.make({
+    scrollMarginTop: '6rem',
+    paddingBlockStart: space[6],
+    borderTop: `1px solid ${color.line}`,
+  }),
+)
+
+const sectionHeading = Style.merge(
+  Design.heading,
+  Style.make({ marginBlockEnd: space[1] }),
+)
 
 const anchor = Style.make({
   color: 'inherit',
   textDecoration: 'none',
-  borderRadius: Design.tokens.radius.sm,
+  borderRadius: radius.sm,
 }).pipe(
   Style.merge(Design.focusRing),
   Style.when(When.after, {
-    content: '"#"',
-    marginInlineStart: '0.3em',
-    color: Design.tokens.color.accent,
+    content: '"§"',
+    marginInlineStart: '0.35em',
+    fontSize: '0.6em',
+    verticalAlign: '0.25em',
+    color: color.accent,
     opacity: 0,
   }),
   Style.when(When.all(When.hover, When.after), { opacity: 1 }),
@@ -69,7 +87,7 @@ export const section = <Message>(
   h.section(
     [h.Id(id), ...css(sectionStyle)],
     [
-      h.h2([...css(Design.heading)], [h.a([h.Href(`#${id}`), ...css(anchor)], [title])]),
+      h.h2([...css(sectionHeading)], [h.a([h.Href(`#${id}`), ...css(anchor)], [title])]),
       ...children,
     ],
   )
@@ -80,7 +98,7 @@ export const subsection = <Message>(
   children: ReadonlyArray<Html>,
 ): Html =>
   h.div(
-    [...css(Design.stack(Design.tokens.space[3]))],
+    [...css(Design.stack(space[3]))],
     [h.h3([...css(Design.subheading)], [title]), ...children],
   )
 
@@ -90,24 +108,15 @@ const rail = Style.make({ display: 'none' }).pipe(
   Style.when(When.minWidth('86rem'), {
     display: 'flex',
     flexDirection: 'column',
-    gap: Design.tokens.space[3],
+    gap: space[3],
     position: 'fixed',
     top: '8.25rem',
-    insetInlineEnd: 'max(2rem, calc(50% - 42rem))',
+    insetInlineEnd: 'max(2rem, calc(50% - 40rem))',
     width: RAIL_WIDTH,
     maxHeight: 'calc(100vh - 10rem)',
     overflowY: 'auto',
   }),
 )
-
-const railTitle = Style.make({
-  fontFamily: Design.tokens.font.mono,
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: Design.tokens.color.muted,
-})
 
 const railList = Style.make({
   listStyle: 'none',
@@ -115,24 +124,24 @@ const railList = Style.make({
   padding: 0,
   display: 'flex',
   flexDirection: 'column',
-  borderInlineStart: `1px solid ${Design.tokens.color.line}`,
+  borderInlineStart: `1px solid ${color.line}`,
 })
 
 const railLink = Style.make({
   display: 'block',
   paddingBlock: '0.3125rem',
-  paddingInlineStart: Design.tokens.space[3],
+  paddingInlineStart: space[3],
   marginInlineStart: -1,
   borderInlineStart: '1px solid transparent',
-  fontSize: Design.tokens.text.sm,
+  fontSize: text.sm,
   lineHeight: 1.4,
-  color: Design.tokens.color.muted,
+  color: color.muted,
   textDecoration: 'none',
 }).pipe(
   Style.merge(Design.focusRing),
   Style.when(When.hover, {
-    color: Design.tokens.color.ink,
-    borderInlineStartColor: Design.tokens.color.accent,
+    color: color.ink,
+    borderInlineStartColor: color.accent,
   }),
 )
 
@@ -145,7 +154,7 @@ export const onThisPage = <Message>(
   h.nav(
     [h.AriaLabel('On this page'), ...css(rail)],
     [
-      h.span([...css(railTitle)], ['On this page']),
+      h.span([...css(Design.eyebrow)], ['On this page']),
       h.ul(
         [...css(railList)],
         entries.map(([id, title]) =>

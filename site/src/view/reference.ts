@@ -275,7 +275,7 @@ const signature = Style.make({
   fontFamily: font.mono,
   fontSize: '0.8125rem',
   lineHeight: 1.6,
-  color: color.indigo,
+  color: color.teal,
   overflowWrap: 'anywhere',
 })
 

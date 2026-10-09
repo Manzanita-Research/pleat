@@ -54,7 +54,11 @@ const caption = Style.make({
   color: color.muted,
 })
 
-const stage = Style.make({ display: 'grid', gap: space[4] }).pipe(
+const stage = Style.make({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  gap: space[4],
+}).pipe(
   Style.when(When.minWidth('56rem'), {
     gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
   }),
@@ -79,7 +83,11 @@ const sample = Style.make({
   gap: 8,
 })
 
-const codePair = Style.make({ display: 'grid', gap: space[4] }).pipe(
+const codePair = Style.make({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  gap: space[4],
+}).pipe(
   Style.when(When.minWidth('64rem'), {
     gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
   }),

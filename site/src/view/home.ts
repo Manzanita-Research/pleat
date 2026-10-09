@@ -1,6 +1,6 @@
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
-import { Color, Recipe, Style, When } from '@pleat/core'
+import { Recipe, Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
 
 import { codeBlock } from '../code.ts'
@@ -9,6 +9,7 @@ import { Message, type Model, type Size, type Tone } from '../message.ts'
 import { algebraRouter, generativeRouter, guideRouter } from '../route.ts'
 import quickstartSource from '../snippet/quickstart.ts?raw'
 import transformsSource from '../snippet/transforms.ts?raw'
+import { FACE_COUNT, pleatView } from './pleat.ts'
 import { paragraph, rich } from './prose.ts'
 
 const { color, font, radius, space, text } = Design.tokens
@@ -22,52 +23,62 @@ const section = Style.merge(
   Style.make({ paddingBlock: space[8] }),
 ).pipe(Style.when(wide, { paddingBlock: space[9] }))
 
-const heroSection = Style.merge(
+const sectionTitle = Style.merge(
+  Design.heading,
+  Style.make({ maxWidth: '26ch', marginBlockEnd: space[6] }),
+)
+
+// HERO
+
+const heroTitle = Style.merge(
+  Design.container,
+  Style.make({ paddingBlockStart: space[8], paddingBlockEnd: space[6] }),
+).pipe(Style.when(wide, { paddingBlockStart: space[9], paddingBlockEnd: space[7] }))
+
+const title = Style.merge(Design.hero, Style.make({ maxWidth: '14ch' }))
+
+const bandCaption = Style.merge(
   Design.container,
   Style.make({
-    display: 'grid',
-    gap: space[7],
-    alignItems: 'center',
-    paddingBlockStart: space[8],
-    paddingBlockEnd: space[7],
-  }),
-).pipe(
-  Style.when(wide, {
-    gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 1fr)',
-    gap: space[8],
-    paddingBlockStart: space[8],
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: space[4],
+    paddingBlockStart: space[3],
+    fontSize: text.xs,
+    fontStyle: 'italic',
+    color: color.muted,
   }),
 )
 
-const heroCopy = Style.make({
+const whenHoverable = Style.make({ display: 'none' }).pipe(
+  Style.when(When.canHover, { display: 'inline' }),
+)
+
+const dek = Style.merge(
+  Design.container,
+  Style.make({
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr)',
+    gap: space[6],
+    alignItems: 'start',
+    paddingBlockStart: space[7],
+    paddingBlockEnd: space[8],
+  }),
+).pipe(
+  Style.when(wide, {
+    gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
+    gap: space[8],
+    paddingBlockStart: space[8],
+    paddingBlockEnd: space[9],
+  }),
+)
+
+const actions = Style.make({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: space[5],
-})
-
-const pill = Style.make({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: space[2],
-  paddingBlock: space[1],
-  paddingInlineStart: space[2],
-  paddingInlineEnd: space[3],
-  borderRadius: 999,
-  border: `1px solid ${color.line}`,
-  backgroundColor: color.surface,
-  fontSize: text.xs,
-  fontWeight: 500,
-  color: color.muted,
-})
-
-const pillDot = Style.make({
-  width: 7,
-  height: 7,
-  borderRadius: 999,
-  backgroundColor: color.green,
-  boxShadow: `0 0 0 3px ${Color.alpha(color.green, 0.18)}`,
-})
+}).pipe(Style.when(wide, { paddingBlockStart: space[2] }))
 
 const install = Style.make({
   display: 'inline-flex',
@@ -75,23 +86,32 @@ const install = Style.make({
   gap: space[3],
   maxWidth: '100%',
   overflowX: 'auto',
-  paddingBlock: space[2],
-  paddingInline: space[4],
-  borderRadius: radius.md,
-  backgroundColor: color.sunken,
-  border: `1px solid ${color.line}`,
+  paddingBlockStart: space[4],
+  borderTop: `1px solid ${color.line}`,
   fontFamily: font.mono,
-  fontSize: text.sm,
+  fontSize: text.xs,
   whiteSpace: 'nowrap',
-}).pipe(
-  Style.when(When.before, {
-    content: '"$"',
-    color: color.muted,
-  }),
-)
+}).pipe(Style.when(When.before, { content: '"$"', color: color.muted }))
 
-// NOTE: the hero specimen compiles a real style and shows what Pleat made of
-// it, so the page can't drift from the library.
+// MANIFESTO
+
+const manifesto = Style.merge(
+  Design.container,
+  Style.make({ paddingBlockEnd: space[8] }),
+).pipe(Style.when(wide, { paddingBlockEnd: space[9] }))
+
+const manifestoText = Style.make({
+  maxWidth: '46rem',
+  fontSize: 'clamp(1.375rem, 2.4vw, 1.875rem)',
+  lineHeight: 1.35,
+  letterSpacing: '-0.01em',
+  textWrap: 'pretty',
+})
+
+// SPECIMEN
+
+// NOTE: the specimen compiles a real style and shows what Pleat made of it,
+// so the page can't drift from the library.
 const specimenStyle = Style.make({
   display: 'grid',
   gap: 12,
@@ -103,55 +123,65 @@ const specimenStyle = Style.make({
 )
 
 const SPECIMEN_SOURCE = `const card = Style.make({
-  display: 'grid', gap: 12, padding: 20, borderRadius: 12,
+  display: 'grid',
+  gap: 12,
+  padding: 20,
+  borderRadius: 12,
 }).pipe(
   Style.when(When.hover, { translate: '0 -2px' }),
   Style.when(When.minWidth('40rem'), { padding: 28 }),
 )`
 
-const specimen = Style.merge(
-  Design.card,
-  Style.make({
-    padding: 0,
-    overflow: 'hidden',
-    boxShadow: Design.tokens.shadow.overlay,
+const threeWide = When.minWidth('72rem')
+
+const specimen = Style.make({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  minWidth: 0,
+  borderTop: `1px solid ${color.line}`,
+  borderBottom: `1px solid ${color.line}`,
+}).pipe(
+  Style.when(threeWide, {
+    gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.8fr)',
   }),
 )
 
-const specimenStage = Style.make({
+const stage = Style.make({
   display: 'flex',
   flexDirection: 'column',
-  gap: space[3],
-  padding: space[4],
+  gap: space[4],
+  minWidth: 0,
+  paddingBlock: space[5],
   borderTop: `1px solid ${color.line}`,
-}).pipe(Style.when(When.firstChild, { borderTop: 'none' }))
+}).pipe(
+  Style.when(When.firstChild, { borderTop: 'none' }),
+  Style.when(threeWide, {
+    borderTop: 'none',
+    paddingInline: space[5],
+    borderInlineStart: `1px solid ${color.line}`,
+  }),
+  Style.when(When.all(threeWide, When.firstChild), {
+    paddingInlineStart: 0,
+    borderInlineStart: 'none',
+  }),
+  Style.when(When.all(threeWide, When.lastChild), { paddingInlineEnd: 0 }),
+)
 
-const stageLabel = Style.make({
-  display: 'flex',
-  alignItems: 'center',
-  gap: space[2],
-  fontFamily: font.mono,
-  fontSize: '0.75rem',
-  color: color.muted,
-})
+const stageLabel = Style.merge(Design.eyebrow, Style.make({ gap: space[3] }))
 
 const stageNumber = Style.make({
-  display: 'inline-grid',
-  placeItems: 'center',
-  width: 18,
-  height: 18,
-  borderRadius: 999,
-  backgroundColor: color.accent,
-  color: color.onAccent,
-  fontSize: '0.6875rem',
-  fontWeight: 600,
+  fontFamily: font.serif,
+  fontSize: text.md,
+  fontWeight: 400,
+  letterSpacing: 0,
+  color: color.accent,
 })
 
 const specimenCode = Style.make({
   margin: 0,
   fontFamily: font.mono,
   fontSize: '0.75rem',
-  lineHeight: 1.65,
+  lineHeight: 1.7,
   whiteSpace: 'pre',
   overflowX: 'auto',
 })
@@ -167,66 +197,55 @@ const atomTable = Style.make({
 
 const atomCell = Style.make({
   textAlign: 'start',
-  paddingBlock: 3,
+  paddingBlock: 4,
   paddingInlineEnd: space[3],
-  borderBottom: `1px dashed ${color.line}`,
+  borderBottom: `1px solid ${color.line}`,
   whiteSpace: 'nowrap',
-})
+}).pipe(Style.when(When.lastChild, { paddingInlineEnd: 0 }))
 
-const conditionCell = Style.merge(atomCell, Style.make({ color: color.indigo }))
+const conditionCell = Style.merge(atomCell, Style.make({ color: color.teal }))
 
 const classOutput = Style.make({
   margin: 0,
   fontFamily: font.mono,
   fontSize: '0.75rem',
-  lineHeight: 1.6,
+  lineHeight: 1.7,
   overflowWrap: 'anywhere',
-  color: color.ink,
 })
 
-const classValue = Style.make({ color: color.green })
+const classValue = Style.make({ color: color.madder })
 
-const bandSection = Style.merge(
-  Design.container,
-  Style.make({ paddingBlockEnd: space[7] }),
+const ledger = Style.make({
+  display: 'grid',
+  gap: space[4],
+  marginBlockStart: space[6],
+  fontSize: text.sm,
+  color: color.muted,
+}).pipe(
+  Style.when(When.minWidth('40rem'), {
+    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+  }),
 )
 
-const stats = Style.make({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  gap: 1,
-  margin: 0,
-  backgroundColor: color.line,
-  borderBlock: `1px solid ${color.line}`,
-}).pipe(Style.when(wide, { gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }))
-
-const stat = Style.make({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: space[2],
-  paddingBlock: space[5],
-  paddingInline: space[4],
-  backgroundColor: color.canvas,
-}).pipe(Style.when(wide, { paddingBlock: space[6], paddingInline: space[5] }))
-
-const statFigure = Style.make({
+const ledgerFigure = Style.make({
+  display: 'block',
   fontFamily: font.serif,
-  fontSize: 'clamp(2.25rem, 4vw, 3rem)',
-  lineHeight: 1,
-  letterSpacing: '-0.02em',
+  fontSize: text.xl,
+  color: color.ink,
+  lineHeight: 1.1,
+  marginBlockEnd: space[1],
+  fontVariantNumeric: 'tabular-nums',
 })
 
-const statText = Style.make({ fontSize: text.sm, color: color.muted, textWrap: 'pretty' })
+// HOW IT WORKS
 
-const sectionHeader = Style.make({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: space[4],
-  maxWidth: '44rem',
-  marginBlockEnd: space[7],
-})
-
-const split = Style.make({ display: 'grid', gap: space[7], alignItems: 'start' }).pipe(
+const split = Style.make({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  gap: space[7],
+  alignItems: 'start',
+  minWidth: 0,
+}).pipe(
   Style.when(wide, {
     gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)',
     gap: space[8],
@@ -243,32 +262,31 @@ const steps = Style.make({
 
 const step = Style.make({
   display: 'grid',
-  gridTemplateColumns: '2.5rem minmax(0, 1fr)',
+  gridTemplateColumns: '2.25rem minmax(0, 1fr)',
   gap: space[3],
   paddingBlock: space[5],
   borderTop: `1px solid ${color.line}`,
 }).pipe(Style.when(When.firstChild, { borderTop: 'none', paddingBlockStart: 0 }))
 
 const stepNumber = Style.make({
-  fontFamily: font.mono,
-  fontSize: text.xs,
+  fontFamily: font.serif,
+  fontSize: text.xl,
+  lineHeight: 1,
   color: color.accent,
-  paddingBlockStart: 3,
+  paddingBlockStart: 2,
 })
+
+// WHAT YOU GET
 
 const pillars = Style.make({
   display: 'grid',
-  gap: 1,
-  backgroundColor: color.line,
-  border: `1px solid ${color.line}`,
-  borderRadius: radius.lg,
-  overflow: 'hidden',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  margin: 0,
+  borderTop: `1px solid ${color.line}`,
 }).pipe(
-  Style.when(When.minWidth('40rem'), {
+  Style.when(When.minWidth('48rem'), {
     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  }),
-  Style.when(When.minWidth('68rem'), {
-    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    columnGap: space[8],
   }),
 )
 
@@ -276,70 +294,64 @@ const pillar = Style.make({
   display: 'flex',
   flexDirection: 'column',
   gap: space[3],
-  padding: space[5],
-  backgroundColor: color.surface,
-}).pipe(Style.when(When.minWidth('48rem'), { padding: space[6] }))
-
-const pillarNumber = Style.make({
-  fontFamily: font.mono,
-  fontSize: text.xs,
-  color: color.accent,
+  paddingBlock: space[6],
+  borderBottom: `1px solid ${color.line}`,
 })
 
 const pillarTitle = Style.make({
   fontFamily: font.serif,
-  fontSize: '1.75rem',
+  fontSize: text.xl,
   fontWeight: 400,
-  lineHeight: 1.1,
+  lineHeight: 1.15,
+  letterSpacing: '-0.01em',
 })
 
-const playground = Style.merge(
-  Design.card,
-  Style.make({ display: 'grid', padding: 0, overflow: 'hidden' }),
-).pipe(Style.when(wide, { gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.1fr)' }))
+// PLAYGROUND
+
+const intro = Style.merge(Design.body, Style.make({ maxWidth: '42rem' }))
+
+const playground = Style.make({ display: 'flex', flexDirection: 'column', gap: space[6] })
 
 const controls = Style.make({
   display: 'flex',
-  flexDirection: 'column',
-  gap: space[4],
-  padding: space[5],
+  flexWrap: 'wrap',
+  alignItems: 'flex-start',
+  gap: space[6],
 })
 
 const control = Style.make({ display: 'flex', flexDirection: 'column', gap: space[2] })
 
 const controlLabel = Style.make({
-  fontSize: '0.75rem',
   fontFamily: font.mono,
+  fontSize: '0.75rem',
   color: color.muted,
+  overflowWrap: 'anywhere',
 })
 
-const stage = Style.make({
+const liveStage = Style.make({
   position: 'relative',
   display: 'grid',
   placeItems: 'center',
-  minHeight: 240,
+  minHeight: 220,
   padding: space[6],
-  backgroundColor: color.canvas,
-  backgroundImage: `radial-gradient(${Color.alpha(color.muted, 0.35)} 1px, transparent 1px)`,
-  backgroundSize: '14px 14px',
-  borderTop: `1px solid ${color.line}`,
-}).pipe(
-  Style.when(wide, { borderTop: 'none', borderInlineStart: `1px solid ${color.line}` }),
-)
+  borderBlock: `1px solid ${color.line}`,
+})
 
 const stageCaption = Style.merge(
-  controlLabel,
-  Style.make({ position: 'absolute', top: space[3], insetInlineStart: space[4] }),
+  Design.eyebrow,
+  Style.make({ position: 'absolute', top: space[3], insetInlineStart: 0 }),
 )
 
 const output = Style.make({
-  gridColumn: '1 / -1',
   display: 'grid',
-  gap: space[5],
-  padding: space[5],
-  borderTop: `1px solid ${color.line}`,
-  backgroundColor: color.sunken,
-}).pipe(Style.when(wide, { gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)' }))
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  gap: space[6],
+}).pipe(
+  Style.when(wide, {
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+    gap: space[8],
+  }),
+)
 
 const mono = Style.make({
   fontFamily: font.mono,
@@ -348,29 +360,20 @@ const mono = Style.make({
   overflowWrap: 'anywhere',
   margin: 0,
   whiteSpace: 'pre-wrap',
-  color: color.ink,
 })
 
 const schemaFrame = Style.merge(
   mono,
   Style.make({
-    maxHeight: 340,
+    maxHeight: 360,
     overflowY: 'auto',
-    padding: space[3],
-    border: `1px solid ${color.line}`,
-    borderRadius: radius.md,
-    backgroundColor: color.surface,
+    padding: space[4],
+    borderRadius: radius.lg,
+    backgroundColor: color.sunken,
   }),
 )
 
-const tableFrame = Style.make({
-  maxHeight: 280,
-  overflowY: 'auto',
-  border: `1px solid ${color.line}`,
-  borderRadius: radius.md,
-  backgroundColor: color.surface,
-  paddingInline: space[3],
-})
+const tableFrame = Style.make({ maxHeight: 300, overflowY: 'auto' })
 
 const declarationTable = Style.make({
   width: '100%',
@@ -391,48 +394,39 @@ const headCell = Style.merge(
   cell,
   Style.make({
     color: color.muted,
-    fontWeight: 500,
+    fontWeight: 400,
     position: 'sticky',
     top: 0,
-    backgroundColor: color.surface,
+    backgroundColor: color.canvas,
   }),
 )
 
-const closing = Style.merge(
-  Design.card,
-  Style.make({
-    position: 'relative',
-    display: 'grid',
-    gap: space[6],
-    padding: space[6],
-    overflow: 'hidden',
-  }),
-).pipe(
+// CLOSING
+
+const closing = Style.merge(Design.container, Style.make({ paddingBlockEnd: space[9] }))
+
+const closingInner = Style.make({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  gap: space[6],
+  paddingBlockStart: space[7],
+  borderTop: `1px solid ${color.line}`,
+}).pipe(
   Style.when(wide, {
     gridTemplateColumns: 'minmax(0, 1.4fr) auto',
     alignItems: 'end',
-    padding: space[7],
+    gap: space[8],
   }),
 )
 
-const transformsSection = Style.merge(section, Style.make({ paddingBlockStart: 0 }))
-
-const closingSection = Style.merge(
-  Design.container,
-  Style.make({ paddingBlockEnd: space[9] }),
-)
-
-const closingStripe = Style.merge(
-  Design.pleatBand,
-  Style.make({
-    position: 'absolute',
-    insetInline: 0,
-    top: 0,
-    height: 6,
-    borderRadius: 0,
-    boxShadow: 'none',
-  }),
-)
+const closingText = Style.make({
+  fontFamily: font.serif,
+  fontSize: 'clamp(1.75rem, 3.4vw, 2.75rem)',
+  lineHeight: 1.12,
+  letterSpacing: '-0.015em',
+  textWrap: 'balance',
+  maxWidth: '22ch',
+})
 
 // VIEW
 
@@ -474,74 +468,88 @@ const buttonSchema = JSON.stringify(
   2,
 )
 
+const stageView = (
+  h: HtmlBuilder<Message>,
+  number: string,
+  label: string,
+  content: Html,
+): Html =>
+  h.div(
+    [...css(stage)],
+    [
+      h.span([...css(stageLabel)], [h.span([...css(stageNumber)], [number]), label]),
+      content,
+    ],
+  )
+
+const LEDGER: ReadonlyArray<readonly [figure: string, body: string]> = [
+  ['90 ns', 'to resolve a recipe to its class names. cva takes 228.'],
+  ['0 rules', 'created during render. Each exists once its module loads.'],
+  ['1 class', 'per declaration, shared by every style that uses it.'],
+  ['4 laws', 'checked by property tests, and in Chromium against the cascade.'],
+]
+
 const specimenView = (h: HtmlBuilder<Message>): Html =>
   h.figure(
-    [h.AriaLabel('What Pleat compiles a style to'), ...css(specimen)],
+    [h.AriaLabel('What Pleat compiles a style to')],
     [
       h.div(
-        [...css(specimenStage)],
+        [...css(specimen)],
         [
-          h.span(
-            [...css(stageLabel)],
-            [h.span([...css(stageNumber)], ['1']), 'You write a value'],
+          stageView(
+            h,
+            '1',
+            'A value you write',
+            h.pre([...css(specimenCode)], [SPECIMEN_SOURCE]),
           ),
-          h.pre([...css(specimenCode)], [SPECIMEN_SOURCE]),
-        ],
-      ),
-      h.div(
-        [...css(specimenStage)],
-        [
-          h.span(
-            [...css(stageLabel)],
-            [
-              h.span([...css(stageNumber)], ['2']),
-              'Pleat compiles atoms when the module loads',
-            ],
-          ),
-          h.div(
-            [...css(scroller)],
-            [
-              h.table(
-                [...css(atomTable)],
-                [
-                  h.tbody(
-                    [],
-                    Style.declarations(specimenStyle).map(entry =>
-                      h.tr(
-                        [],
-                        [
-                          h.td([...css(conditionCell)], [entry.condition]),
-                          h.td([...css(atomCell)], [entry.property]),
-                          h.td([...css(atomCell)], [entry.value]),
-                        ],
+          stageView(
+            h,
+            '2',
+            'Atoms, compiled at module load',
+            h.div(
+              [...css(scroller)],
+              [
+                h.table(
+                  [...css(atomTable)],
+                  [
+                    h.tbody(
+                      [],
+                      Style.declarations(specimenStyle).map(entry =>
+                        h.tr(
+                          [],
+                          [
+                            h.td([...css(conditionCell)], [entry.condition]),
+                            h.td([...css(atomCell)], [entry.property]),
+                            h.td([...css(atomCell)], [entry.value]),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          stageView(
+            h,
+            '3',
+            'One attribute for the view',
+            h.p(
+              [...css(classOutput)],
+              [
+                'css(card)\n→ class="',
+                h.span([...css(classValue)], [specimenStyle.className]),
+                '"',
+              ],
+            ),
           ),
         ],
       ),
-      h.div(
-        [...css(specimenStage)],
-        [
-          h.span(
-            [...css(stageLabel)],
-            [
-              h.span([...css(stageNumber)], ['3']),
-              'The view gets one finished attribute',
-            ],
-          ),
-          h.p(
-            [...css(classOutput)],
-            [
-              'css(card) → class="',
-              h.span([...css(classValue)], [specimenStyle.className]),
-              '"',
-            ],
-          ),
-        ],
+      h.dl(
+        [...css(ledger)],
+        LEDGER.map(([figure, body]) =>
+          h.div([], [h.dt([...css(ledgerFigure)], [figure]), h.dd([], [body])]),
+        ),
       ),
     ],
   )
@@ -571,7 +579,7 @@ const playgroundView = (model: Model, h: HtmlBuilder<Message>): Html => {
         ],
       ),
       h.div(
-        [...css(stage)],
+        [...css(liveStage)],
         [
           h.span([...css(stageCaption)], ['Live']),
           h.button(
@@ -584,7 +592,7 @@ const playgroundView = (model: Model, h: HtmlBuilder<Message>): Html => {
         [...css(output)],
         [
           h.div(
-            [...css(Design.stack(space[2]))],
+            [...css(Design.stack(space[3]))],
             [
               h.span(
                 [...css(controlLabel)],
@@ -626,7 +634,7 @@ const playgroundView = (model: Model, h: HtmlBuilder<Message>): Html => {
             ],
           ),
           h.div(
-            [...css(Design.stack(space[2]))],
+            [...css(Design.stack(space[3]))],
             [
               h.span([...css(controlLabel)], ['Recipe.jsonSchema(button)']),
               h.pre([...css(schemaFrame)], [buttonSchema]),
@@ -637,13 +645,6 @@ const playgroundView = (model: Model, h: HtmlBuilder<Message>): Html => {
     ],
   )
 }
-
-const STATS: ReadonlyArray<readonly [figure: string, body: string]> = [
-  ['90 ns', 'to resolve a recipe to its class names. cva takes 228 ns.'],
-  ['0', 'rules created during render. Every rule exists once its module loads.'],
-  ['1 class', 'per declaration, shared by every style that uses it.'],
-  ['4 laws', 'checked by property tests, and in Chromium against the real cascade.'],
-]
 
 const STEPS: ReadonlyArray<readonly [title: string, body: string]> = [
   [
@@ -663,7 +664,7 @@ const STEPS: ReadonlyArray<readonly [title: string, body: string]> = [
 const PILLARS: ReadonlyArray<readonly [title: string, body: string]> = [
   [
     'Lawful',
-    'Merging is associative, has an identity, and changes nothing when repeated. Property tests check the laws, and a Chromium test checks the cascade agrees with them.',
+    'Merging is associative, has an identity, and changes nothing when repeated. Property tests check the laws, and a Chromium test checks that the cascade agrees with them.',
   ],
   [
     'Built for Foldkit',
@@ -679,43 +680,33 @@ const PILLARS: ReadonlyArray<readonly [title: string, body: string]> = [
   ],
 ]
 
-const sectionHeaderView = (
-  h: HtmlBuilder<Message>,
-  eyebrow: string,
-  title: string,
-  body: ReadonlyArray<string>,
-): Html =>
-  h.div(
-    [...css(sectionHeader)],
-    [
-      h.span([...css(Design.eyebrow)], [eyebrow]),
-      h.h2([...css(Design.heading)], [title]),
-      ...body.map(text => paragraph(h, text)),
-    ],
-  )
-
 export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
   h.div(
     [],
     [
       h.section(
-        [...css(heroSection)],
+        [h.AriaLabel('Introduction')],
         [
           h.div(
-            [...css(heroCopy)],
+            [...css(heroTitle)],
+            [h.h1([...css(title)], ['Styles are values. Pleat folds them.'])],
+          ),
+          pleatView(h),
+          h.p(
+            [...css(bandCaption)],
             [
               h.span(
-                [...css(pill)],
-                [h.span([...css(pillDot)]), 'v0.1 for Foldkit and Effect v4'],
-              ),
-              h.h1(
-                [...css(Design.hero)],
+                [],
                 [
-                  'Styles are ',
-                  h.em([...css(Design.flourish)], ['values.']),
-                  ' Pleat folds them.',
+                  `${FACE_COUNT} elements and two conditions. No JavaScript moves it. `,
+                  h.span([...css(whenHoverable)], ['Run your pointer across it.']),
                 ],
               ),
+            ],
+          ),
+          h.div(
+            [...css(dek)],
+            [
               h.p(
                 [...css(Design.lede)],
                 [
@@ -723,69 +714,65 @@ export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
                 ],
               ),
               h.div(
-                [...css(Design.row(space[3]))],
+                [...css(actions)],
                 [
-                  h.a(
+                  h.div(
+                    [...css(Design.row(space[4]))],
                     [
-                      h.Href(guideRouter()),
-                      ...css(Design.button({ tone: 'Primary', size: 'Large' })),
+                      h.a(
+                        [
+                          h.Href(guideRouter()),
+                          ...css(Design.button({ tone: 'Primary', size: 'Large' })),
+                        ],
+                        ['Read the guide'],
+                      ),
+                      h.a(
+                        [h.Href(algebraRouter()), ...css(Design.link)],
+                        ['See the algebra'],
+                      ),
                     ],
-                    ['Read the guide'],
                   ),
-                  h.a(
-                    [h.Href(algebraRouter()), ...css(Design.button({ size: 'Large' }))],
-                    ['See the algebra'],
-                  ),
+                  h.code([...css(install)], ['pnpm add @pleat/core @pleat/foldkit']),
                 ],
               ),
-              h.code([...css(install)], ['pnpm add @pleat/core @pleat/foldkit']),
             ],
           ),
-          specimenView(h),
         ],
-      ),
-      h.div(
-        [...css(bandSection)],
-        [h.div([h.AriaHidden(true), ...css(Design.pleatBand)])],
       ),
       h.section(
-        [h.AriaLabel('At a glance'), ...css(Design.container)],
+        [h.AriaLabel('In brief'), ...css(manifesto)],
         [
-          h.dl(
-            [...css(stats)],
-            STATS.map(([figure, body]) =>
-              h.div(
-                [...css(stat)],
-                [h.dt([...css(statFigure)], [figure]), h.dd([...css(statText)], [body])],
-              ),
-            ),
+          h.p(
+            [...css(manifestoText)],
+            [
+              'A style is data, so everything about it is known before the first render. A recipe call is a few map lookups. A server-rendered page ships only the CSS it uses. And a language model building your interface can choose styles, but never write CSS.',
+            ],
           ),
         ],
+      ),
+      h.section(
+        [...css(Design.container)],
+        [h.h2([...css(sectionTitle)], ['What Pleat makes of a style']), specimenView(h)],
       ),
       h.section(
         [...css(section)],
         [
-          sectionHeaderView(
-            h,
-            'How it works',
-            'A style is data, so everything knows it in advance',
-            [],
-          ),
+          h.h2([...css(sectionTitle)], ['How it works']),
           h.div(
             [...css(split)],
             [
               codeBlock(h, quickstartSource, 'post.ts'),
               h.ol(
                 [...css(steps)],
-                STEPS.map(([title, body], index) =>
+                STEPS.map(([heading, body], index) =>
                   h.li(
                     [...css(step)],
                     [
-                      h.span([...css(stepNumber)], [`0${index + 1}`]),
+                      h.span([...css(stepNumber)], [`${index + 1}`]),
                       h.div(
                         [...css(Design.stack(space[2]))],
                         [
-                          h.h3([...css(Design.subheading)], [title]),
+                          h.h3([...css(Design.subheading)], [heading]),
                           h.p([...css(Design.muted)], rich(h, body)),
                         ],
                       ),
@@ -800,15 +787,15 @@ export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
       h.section(
         [...css(Design.container)],
         [
-          h.div(
+          h.h2([...css(sectionTitle)], ['What you get']),
+          h.dl(
             [...css(pillars)],
-            PILLARS.map(([title, body], index) =>
-              h.article(
+            PILLARS.map(([heading, body]) =>
+              h.div(
                 [...css(pillar)],
                 [
-                  h.span([...css(pillarNumber)], [`0${index + 1}`]),
-                  h.h3([...css(pillarTitle)], [title]),
-                  h.p([...css(Design.muted)], rich(h, body)),
+                  h.dt([...css(pillarTitle)], [heading]),
+                  h.dd([...css(Design.muted)], rich(h, body)),
                 ],
               ),
             ),
@@ -818,14 +805,25 @@ export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
       h.section(
         [h.Id('playground'), ...css(section)],
         [
-          sectionHeaderView(h, 'Playground', 'Try a recipe', [
-            'This is the button this site uses. Each choice below is a Message; the view calls `button(props)` and gets back a style that was compiled when the page loaded. The JSON Schema is what a model would see.',
-          ]),
+          h.div(
+            [...css(Design.stack(space[4]))],
+            [
+              h.h2([...css(Design.heading)], ['Try a recipe']),
+              h.p(
+                [...css(intro)],
+                rich(
+                  h,
+                  'This is the button this site uses. Each choice below is a Message; the view calls `button(props)` and gets back a style that was compiled when the page loaded. The JSON Schema is what a model would see.',
+                ),
+              ),
+            ],
+          ),
+          h.div([...css(Style.make({ height: space[7] }))]),
           playgroundView(model, h),
         ],
       ),
       h.section(
-        [...css(transformsSection)],
+        [...css(Design.container)],
         [
           h.div(
             [...css(split)],
@@ -833,7 +831,6 @@ export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
               h.div(
                 [...css(Design.stack(space[4]))],
                 [
-                  h.span([...css(Design.eyebrow)], ['Transforms']),
                   h.h2(
                     [...css(Design.heading)],
                     ['Change styles with functions, not overrides'],
@@ -854,28 +851,30 @@ export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
         ],
       ),
       h.section(
-        [...css(closingSection)],
+        [...css(section, closing)],
         [
           h.div(
-            [...css(closing)],
+            [...css(closingInner)],
             [
-              h.div([h.AriaHidden(true), ...css(closingStripe)]),
               h.div(
                 [...css(Design.stack(space[4]))],
                 [
-                  h.span([...css(Design.eyebrow)], ['The FACE stack']),
-                  h.h2(
-                    [...css(Design.heading)],
-                    ['Foldkit, Alchemy, Cloudflare, Effect'],
+                  h.p(
+                    [...css(closingText)],
+                    [
+                      'Pleat is the styling layer of the FACE stack: Foldkit, Alchemy, Cloudflare, Effect.',
+                    ],
                   ),
-                  paragraph(
-                    h,
-                    'Pleat is meant to be the default styling layer for FACE apps. This site is one: a Foldkit app rendered to static pages, styled only with Pleat, and deployed to Cloudflare by an Alchemy stack.',
+                  h.p(
+                    [...css(Design.muted)],
+                    [
+                      'This site is one: a Foldkit app rendered to static pages, styled only with Pleat, and deployed to Cloudflare by an Alchemy stack.',
+                    ],
                   ),
                 ],
               ),
               h.div(
-                [...css(Design.row(space[3]))],
+                [...css(Design.row(space[4]))],
                 [
                   h.a(
                     [
@@ -885,11 +884,8 @@ export const homeView = (model: Model, h: HtmlBuilder<Message>): Html =>
                     ['Start the guide'],
                   ),
                   h.a(
-                    [
-                      h.Href(generativeRouter()),
-                      ...css(Design.button({ tone: 'Quiet', size: 'Large' })),
-                    ],
-                    ['Generative interfaces →'],
+                    [h.Href(generativeRouter()), ...css(Design.link)],
+                    ['Generative interfaces'],
                   ),
                 ],
               ),
