@@ -144,6 +144,7 @@ const collect = (
   path: ReadonlyArray<string>,
   declarations: Array<readonly [string, string]>,
   isComplete: boolean,
+  isDecoded: boolean,
 ): void => {
   if (values === undefined) {
     if (isComplete) {
@@ -161,7 +162,7 @@ const collect = (
           `holds a ${values.kind.name}, not a ${tokens.kind.name}.`,
       )
     }
-    if (!isRef(values)) {
+    if (!isDecoded && !isRef(values)) {
       const result = Schema.decodeUnknownExit(tokens.kind.schema)(values)
       if (result._tag === 'Failure') {
         throw new Error(
@@ -179,7 +180,14 @@ const collect = (
   }
   for (const [key, child] of Object.entries(tokens)) {
     if (typeof child === 'object' && child !== null) {
-      collect(child, Reflect.get(values, key), [...path, key], declarations, isComplete)
+      collect(
+        child,
+        Reflect.get(values, key),
+        [...path, key],
+        declarations,
+        isComplete,
+        isDecoded,
+      )
     }
   }
 }
@@ -231,9 +239,13 @@ const makeTheme = (
 export const make = <T extends object>(
   tokens: T,
   values: Values<T> | LiteralValues<T>,
-): Theme => {
+): Theme => makeWith(tokens, values, false)
+
+// NOTE: values a schema has decoded already hold their kinds, so `isDecoded`
+// skips checking each one again.
+const makeWith = (tokens: object, values: unknown, isDecoded: boolean): Theme => {
   const declarations: Array<readonly [string, string]> = []
-  collect(tokens, values, [], declarations, true)
+  collect(tokens, values, [], declarations, true, isDecoded)
   return makeTheme(declarations, tokensOf(tokens))
 }
 
@@ -244,10 +256,17 @@ export const extend = <T extends object>(
   theme: Theme,
   tokens: T,
   values: PartialValues<T> | PartialLiteralValues<T>,
+): Theme => extendWith(theme, tokens, values, false)
+
+const extendWith = (
+  theme: Theme,
+  tokens: object,
+  values: unknown,
+  isDecoded: boolean,
 ): Theme => {
   const unioned = unionTokens(theme.tokens, tokensOf(tokens))
   const overrides: Array<readonly [string, string]> = []
-  collect(tokens, values, [], overrides, false)
+  collect(tokens, values, [], overrides, false, isDecoded)
   const merged = new Map(theme.declarations)
   for (const [name, value] of overrides) {
     merged.set(name, value)
@@ -281,7 +300,7 @@ export const patch = <T extends object>(
 ): Theme => {
   const unioned = unionTokens(base.tokens, tokensOf(tokens))
   const overrides: Array<readonly [string, string]> = []
-  collect(tokens, values, [], overrides, false)
+  collect(tokens, values, [], overrides, false, false)
   const overridden = new Map(overrides)
   const affected = new Set(overridden.keys())
   for (let isGrowing = true; isGrowing;) {
@@ -330,23 +349,67 @@ export const merge = (self: Theme, that: Theme): Theme => {
   return makeTheme([...declarations], tokens)
 }
 
+/** A rule about a whole theme that checks on single values can't express, such as a
+ *  contrast target between a text color and its background, or an accent that must differ
+ *  from the surface. It gets the theme, so {@link resolve} can follow its aliases, and
+ *  returns what a `Schema.makeFilter` predicate returns: nothing when the theme passes, or
+ *  the failures, each a message or a `{ path, issue }` that points at a token.
+ *
+ *  ```ts
+ *  const accentStandsOut: Theme.Check = theme =>
+ *    Equal.equals(Theme.resolve(theme, color.accent), Theme.resolve(theme, color.surface))
+ *      ? { path: color.accent.path, issue: 'The accent is the same color as the surface' }
+ *      : undefined
+ *  ``` */
+export type Check = (theme: Theme) => Schema.FilterOutput
+
+/** Options for {@link decode} and {@link decodePartial}. */
+export type DecodeOptions = Readonly<{ checks?: ReadonlyArray<Check> }>
+
+// NOTE: one call decodes one input, so the theme is built once and shared
+// by every check and the result.
+const decodeWith = <V>(
+  codec: Schema.Codec<V, unknown>,
+  build: (values: V) => Theme,
+  input: unknown,
+  options: DecodeOptions,
+): Effect.Effect<Theme, Schema.SchemaError> => {
+  let built: Readonly<{ values: V; theme: Theme }> | undefined
+  const themeOf = (values: V): Theme => {
+    if (built?.values !== values) {
+      built = { values, theme: build(values) }
+    }
+    return built.theme
+  }
+  const [first, ...rest] = (options.checks ?? []).map(check =>
+    Schema.makeFilter<V>(values => check(themeOf(values))),
+  )
+  const checked = first === undefined ? codec : codec.check(first, ...rest)
+  return Effect.map(
+    Schema.decodeUnknownEffect(checked)(input, { errors: 'all' }),
+    themeOf,
+  )
+}
+
 /** Decodes theme values from unknown input, such as a language model's structured output,
  *  and builds the theme. Fails with a `SchemaError` that lists every wrong value, each with
  *  its path and the kind it should have been, such as
- *  `Expected a CSS length, such as 0.75rem or 12px at ["space"]["2"]`. */
+ *  `Expected a CSS length, such as 0.75rem or 12px at ["space"]["2"]`.
+ *
+ *  Pass `checks` for rules about the whole theme, such as contrast between a text color and
+ *  its background. They run on the built theme once every value has its kind, and their
+ *  failures join the same error. */
 export const decode = <T extends object>(
   tokens: T,
   input: unknown,
+  options: DecodeOptions = {},
 ): Effect.Effect<Theme, Schema.SchemaError> =>
-  Effect.map(
-    Schema.decodeUnknownEffect(schema(tokens))(input, { errors: 'all' }),
-    values => make(tokens, values),
-  )
+  decodeWith(schema(tokens), values => makeWith(tokens, values, true), input, options)
 
 /** Decodes values for some tokens from unknown input, such as a brand kit from a settings
  *  form, and extends `base` with them the way {@link extend} does. Tokens the input leaves
  *  out keep `base`'s values, so `tokens` can be the whole tree. Fails with a `SchemaError`
- *  that lists every wrong value, as {@link decode} does.
+ *  that lists every wrong value, as {@link decode} does. `checks` run on the extended theme.
  *
  *  ```ts
  *  Theme.decodePartial(light, tokens, { color: { accent: '#ff6600' } })
@@ -355,10 +418,13 @@ export const decodePartial = <T extends object>(
   base: Theme,
   tokens: T,
   input: unknown,
+  options: DecodeOptions = {},
 ): Effect.Effect<Theme, Schema.SchemaError> =>
-  Effect.map(
-    Schema.decodeUnknownEffect(partialSchema(tokens))(input, { errors: 'all' }),
-    values => extend(base, tokens, values),
+  decodeWith(
+    partialSchema(tokens),
+    values => extendWith(base, tokens, values, true),
+    input,
+    options,
   )
 
 /** The rule that applies `theme` at `selector`. */
