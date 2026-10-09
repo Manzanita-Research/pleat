@@ -97,11 +97,7 @@ export const dialogDemo = (
         : h.button(
             [
               h.Type('button'),
-              h.OnClick(
-                Message.GotDialogMessage({
-                  message: Dialog.Message.RequestedOpen(),
-                }),
-              ),
+              h.OnClick(Message.ClickedArchivePrompt()),
               ...css(uiButton({})),
             ],
             ['Archive pattern…'],
@@ -130,7 +126,7 @@ export const dialogDemo = (
             h.dialog(
               [...dialog, ...css(dialogRoot)],
               [
-                h.div([...backdrop, ...css(dialogBackdrop)], []),
+                h.div([...backdrop, ...css(dialogBackdrop)]),
                 h.div(
                   [...panel, ...css(dialogPanel)],
                   [

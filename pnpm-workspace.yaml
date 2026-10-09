@@ -1,3 +1,8 @@
 packages:
   - packages/*
   - site
+  - bench
+  - test/browser
+# This version was already pinned before the pnpm 12 migration.
+minimumReleaseAgeExclude:
+  - vite@8.3.4

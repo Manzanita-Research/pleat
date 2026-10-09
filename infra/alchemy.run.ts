@@ -20,7 +20,10 @@ export const Docs = Cloudflare.Website.StaticSite('Docs', {
       'site/scripts/**',
       'site/vite.config.ts',
       'site/package.json',
+      'package.json',
+      'pnpm-workspace.yaml',
       'pnpm-lock.yaml',
+      'tsconfig.base.json',
     ],
   },
   assets: {

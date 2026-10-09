@@ -118,7 +118,7 @@ const labeledSwitch = (
                   switchTrack({ size: config.size ?? 'Medium' }),
                 ),
               ],
-              [h.span([...css(switchThumb)], [])],
+              [h.span([...css(switchThumb)])],
             ),
           ],
         ),

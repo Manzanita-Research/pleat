@@ -100,14 +100,14 @@ export const comboboxDemo = (
           inputPlaceholder: 'Search fabrics',
           inputWrapperClassName: cssClass(comboboxField),
           inputClassName: cssClass(comboboxInput),
-          buttonContent: h.span([...css(chevron)], []),
+          buttonContent: h.span([...css(chevron)]),
           buttonClassName: cssClass(comboboxToggle),
           itemsClassName: cssClass(panel),
           itemToConfig: fabric => ({
             className: cssClass(optionItem({})),
             content: h.span(
               [...css(spread)],
-              [fabric, h.span([...css(optionCheck)], [])],
+              [fabric, h.span([...css(optionCheck)])],
             ),
           }),
           anchor: { placement: 'bottom-start', gap: 6 },

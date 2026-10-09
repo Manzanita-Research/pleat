@@ -43,4 +43,4 @@ export const button = Recipe.make({
 })
 
 button({ tone: 'Primary' }) // a Style, the same object every time
-button.schema // an Effect Schema for the props
+export const buttonSchema = button.schema // an Effect Schema for the props

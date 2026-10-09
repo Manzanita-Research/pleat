@@ -5,3 +5,8 @@ node_modules
 **/.mcp.json
 **/.vscode
 **/.idea
+
+# Upstream references and agent skills retain their own formatting.
+repos/
+FOLDKIT.md
+.agents/skills/

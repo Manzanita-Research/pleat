@@ -81,7 +81,7 @@ const weightSelect = (
       isDisabled: config.isDisabled,
       isInvalid: !config.isDisabled && config.value === '',
       hasDescription: true,
-      onChange: weight => Message.ChangedWeight({ weight }),
+      onChange: weight => Message.UpdatedWeight({ weight }),
       toView: ({ select, label, description }) =>
         h.div(
           [...css(field)],
@@ -96,7 +96,7 @@ const weightSelect = (
                     h.option([h.Value(value)], [text]),
                   ),
                 ),
-                h.span([...css(selectChevron)], []),
+                h.span([...css(selectChevron)]),
               ],
             ),
             h.span(

@@ -3,6 +3,7 @@ import { css } from '@pleat/foldkit'
 import { Button } from '@foldkit/ui'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
+import { defineRouteUnion, literal, mapTo } from 'foldkit/route'
 
 import { button } from './recipe.ts'
 import { link } from './styles.ts'
@@ -41,5 +42,8 @@ export const saveView = (
     h,
   )
 
+const AppRoute = defineRouteUnion({ About: {} })
+const aboutRouter = mapTo(AppRoute.About)(literal('about'))
+
 export const footerLink = (h: HtmlBuilder<Message>): Html =>
-  h.a([h.Href('/about'), ...css(link)], ['About'])
+  h.a([h.Href(aboutRouter()), ...css(link)], ['About'])

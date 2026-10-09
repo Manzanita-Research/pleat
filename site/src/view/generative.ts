@@ -190,7 +190,7 @@ const workbenchView = (model: Model, h: HtmlBuilder<Message>): Html =>
               h.textarea([
                 h.Value(model.specSource),
                 h.Spellcheck(false),
-                h.OnInput(source => Message.EditedSpec({ source })),
+                h.OnInput(source => Message.UpdatedSpec({ source })),
                 ...css(editor),
               ]),
             ],

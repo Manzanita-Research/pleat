@@ -106,7 +106,7 @@ export const disclosureDemo = (
               [
                 h.button(
                   [...button, ...css(disclosureButton)],
-                  [title, h.span([...css(chevron)], [])],
+                  [title, h.span([...css(chevron)])],
                 ),
                 animatePanel(
                   h.div(

@@ -244,7 +244,7 @@ const appearancePicker = (model: Model, h: HtmlBuilder<Message>): Html =>
             [
               h.Type('button'),
               h.AriaPressed(model.tabAppearance === appearance ? 'true' : 'false'),
-              h.OnClick(Message.PickedTabAppearance({ appearance })),
+              h.OnClick(Message.SelectedTabAppearance({ appearance })),
               ...css(Design.segmentButton),
             ],
             [appearance],

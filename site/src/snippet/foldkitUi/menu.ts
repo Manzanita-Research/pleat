@@ -49,7 +49,7 @@ export const menuDemo = (
             action === 'Delete' ? 'Danger' : 'Safe',
           buttonContent: h.span(
             [...css(spread)],
-            ['Actions', h.span([...css(chevron)], [])],
+            ['Actions', h.span([...css(chevron)])],
           ),
           buttonClassName: cssClass(triggerButton),
           itemsClassName: cssClass(panel),

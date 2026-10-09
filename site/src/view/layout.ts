@@ -391,7 +391,7 @@ const iconView = (h: HtmlBuilder<Message>, name: keyof typeof ICON_PATHS): Html 
       h.AriaHidden(true),
       ...css(icon),
     ],
-    [h.path([h.D(ICON_PATHS[name])], [])],
+    [h.path([h.D(ICON_PATHS[name])])],
   )
 
 // VIEW

@@ -131,8 +131,9 @@ export const Message = defineMessageUnion({
   ToggledStep: { step: Step, isChecked: Schema.Boolean },
   ToggledAllSteps: { isChecked: Schema.Boolean },
   ToggledQuestion: { question: Question, isOpen: Schema.Boolean },
-  PickedTabAppearance: { appearance: TabAppearance },
-  ChangedWeight: { weight: Schema.String },
+  SelectedTabAppearance: { appearance: TabAppearance },
+  UpdatedWeight: { weight: Schema.String },
+  ClickedArchivePrompt: {},
   ClickedArchive: {},
   ClickedRestore: {},
   GotTabsMessage: { message: Tabs.Message },
@@ -216,6 +217,24 @@ const foldDialog = Update.foldChild({
   foldOutMessage: () => model => ({ model }),
 })
 
+const foldDialogOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: (model: Model) => Option.some(model.dialog),
+  write: (model, nextDialog) =>
+    modifyFields(model, { dialog: () => nextDialog }),
+  toParentMessage: message => Message.GotDialogMessage({ message }),
+  foldOutMessage: () => model => ({ model }),
+})
+
+const foldDialogClose = Update.foldChildStep({
+  update: Dialog.close,
+  read: (model: Model) => Option.some(model.dialog),
+  write: (model, nextDialog) =>
+    modifyFields(model, { dialog: () => nextDialog }),
+  toParentMessage: message => Message.GotDialogMessage({ message }),
+  foldOutMessage: () => model => ({ model }),
+})
+
 const foldTooltip = Update.foldChild({
   update: Tooltip.update,
   read: (model: Model) => Option.some(model.tooltip),
@@ -235,10 +254,7 @@ const toggled = <A>(
     ? Array.union(values, [value])
     : Array.filter(values, other => other !== value)
 
-export const update = (
-  model: Model,
-  message: Message,
-): UpdateReturn =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedSave: () => ({
       model: modifyFields(model, { saveCount: count => count + 1 }),
@@ -265,18 +281,18 @@ export const update = (
           toggled(questions, question, isOpen),
       }),
     }),
-    PickedTabAppearance: ({ appearance }) => ({
+    SelectedTabAppearance: ({ appearance }) => ({
       model: modifyFields(model, {
         tabAppearance: () => appearance,
       }),
     }),
-    ChangedWeight: ({ weight }) => ({
+    UpdatedWeight: ({ weight }) => ({
       model: modifyFields(model, { weight: () => weight }),
     }),
+    ClickedArchivePrompt: () => foldDialogOpen(model),
     ClickedArchive: () =>
-      foldDialog(
+      foldDialogClose(
         modifyFields(model, { isPatternArchived: () => true }),
-        Dialog.Message.RequestedClose(),
       ),
     ClickedRestore: () => ({
       model: modifyFields(model, {

@@ -306,12 +306,14 @@ const controlsView = (scope: Scope, h: HtmlBuilder<Message>): Html =>
   h.div(
     [...css(controls)],
     [
-      segmentControl(h, 'Mode', MODES, scope.mode, mode => Message.PickedMode({ mode })),
+      segmentControl(h, 'Mode', MODES, scope.mode, mode =>
+        Message.SelectedMode({ mode }),
+      ),
       segmentControl(h, 'Brand', BRANDS, scope.brand, brand =>
-        Message.PickedBrand({ brand }),
+        Message.SelectedBrand({ brand }),
       ),
       segmentControl(h, 'Density', DENSITIES, scope.density, density =>
-        Message.PickedDensity({ density }),
+        Message.SelectedDensity({ density }),
       ),
     ],
   )
@@ -495,7 +497,7 @@ const decodeWorkbench = (model: Model, h: HtmlBuilder<Message>): Html =>
               h.textarea([
                 h.Value(model.theming.brandSource),
                 h.Spellcheck(false),
-                h.OnInput(source => Message.EditedBrandSource({ source })),
+                h.OnInput(source => Message.UpdatedBrandSource({ source })),
                 ...css(editor),
               ]),
             ],

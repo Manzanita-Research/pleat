@@ -65,16 +65,58 @@ From [`bench/RESULTS.md`](bench/RESULTS.md), on an AMD Ryzen 5 7640HS with Node 
 
 ## Development
 
+Use Node 22.18 or newer and the pnpm 12.10.1 release pinned in both root and
+`infra/package.json`. Install that version with `npm install --global pnpm@12.10.1`
+if needed.
+
 ```sh
 pnpm install
+pnpm lint            # Foldkit application conventions, including displayed snippets
 pnpm typecheck       # every package, the site, and the browser tests
 pnpm test            # unit and property tests
+pnpm chromium:install # download Playwright's Chromium once
 pnpm test:browser    # the Chromium cascade test (set CHROMIUM_PATH if Playwright's isn't installed)
 pnpm bench           # the render benchmark
 pnpm site:dev        # the docs site with hot reload
 pnpm site:build      # the static site in site/dist/client
 pnpm check           # all of the above that CI runs
 ```
+
+The root owns shared tooling. `bench` and `test/browser` are private workspaces
+with their own manifests and TypeScript configs, so comparison and browser-fixture
+packages stay with the code that uses them. `infra` remains a separate workspace
+with its own lockfile and Effect version; CI additionally runs
+`pnpm --dir infra install --frozen-lockfile` and `pnpm --dir infra typecheck`.
+
+### Agent setup
+
+Follow [Foldkit's AI guidance](https://foldkit.dev/ai/overview). `repos/foldkit` is a
+read-only git subtree at `foldkit@0.167.0`, matching the installed framework. It
+provides the source, examples, documentation, and upstream skills in a normal
+clone. `FOLDKIT.md` is copied unchanged from that release's scaffolder template;
+Pleat-specific instructions live in `AGENTS.md`.
+
+Foldkit's `foldkit`, `generate-program`, and `audit-program` skills are symlinked
+into `.agents/skills` for Codex and OpenCode and `.claude/skills` for Claude Code.
+The project-local Effect skill is committed alongside them. Invoke `$foldkit` or
+`$audit-program` in Codex, or `/foldkit` or `/audit-program` in Claude Code.
+
+`.mcp.json` launches the site's pinned `@foldkit/devtools-mcp` package through
+pnpm. With `pnpm site:dev` running and the app open in a browser, an MCP-enabled
+agent can inspect the Model and Message history. The recommended Foldkit lint
+rules run through `pnpm lint` and CI.
+
+After upgrading the site's Foldkit packages, update both reference snapshots:
+
+```sh
+git subtree pull --prefix=repos/foldkit https://github.com/foldkit/foldkit.git \
+  "foldkit@$(node -p "require('./site/node_modules/foldkit/package.json').version")" --squash
+cp repos/foldkit/packages/create-foldkit-app/templates/base/FOLDKIT.md FOLDKIT.md
+```
+
+The skill symlinks follow the updated subtree automatically. `repos/` is excluded
+from workspace package discovery, formatting, and the editor file tree. Import
+framework code through the installed npm packages.
 
 Deploying the site needs Cloudflare credentials: locally, `pnpm --dir infra exec alchemy profile edit` once, then `pnpm --dir infra deploy`. In CI, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as repository secrets and run the Deploy workflow.
 

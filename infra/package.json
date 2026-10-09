@@ -2,7 +2,7 @@
   "name": "pleat-infra",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@12.10.1",
   "engines": {
     "node": ">=22.18"
   },

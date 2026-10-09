@@ -113,10 +113,7 @@ const labeledCheckbox = (
           [
             h.button(
               [...attributes.checkbox, ...css(checkboxBox)],
-              [
-                h.span([...css(tick)], []),
-                h.span([...css(dash)], []),
-              ],
+              [h.span([...css(tick)]), h.span([...css(dash)])],
             ),
             h.span([...attributes.label], [config.label]),
           ],

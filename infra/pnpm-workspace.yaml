@@ -1,1 +1,9 @@
 packages: []
+
+# This version was already pinned before the pnpm 12 migration.
+minimumReleaseAgeExclude:
+  - '@puppeteer/browsers@3.2.4'
+
+# Alchemy uses workerd for the Cloudflare runtime.
+allowBuilds:
+  workerd@1.20260918.1: true
