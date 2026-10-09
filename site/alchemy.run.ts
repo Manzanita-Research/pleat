@@ -4,7 +4,7 @@ import * as Effect from 'effect/Effect'
 import { fileURLToPath } from 'node:url'
 
 // Foldkit owns the Vite build, including prerendered pages and the Cloudflare 404.
-const SITE_ROOT = fileURLToPath(new URL('../site', import.meta.url))
+const SITE_ROOT = fileURLToPath(new URL('.', import.meta.url))
 
 /** The docs site, built and deployed through Alchemy’s Foldkit integration. */
 export const Docs = Cloudflare.Website.Foldkit('Docs', {

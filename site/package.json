@@ -6,6 +6,9 @@
     "dev": "vite",
     "build": "vite build && node --test scripts/build.test.mjs",
     "preview": "vite preview --outDir dist/client",
+    "setup": "alchemy profile edit --add Cloudflare",
+    "deploy": "alchemy deploy --stage prod",
+    "destroy": "alchemy destroy",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --deny-warnings src"
   },
@@ -21,10 +24,11 @@
     "foldkit": "0.167.0"
   },
   "devDependencies": {
+    "@effect/platform-node": "4.0.0",
     "@foldkit/devtools-mcp": "0.24.1",
     "@foldkit/oxlint-plugin": "0.15.3",
     "@foldkit/vite-plugin": "0.27.0",
-    "typescript": "7.0.2",
+    "alchemy": "2.0.0-beta.81",
     "vite": "8.3.4",
     "vitest": "5.0.3"
   }
