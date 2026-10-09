@@ -16,8 +16,6 @@
     "@effect/platform-browser": "4.0.0",
     "@foldkit/devtools": "0.167.0",
     "@foldkit/ui": "0.167.0",
-    "@fontsource-variable/fraunces": "5.3.0",
-    "@fontsource/ibm-plex-mono": "5.3.0",
     "@pleat/core": "workspace:^",
     "@pleat/foldkit": "workspace:^",
     "effect": "4.0.0",

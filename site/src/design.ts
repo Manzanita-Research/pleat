@@ -1,7 +1,3 @@
-import frauncesItalicUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-italic.woff2?url'
-import frauncesUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2?url'
-import plexMonoUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url'
-import plexMonoMediumUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url'
 import {
   Color,
   type Declarations,
@@ -12,6 +8,11 @@ import {
   Token,
   When,
 } from '@pleat/core'
+
+import commitMonoUrl from './fonts/CommitMonoManzanita-400.woff2?url'
+import commitMonoBoldUrl from './fonts/CommitMonoManzanita-600.woff2?url'
+import terminalOpenUrl from './fonts/TerminalGrotesque-Open.woff2?url'
+import terminalUrl from './fonts/TerminalGrotesque.woff2?url'
 
 // TOKENS
 
@@ -30,7 +31,7 @@ export const tokens = Token.make({
     teal: Token.color,
     madder: Token.color,
   },
-  font: { serif: Token.fontFamily, sans: Token.fontFamily, mono: Token.fontFamily },
+  font: { sans: Token.fontFamily, outline: Token.fontFamily, mono: Token.fontFamily },
   space: {
     1: Token.length,
     2: Token.length,
@@ -61,52 +62,52 @@ const { color, font, space, text, radius } = tokens
 // FONTS
 
 /** The fonts this site ships, preloaded by the server entry. */
-export const FONT_URLS: ReadonlyArray<string> = [frauncesUrl, plexMonoUrl]
+export const FONT_URLS: ReadonlyArray<string> = [terminalUrl, commitMonoUrl]
 
 // NOTE: Global.fontFace takes style Declarations, which have no `src` or
 // `fontDisplay`, so the descriptors are cast. Reported as API friction.
 const fontFace = (descriptors: Readonly<Record<string, string>>): void =>
   Global.fontFace(descriptors as Declarations)
 
-// NOTE: one serif carries the whole site. Fraunces has an optical size axis,
-// so the browser picks the text cut for prose and the display cut for titles
-// from the same file.
+// NOTE: Terminal Grotesque is a pixel grotesque with one weight and no
+// italic, so the whole site is set at weight 400 and `font-synthesis` is off.
+// Its outlined cut draws the wordmark.
 fontFace({
-  fontFamily: 'Fraunces',
-  fontStyle: 'normal',
-  fontWeight: '100 900',
-  fontDisplay: 'swap',
-  src: `url(${frauncesUrl}) format("woff2")`,
-})
-fontFace({
-  fontFamily: 'Fraunces',
-  fontStyle: 'italic',
-  fontWeight: '100 900',
-  fontDisplay: 'swap',
-  src: `url(${frauncesItalicUrl}) format("woff2")`,
-})
-fontFace({
-  fontFamily: 'IBM Plex Mono',
+  fontFamily: 'Terminal Grotesque',
   fontStyle: 'normal',
   fontWeight: '400',
   fontDisplay: 'swap',
-  src: `url(${plexMonoUrl}) format("woff2")`,
+  src: `url(${terminalUrl}) format("woff2")`,
 })
 fontFace({
-  fontFamily: 'IBM Plex Mono',
+  fontFamily: 'Terminal Grotesque Open',
   fontStyle: 'normal',
-  fontWeight: '500',
+  fontWeight: '400',
   fontDisplay: 'swap',
-  src: `url(${plexMonoMediumUrl}) format("woff2")`,
+  src: `url(${terminalOpenUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'Commit Mono Manzanita',
+  fontStyle: 'normal',
+  fontWeight: '400',
+  fontDisplay: 'swap',
+  src: `url(${commitMonoUrl}) format("woff2")`,
+})
+fontFace({
+  fontFamily: 'Commit Mono Manzanita',
+  fontStyle: 'normal',
+  fontWeight: '600',
+  fontDisplay: 'swap',
+  src: `url(${commitMonoBoldUrl}) format("woff2")`,
 })
 
 // THEMES
 
 const shared = {
   font: {
-    serif: 'Fraunces, "Iowan Old Style", "Palatino Linotype", Georgia, serif',
-    sans: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
-    mono: '"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+    sans: '"Terminal Grotesque", ui-sans-serif, system-ui, sans-serif',
+    outline: '"Terminal Grotesque Open", "Terminal Grotesque", ui-sans-serif, sans-serif',
+    mono: '"Commit Mono Manzanita", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   },
   space: {
     1: '0.25rem',
@@ -126,8 +127,8 @@ const shared = {
     lg: '1.25rem',
     xl: '1.5rem',
     xxl: '2.25rem',
-    display: 'clamp(2.75rem, 5.5vw, 4rem)',
-    hero: 'clamp(3.25rem, 8.6vw, 7.75rem)',
+    display: 'clamp(2.5rem, 5.2vw, 3.75rem)',
+    hero: 'clamp(3rem, 8.2vw, 7.25rem)',
   },
   radius: { sm: '3px', md: '5px', lg: '8px' },
 } as const
@@ -200,10 +201,10 @@ Global.rule('body', {
   margin: 0,
   backgroundColor: color.canvas,
   color: color.ink,
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.md,
-  lineHeight: 1.6,
-  fontOpticalSizing: 'auto',
+  lineHeight: 1.55,
+  fontSynthesis: 'none',
   WebkitFontSmoothing: 'antialiased',
   MozOsxFontSmoothing: 'grayscale',
 })
@@ -213,6 +214,8 @@ Global.rule('::selection', {
 Global.rule('a', { color: 'inherit' })
 Global.rule('h1, h2, h3, h4, p, pre, figure, ul, ol, dl, dd', { margin: 0 })
 Global.rule('button, input, textarea, select', { font: 'inherit' })
+// NOTE: no bold exists, so emphasis is a color, not a weight.
+Global.rule('strong, b', { fontWeight: 400, color: color.accent })
 
 // LAYOUT
 
@@ -267,48 +270,42 @@ export const eyebrow = Style.make({
   display: 'inline-flex',
   alignItems: 'center',
   gap: space[2],
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: '0.75rem',
-  fontWeight: 500,
-  letterSpacing: '0.14em',
+  fontWeight: 400,
+  letterSpacing: '0.12em',
   textTransform: 'uppercase',
   color: color.muted,
 })
 
 export const display = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.display,
   fontWeight: 400,
   lineHeight: 1.0,
-  letterSpacing: '-0.015em',
+  letterSpacing: '-0.01em',
   textWrap: 'balance',
 })
 
 export const hero = Style.merge(
   display,
-  Style.make({
-    fontSize: text.hero,
-    fontWeight: 380,
-    lineHeight: 0.94,
-    letterSpacing: '-0.025em',
-  }),
+  Style.make({ fontSize: text.hero, lineHeight: 0.92, letterSpacing: '-0.015em' }),
 )
 
 export const heading = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xxl,
   fontWeight: 400,
-  lineHeight: 1.1,
-  letterSpacing: '-0.012em',
+  lineHeight: 1.08,
+  letterSpacing: '-0.01em',
   textWrap: 'balance',
 })
 
 export const subheading = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.lg,
-  fontWeight: 600,
+  fontWeight: 400,
   lineHeight: 1.25,
-  letterSpacing: '-0.005em',
 })
 
 export const lede = Style.make({
@@ -393,8 +390,8 @@ export const button = Recipe.make({
     gap: space[2],
     border: '1px solid transparent',
     borderRadius: radius.md,
-    fontFamily: font.serif,
-    fontWeight: 500,
+    fontFamily: font.sans,
+    fontWeight: 400,
     lineHeight: 1,
     textDecoration: 'none',
     cursor: 'pointer',
@@ -459,9 +456,9 @@ export const segmentButton = Style.make({
   borderRadius: radius.sm,
   paddingBlock: '0.3125rem',
   paddingInline: '0.625rem',
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.sm,
-  fontWeight: 500,
+  fontWeight: 400,
   lineHeight: 1.3,
   color: color.muted,
   backgroundColor: 'transparent',

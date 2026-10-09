@@ -249,9 +249,8 @@ const moduleHeader = Style.make({
 })
 
 const moduleTitle = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: '2rem',
-  fontWeight: 400,
   lineHeight: 1.1,
 })
 

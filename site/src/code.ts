@@ -54,7 +54,7 @@ const TOKEN_STYLES = {
   String: Style.make({ color: color.madder }),
   Keyword: Style.make({ color: color.accent }),
   Type: Style.make({ color: color.teal }),
-  Call: Style.make({ color: color.ink, fontWeight: 500 }),
+  Call: Style.make({ color: color.ink, fontWeight: 600 }),
   Number: Style.make({ color: color.madder }),
   Plain: Style.empty,
 } as const

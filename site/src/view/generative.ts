@@ -50,9 +50,8 @@ const label = Style.make({ fontFamily: font.mono, fontSize: text.xs, color: colo
 const result = Style.make({ display: 'flex', flexDirection: 'column', gap: space[3] })
 
 const cardTitle = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xl,
-  fontWeight: 600,
   lineHeight: 1.2,
 })
 

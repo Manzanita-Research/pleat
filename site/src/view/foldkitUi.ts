@@ -87,7 +87,7 @@ const cell = Style.make({
 
 const headCell = Style.merge(
   cell,
-  Style.make({ color: color.muted, fontWeight: 500, whiteSpace: 'nowrap' }),
+  Style.make({ color: color.muted, whiteSpace: 'nowrap' }),
 )
 
 const monoCell = Style.merge(

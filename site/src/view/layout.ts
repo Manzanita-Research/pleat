@@ -38,7 +38,6 @@ const skipLink = Style.make({
   backgroundColor: color.ink,
   color: color.canvas,
   fontSize: text.sm,
-  fontWeight: 500,
   textDecoration: 'none',
   transform: 'translateY(-200%)',
 }).pipe(Style.when(When.focus, { transform: 'none' }))
@@ -66,11 +65,9 @@ const wordmark = Style.make({
   alignItems: 'center',
   gap: space[2],
   textDecoration: 'none',
-  fontFamily: font.serif,
-  fontSize: '1.5rem',
-  fontWeight: 500,
+  fontFamily: font.outline,
+  fontSize: '1.625rem',
   lineHeight: 1,
-  letterSpacing: '-0.02em',
   borderRadius: radius.sm,
 }).pipe(Style.merge(Design.focusRing))
 
@@ -95,7 +92,6 @@ const topLink = Style.make({
   borderRadius: radius.md,
   textDecoration: 'none',
   fontSize: text.sm,
-  fontWeight: 400,
   color: color.muted,
 }).pipe(
   Style.merge(Design.focusRing),
@@ -300,7 +296,6 @@ const colophon = Style.merge(
     paddingBlock: space[4],
     borderTop: `1px solid ${color.line}`,
     fontSize: text.xs,
-    fontStyle: 'italic',
   }),
 )
 
@@ -566,7 +561,10 @@ const footerView = (h: HtmlBuilder<Message>): Html =>
       h.div(
         [...css(colophon)],
         [
-          h.span([], ['Set in Fraunces and IBM Plex Mono. Styled only with Pleat.']),
+          h.span(
+            [],
+            ['Set in Terminal Grotesque and Commit Mono. Styled only with Pleat.'],
+          ),
           h.span(
             [],
             ['Built with Foldkit, typed with Effect, deployed by Alchemy to Cloudflare.'],

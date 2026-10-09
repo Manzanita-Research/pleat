@@ -45,7 +45,6 @@ const bandCaption = Style.merge(
     gap: space[4],
     paddingBlockStart: space[3],
     fontSize: text.xs,
-    fontStyle: 'italic',
     color: color.muted,
   }),
 )
@@ -103,8 +102,7 @@ const manifesto = Style.merge(
 const manifestoText = Style.make({
   maxWidth: '46rem',
   fontSize: 'clamp(1.375rem, 2.4vw, 1.875rem)',
-  lineHeight: 1.35,
-  letterSpacing: '-0.01em',
+  lineHeight: 1.3,
   textWrap: 'pretty',
 })
 
@@ -170,9 +168,8 @@ const stage = Style.make({
 const stageLabel = Style.merge(Design.eyebrow, Style.make({ gap: space[3] }))
 
 const stageNumber = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.md,
-  fontWeight: 400,
   letterSpacing: 0,
   color: color.accent,
 })
@@ -229,7 +226,7 @@ const ledger = Style.make({
 
 const ledgerFigure = Style.make({
   display: 'block',
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xl,
   color: color.ink,
   lineHeight: 1.1,
@@ -269,7 +266,7 @@ const step = Style.make({
 }).pipe(Style.when(When.firstChild, { borderTop: 'none', paddingBlockStart: 0 }))
 
 const stepNumber = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xl,
   lineHeight: 1,
   color: color.accent,
@@ -299,11 +296,9 @@ const pillar = Style.make({
 })
 
 const pillarTitle = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: text.xl,
-  fontWeight: 400,
   lineHeight: 1.15,
-  letterSpacing: '-0.01em',
 })
 
 // PLAYGROUND
@@ -394,7 +389,6 @@ const headCell = Style.merge(
   cell,
   Style.make({
     color: color.muted,
-    fontWeight: 400,
     position: 'sticky',
     top: 0,
     backgroundColor: color.canvas,
@@ -420,10 +414,10 @@ const closingInner = Style.make({
 )
 
 const closingText = Style.make({
-  fontFamily: font.serif,
+  fontFamily: font.sans,
   fontSize: 'clamp(1.75rem, 3.4vw, 2.75rem)',
-  lineHeight: 1.12,
-  letterSpacing: '-0.015em',
+  lineHeight: 1.1,
+  letterSpacing: '-0.01em',
   textWrap: 'balance',
   maxWidth: '22ch',
 })

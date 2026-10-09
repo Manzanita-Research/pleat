@@ -107,7 +107,7 @@ const headerCell = Style.make({
   paddingBlock: space[2],
   paddingInline: space[3],
   borderBottom: `1px solid ${color.line}`,
-  fontWeight: 600,
+  color: color.muted,
 })
 
 const cell = Style.make({
@@ -143,7 +143,7 @@ const swatchBase = Style.make({
   border: `1px solid ${semantic.color.border}`,
 })
 
-const swatchSample = Style.make({ fontSize: text.lg, fontWeight: 600, lineHeight: 1.1 })
+const swatchSample = Style.make({ fontSize: text.lg, lineHeight: 1.1 })
 
 const swatchName = Style.make({ fontFamily: font.mono, fontSize: text.xs })
 
