@@ -1,4 +1,4 @@
-import { Cause, Effect, Exit, Option, Schema } from 'effect'
+import { Cause, Effect, Equal, Exit, Option, Schema } from 'effect'
 import { describe, expect, test } from 'vitest'
 
 import { Theme, Token, Var } from '../src/index.ts'
@@ -248,6 +248,115 @@ describe('Theme.patch', () => {
     expect(() => Theme.patch(base, system, { brand: { 600: system.button } })).toThrow(
       /Theme aliases form a cycle/,
     )
+  })
+})
+
+describe('decode checks', () => {
+  const valid = {
+    color: { canvas: '#ffffff', ink: '#111111', onAccent: 'white' },
+    space: { 1: '0.25rem', 2: '0.5rem' },
+    font: { body: 'serif', weight: 400 },
+  }
+  const sameAs =
+    (token: Token.Token, other: Token.Token): Theme.Check =>
+    theme =>
+      Equal.equals(Theme.resolve(theme, token), Theme.resolve(theme, other))
+        ? {
+            path: token.path,
+            issue: `${token.path.join('.')} is the same as ${other.path.join('.')}`,
+          }
+        : undefined
+  const inkStandsOut = sameAs(tokens.color.ink, tokens.color.canvas)
+
+  const failure = async (effect: Effect.Effect<Theme.Theme, Schema.SchemaError>) => {
+    const exit = await Effect.runPromiseExit(effect)
+    if (!Exit.isFailure(exit)) {
+      throw new Error('expected the decode to fail')
+    }
+    return String(Cause.squash(exit.cause))
+  }
+
+  test('reject a theme whose values each have their kind but break a rule', async () => {
+    const message = await failure(
+      Theme.decode(
+        tokens,
+        { ...valid, color: { ...valid.color, ink: '#ffffff' } },
+        {
+          checks: [inkStandsOut],
+        },
+      ),
+    )
+    expect(message).toContain('color.ink is the same as color.canvas')
+    expect(message).toContain('at ["color"]["ink"]')
+    const theme = await Effect.runPromise(
+      Theme.decode(tokens, valid, { checks: [inkStandsOut] }),
+    )
+    expect(Theme.css(theme)).toBe(Theme.css(Theme.make(tokens, valid)))
+  })
+
+  test('report every failing check together', async () => {
+    const message = await failure(
+      Theme.decode(
+        tokens,
+        { ...valid, color: { canvas: '#ffffff', ink: '#ffffff', onAccent: '#ffffff' } },
+        { checks: [inkStandsOut, sameAs(tokens.color.onAccent, tokens.color.canvas)] },
+      ),
+    )
+    expect(message).toContain('at ["color"]["ink"]')
+    expect(message).toContain('at ["color"]["onAccent"]')
+  })
+
+  test('run once on one built theme, which is the result, and only when every value has its kind', async () => {
+    const seen: Array<Theme.Theme> = []
+    const record: Theme.Check = theme => {
+      seen.push(theme)
+      return undefined
+    }
+    const theme = await Effect.runPromise(
+      Theme.decode(tokens, valid, { checks: [record, record] }),
+    )
+    expect(seen).toHaveLength(2)
+    expect(seen[0]).toBe(theme)
+    expect(seen[1]).toBe(theme)
+    seen.length = 0
+    const message = await failure(
+      Theme.decode(
+        tokens,
+        { ...valid, space: { 1: '4px', 2: 'eight' } },
+        { checks: [record] },
+      ),
+    )
+    expect(message).toContain('at ["space"]["2"]')
+    expect(seen).toEqual([])
+  })
+
+  test('run on the extended theme in decodePartial, aliases and all', async () => {
+    const night = Theme.extend(light, tokens, {
+      color: { onAccent: tokens.color.canvas },
+    })
+    const onAccentStandsOut = sameAs(tokens.color.onAccent, tokens.color.ink)
+    const message = await failure(
+      Theme.decodePartial(
+        night,
+        tokens,
+        { color: { canvas: 'oklch(20% 0.02 260)' } },
+        {
+          checks: [onAccentStandsOut],
+        },
+      ),
+    )
+    expect(message).toContain('color.onAccent is the same as color.ink')
+    const theme = await Effect.runPromise(
+      Theme.decodePartial(
+        night,
+        tokens,
+        { color: { canvas: '#000' } },
+        {
+          checks: [onAccentStandsOut],
+        },
+      ),
+    )
+    expect(Theme.resolve(theme, tokens.color.onAccent)).toEqual(Option.some('#000'))
   })
 })
 
