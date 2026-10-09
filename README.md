@@ -71,7 +71,8 @@ if needed.
 
 ```sh
 pnpm install
-pnpm lint            # Foldkit application conventions, including displayed snippets
+pnpm format          # oxfmt, including displayed snippets
+pnpm lint            # oxlint across the repo, plus Foldkit rules for the site
 pnpm typecheck       # every package, the site, and the browser tests
 pnpm test            # unit and property tests
 pnpm chromium:install # download Playwright's Chromium once
@@ -82,9 +83,13 @@ pnpm site:build      # the static site in site/dist/client
 pnpm check           # all of the above that CI runs
 ```
 
-The root owns shared tooling. `bench` and `test/browser` are private workspaces
-with their own manifests and TypeScript configs, so comparison and browser-fixture
-packages stay with the code that uses them. `infra` remains a separate workspace
+The root owns shared tooling: oxfmt, oxlint, TypeScript, Vite, and Vitest.
+Formatting and linting run in `pnpm check` and CI. The formatter preserves the
+narrower widths of displayed snippets and uses Foldkit’s import ordering.
+
+`bench` and `test/browser` are private workspaces with their own manifests and
+TypeScript configs, so comparison and browser-fixture packages stay with the code
+that uses them. `infra` remains a separate workspace
 with its own lockfile and Effect version; CI additionally runs
 `pnpm --dir infra install --frozen-lockfile` and `pnpm --dir infra typecheck`.
 

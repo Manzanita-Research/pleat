@@ -1,7 +1,8 @@
-import { Style, type Theme, When } from '@pleat/core'
-import { css } from '@pleat/foldkit'
 import { Cause, Effect, Exit, Option } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
+
+import { Style, type Theme, When } from '@pleat/core'
+import { css } from '@pleat/foldkit'
 
 import { codeBlock } from '../code.ts'
 import * as Components from '../demo/theming/components.ts'
@@ -13,9 +14,9 @@ import hardcodedSource from '../demo/theming/hardcoded.ts?raw'
 import {
   type Brand,
   type Density,
-  inverted,
   type Mode,
   type Scope,
+  inverted,
   scopeAttributes,
 } from '../demo/theming/scope.ts'
 import scopeSource from '../demo/theming/scope.ts?raw'

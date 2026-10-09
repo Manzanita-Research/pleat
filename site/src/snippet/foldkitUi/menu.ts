@@ -1,6 +1,7 @@
-import { css, cssClass } from '@pleat/foldkit'
 import { Option } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
+
+import { css, cssClass } from '@pleat/foldkit'
 
 import {
   type Action,

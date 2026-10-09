@@ -11,8 +11,9 @@
  *
  *  @packageDocumentation */
 
-import { Style, Var } from '@pleat/core'
 import { type Attribute, inertHtml } from 'foldkit/html'
+
+import { Style, Var } from '@pleat/core'
 
 // PARTS
 

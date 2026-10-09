@@ -9,8 +9,9 @@
  *
  *  @packageDocumentation */
 
-import { Sheet } from '@pleat/core'
 import { Server } from 'foldkit/experimental'
+
+import { Sheet } from '@pleat/core'
 
 /** Options for {@link renderDocument}. */
 export type DocumentOptions = Server.DocumentOptions &

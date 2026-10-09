@@ -36,7 +36,8 @@ export type Props<S extends Shape, D extends Partial<S>> = {
   ]: S[Dimension]
 } & {
   readonly [Dimension in keyof S as Dimension extends keyof D ? Dimension : never]?:
-    S[Dimension] | undefined
+    | S[Dimension]
+    | undefined
 }
 
 type FieldSchema<A> = [A] extends [boolean]

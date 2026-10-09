@@ -1,7 +1,8 @@
-import { type Declarations, Global, Sheet, Style } from '@pleat/core'
 import fc from 'fast-check'
 import type { Browser, Page } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { type Declarations, Global, Sheet, Style } from '@pleat/core'
 
 import { isSafeValue } from '../../packages/core/src/property.ts'
 import { launch } from './chromium.ts'

@@ -1,4 +1,3 @@
-import { Dialog } from '@foldkit/ui'
 import {
   Command,
   given,
@@ -8,6 +7,8 @@ import {
 } from 'foldkit/story'
 import { modifyFields } from 'foldkit/struct'
 import { describe, expect, test } from 'vitest'
+
+import { Dialog } from '@foldkit/ui'
 
 import { Message, init, update } from './foldkitUi.ts'
 

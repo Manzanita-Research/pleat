@@ -24,7 +24,8 @@ Pleat is a styling library for Foldkit and Effect v4. Read `README.md` first, th
 - Workspace packages resolve to source through the `@pleat/source` export condition. Vite, Vitest, TypeScript, and the benchmark all set it.
 - Class names are a contract between server and client. A change to hashing, atom keys, or condition keys changes every class name; treat it as breaking.
 - A law or cascade test that has never failed is not evidence. When you change the compiler, break it on purpose and watch the browser test catch it.
-- Run `pnpm format` before committing. CI checks it.
+- Run `pnpm format` (oxfmt) before committing. CI checks it.
+- `pnpm lint` runs oxlint across all owned code, including infrastructure. The site extends the root rules with Foldkit’s recommended application rules.
 
 ## Dependency ownership
 
@@ -35,4 +36,4 @@ Pleat is a styling library for Foldkit and Effect v4. Read `README.md` first, th
 
 ## Commands
 
-`pnpm check` runs what CI runs: typecheck, unit tests, build, the browser test, and the site build. The browser test needs Chromium: Playwright's (`pnpm chromium:install`) or `CHROMIUM_PATH`. `pnpm lint` runs Foldkit's recommended application rules on the site. CI also installs and typechecks `infra` separately.
+`pnpm check` runs what CI runs: formatting, linting, typecheck, unit tests, build, the browser test, and the site build. The browser test needs Chromium: Playwright's (`pnpm chromium:install`) or `CHROMIUM_PATH`. CI also installs and typechecks `infra` separately.

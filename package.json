@@ -16,14 +16,15 @@
     "site:build": "pnpm --dir site build",
     "site:preview": "pnpm --dir site preview",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:browser && pnpm site:build",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint": "pnpm --dir site lint",
+    "format": "oxfmt --disable-nested-config",
+    "format:check": "oxfmt --check --disable-nested-config",
+    "lint": "oxlint --deny-warnings --disable-nested-config . && pnpm --dir site lint",
     "chromium:install": "pnpm --dir test/browser exec playwright-core install chromium"
   },
   "devDependencies": {
     "@types/node": "24.19.1",
-    "prettier": "3.9.9",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
     "typescript": "7.0.2",
     "vite": "8.3.4",
     "vitest": "5.0.3"

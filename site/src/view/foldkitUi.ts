@@ -1,7 +1,8 @@
-import { Style, When } from '@pleat/core'
-import { css } from '@pleat/foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { defineView } from 'foldkit/submodel'
+
+import { Style, When } from '@pleat/core'
+import { css } from '@pleat/foldkit'
 
 import { codeBlock } from '../code.ts'
 import { Message, type Model, type TabAppearance } from '../demo/foldkitUi.ts'

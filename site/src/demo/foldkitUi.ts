@@ -1,3 +1,8 @@
+import { Array, Option, Schema } from 'effect'
+import { Update } from 'foldkit'
+import { defineMessageUnion } from 'foldkit/message'
+import { modifyFields } from 'foldkit/struct'
+
 import {
   Combobox,
   Dialog,
@@ -6,10 +11,6 @@ import {
   Tabs,
   Tooltip,
 } from '@foldkit/ui'
-import { Array, Option, Schema } from 'effect'
-import { Update } from 'foldkit'
-import { defineMessageUnion } from 'foldkit/message'
-import { modifyFields } from 'foldkit/struct'
 
 // NOTE: the state behind the live demos on the Foldkit UI page. The page is a
 // Submodel of the site, so this is the whole of what the demos add to it.

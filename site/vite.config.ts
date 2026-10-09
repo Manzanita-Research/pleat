@@ -1,5 +1,6 @@
-import { foldkit } from '@foldkit/vite-plugin'
 import { defaultClientConditions, defaultServerConditions, defineConfig } from 'vite'
+
+import { foldkit } from '@foldkit/vite-plugin'
 
 const SOURCE_CONDITION = '@pleat/source'
 

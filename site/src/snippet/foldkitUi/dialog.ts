@@ -1,7 +1,8 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Dialog } from '@foldkit/ui'
 import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Message, type Model } from '../../demo/foldkitUi.ts'
 import { tokens } from '../../design.ts'

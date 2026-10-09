@@ -1,8 +1,9 @@
+import { Array } from 'effect'
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Disclosure } from '@foldkit/ui'
 import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import { Array } from 'effect'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import {
   Message,

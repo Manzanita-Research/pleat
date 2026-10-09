@@ -1,8 +1,7 @@
-import { fileURLToPath } from 'node:url'
-
 import * as Alchemy from 'alchemy'
 import * as Cloudflare from 'alchemy/Cloudflare'
 import * as Effect from 'effect/Effect'
+import { fileURLToPath } from 'node:url'
 
 // The docs site: a Foldkit app prerendered to static pages, served as
 // Workers static assets with no Worker code in front of them.

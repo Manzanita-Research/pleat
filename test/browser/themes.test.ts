@@ -1,8 +1,9 @@
-import { Theme, Token, Var } from '@pleat/core'
 import { Option } from 'effect'
 import fc from 'fast-check'
 import type { Browser } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { Theme, Token, Var } from '@pleat/core'
 
 import { launch } from './chromium.ts'
 

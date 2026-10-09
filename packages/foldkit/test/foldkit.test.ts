@@ -1,8 +1,9 @@
-import { Recipe, Sheet, Style, Theme, Token, Var, When } from '@pleat/core'
 import { Effect } from 'effect'
-import type { Document, HtmlBuilder } from 'foldkit/html'
 import { Server } from 'foldkit/experimental'
+import type { Document, HtmlBuilder } from 'foldkit/html'
 import { describe, expect, test } from 'vitest'
+
+import { Recipe, Sheet, Style, Theme, Token, Var, When } from '@pleat/core'
 
 import { className, css, cssClass } from '../src/index.ts'
 import { renderDocument } from '../src/server.ts'

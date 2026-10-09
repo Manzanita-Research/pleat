@@ -1,7 +1,8 @@
-import { Token } from '@pleat/core'
 import { Exit, Schema } from 'effect'
 import type { Browser } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { Token } from '@pleat/core'
 
 import { launch } from './chromium.ts'
 

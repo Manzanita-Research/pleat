@@ -1,7 +1,8 @@
-import { Style, When } from '@pleat/core'
-import { css } from '@pleat/foldkit'
 import { Cause, Exit, Option, Schema } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
+
+import { Style, When } from '@pleat/core'
+import { css } from '@pleat/foldkit'
 
 import { codeBlock } from '../code.ts'
 import { CardSpec, surface } from '../demo/card.ts'

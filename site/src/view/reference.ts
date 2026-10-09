@@ -1,6 +1,7 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import * as Design from '../design.ts'
 import type { Message } from '../message.ts'

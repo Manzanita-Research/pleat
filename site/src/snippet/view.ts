@@ -1,9 +1,10 @@
-import { Style } from '@pleat/core'
-import { css } from '@pleat/foldkit'
-import { Button } from '@foldkit/ui'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { defineRouteUnion, literal, mapTo } from 'foldkit/route'
+
+import { Button } from '@foldkit/ui'
+import { Style } from '@pleat/core'
+import { css } from '@pleat/foldkit'
 
 import { button } from './recipe.ts'
 import { link } from './styles.ts'

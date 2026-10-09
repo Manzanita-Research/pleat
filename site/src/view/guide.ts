@@ -1,6 +1,7 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Style } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { codeBlock } from '../code.ts'
 import * as Design from '../design.ts'

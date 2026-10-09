@@ -1,10 +1,11 @@
-import { Menu } from '@foldkit/ui'
-import { cssClass } from '@pleat/foldkit'
 import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
+
+import { Menu } from '@foldkit/ui'
+import { cssClass } from '@pleat/foldkit'
 
 import { optionItem, panel, triggerButton } from './kit.ts'
 

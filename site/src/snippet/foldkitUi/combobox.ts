@@ -1,7 +1,8 @@
-import { Style, When } from '@pleat/core'
-import { css, cssClass } from '@pleat/foldkit'
 import { Option, String } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
+
+import { Style, When } from '@pleat/core'
+import { css, cssClass } from '@pleat/foldkit'
 
 import {
   Fabric,

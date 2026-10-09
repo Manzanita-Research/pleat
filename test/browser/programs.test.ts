@@ -1,7 +1,8 @@
-import { Sheet, Style } from '@pleat/core'
 import fc from 'fast-check'
 import type { Browser } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { Sheet, Style } from '@pleat/core'
 
 import { launch } from './chromium.ts'
 

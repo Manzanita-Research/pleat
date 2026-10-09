@@ -1,6 +1,7 @@
-import { Global, Sheet, Style, Theme, Token, When } from '@pleat/core'
 import type { Browser } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { Global, Sheet, Style, Theme, Token, When } from '@pleat/core'
 
 import { bundle } from './bundle.ts'
 import { launch } from './chromium.ts'

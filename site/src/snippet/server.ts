@@ -1,6 +1,7 @@
-import { renderDocument as renderWithPleat } from '@pleat/foldkit/server'
 import { Effect } from 'effect'
 import { Server } from 'foldkit/experimental'
+
+import { renderDocument as renderWithPleat } from '@pleat/foldkit/server'
 
 import { init, view } from './main.ts'
 
