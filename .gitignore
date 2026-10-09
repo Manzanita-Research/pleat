@@ -6,4 +6,5 @@ coverage
 .env
 *.tsbuildinfo
 .DS_Store
-.claude/
+.claude/*
+!.claude/skills/

@@ -2,14 +2,14 @@ import { Effect, Option, Schema } from 'effect'
 
 import { formatNumber } from './property.ts'
 import {
-  isToken,
   type Kind,
-  leaves,
   type Spec,
   type Token,
   type Tokens,
+  isToken,
+  leaves,
 } from './token.ts'
-import { type Binding, isRef, type Ref, type Var } from './var.ts'
+import { type Binding, type Ref, type Var, isRef } from './var.ts'
 
 // TYPES
 
@@ -17,7 +17,9 @@ import { type Binding, isRef, type Ref, type Var } from './var.ts'
  *  another token of the same kind, which aliases it. A token of the `Value` kind can alias a
  *  token of any kind. */
 export type Value<A extends string | number, N extends string> =
-  A | Var<A> | (string extends N ? Token : N extends 'Value' ? Token : Token<A, N>)
+  | A
+  | Var<A>
+  | (string extends N ? Token : N extends 'Value' ? Token : Token<A, N>)
 
 /** Values for every token in a tree. A value may be another token, to alias it. */
 export type Values<T> =

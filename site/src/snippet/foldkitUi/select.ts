@@ -1,7 +1,8 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Select } from '@foldkit/ui'
 import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Message, type Model } from '../../demo/foldkitUi.ts'
 import { focusRing, tokens } from '../../design.ts'
@@ -81,7 +82,7 @@ const weightSelect = (
       isDisabled: config.isDisabled,
       isInvalid: !config.isDisabled && config.value === '',
       hasDescription: true,
-      onChange: weight => Message.ChangedWeight({ weight }),
+      onChange: weight => Message.UpdatedWeight({ weight }),
       toView: ({ select, label, description }) =>
         h.div(
           [...css(field)],
@@ -96,7 +97,7 @@ const weightSelect = (
                     h.option([h.Value(value)], [text]),
                   ),
                 ),
-                h.span([...css(selectChevron)], []),
+                h.span([...css(selectChevron)]),
               ],
             ),
             h.span(

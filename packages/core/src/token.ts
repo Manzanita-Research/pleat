@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 
 import { isSafeValue } from './property.ts'
-import { isRef, makeRef, type Ref } from './var.ts'
+import { type Ref, isRef, makeRef } from './var.ts'
 
 // KINDS
 

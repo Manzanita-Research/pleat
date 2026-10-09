@@ -12,7 +12,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'unit',
-          include: ['packages/*/test/**/*.test.ts'],
+          include: ['packages/*/test/**/*.test.ts', 'site/src/**/*.test.ts'],
           environment: 'node',
         },
       },
@@ -20,6 +20,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'browser',
+          maxWorkers: 1,
           include: ['test/browser/**/*.test.ts'],
           environment: 'node',
           testTimeout: 180_000,

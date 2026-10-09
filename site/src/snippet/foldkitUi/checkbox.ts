@@ -1,8 +1,9 @@
+import { Array } from 'effect'
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Checkbox } from '@foldkit/ui'
 import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import { Array } from 'effect'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Message, type Model, Step } from '../../demo/foldkitUi.ts'
 import { focusRing, tokens } from '../../design.ts'
@@ -113,10 +114,7 @@ const labeledCheckbox = (
           [
             h.button(
               [...attributes.checkbox, ...css(checkboxBox)],
-              [
-                h.span([...css(tick)], []),
-                h.span([...css(dash)], []),
-              ],
+              [h.span([...css(tick)]), h.span([...css(dash)])],
             ),
             h.span([...attributes.label], [config.label]),
           ],

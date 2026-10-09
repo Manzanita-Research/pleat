@@ -1,5 +1,6 @@
-import { Calc, Color, Recipe, Style } from '@pleat/core'
 import { Option } from 'effect'
+
+import { Calc, Color, Recipe, Style } from '@pleat/core'
 
 // Transforms are functions from style to style. They compile to
 // CSS functions, so they hold under every theme.

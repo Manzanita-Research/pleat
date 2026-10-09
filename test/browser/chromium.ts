@@ -1,7 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-
 import { type Browser, chromium } from 'playwright-core'
 
 const playwrightHeadlessShells = (): ReadonlyArray<string> => {
@@ -34,9 +33,7 @@ export const chromiumPath = (): string => {
       return candidate
     }
   }
-  throw new Error(
-    'No Chromium found. Run `pnpm exec playwright-core install chromium` or set CHROMIUM_PATH.',
-  )
+  throw new Error('No Chromium found. Run `pnpm chromium:install` or set CHROMIUM_PATH.')
 }
 
 export const launch = (): Promise<Browser> =>

@@ -1,6 +1,7 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Recipe, Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 const card = Style.make({
   display: 'grid',

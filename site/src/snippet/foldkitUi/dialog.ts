@@ -1,7 +1,8 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Dialog } from '@foldkit/ui'
 import { Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Message, type Model } from '../../demo/foldkitUi.ts'
 import { tokens } from '../../design.ts'
@@ -97,11 +98,7 @@ export const dialogDemo = (
         : h.button(
             [
               h.Type('button'),
-              h.OnClick(
-                Message.GotDialogMessage({
-                  message: Dialog.Message.RequestedOpen(),
-                }),
-              ),
+              h.OnClick(Message.ClickedArchivePrompt()),
               ...css(uiButton({})),
             ],
             ['Archive pattern…'],
@@ -130,7 +127,7 @@ export const dialogDemo = (
             h.dialog(
               [...dialog, ...css(dialogRoot)],
               [
-                h.div([...backdrop, ...css(dialogBackdrop)], []),
+                h.div([...backdrop, ...css(dialogBackdrop)]),
                 h.div(
                   [...panel, ...css(dialogPanel)],
                   [

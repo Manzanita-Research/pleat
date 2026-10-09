@@ -1,6 +1,7 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Style, Var } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 // Continuous values go through a typed custom property. The rule is
 // static; each render binds one inline --progress declaration.

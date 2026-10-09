@@ -1,11 +1,11 @@
 import { Global, Theme } from '@pleat/core'
 
 import {
+  STEPS,
+  type Step,
   component,
   palette,
   semantic,
-  STEPS,
-  type Step,
 } from './tokens.ts'
 
 const { white, black, gray, brand, red, green } = palette

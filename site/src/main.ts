@@ -1,13 +1,13 @@
 import { Effect, Option, Schema } from 'effect'
 import { Command, type Runtime, Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
-import { load, pushUrl, UrlRequest } from 'foldkit/navigation'
+import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
 import { toString as urlToString } from 'foldkit/url'
 
 import { brandPresetSource } from './brandPresets.ts'
 import * as FoldkitUi from './demo/foldkitUi.ts'
-import { Message, Model, type BrandPreset, type Preset } from './message.ts'
+import { type BrandPreset, Message, Model, type Preset } from './message.ts'
 import { presetSource } from './presets.ts'
 import { AppRoute, urlToAppRoute } from './route.ts'
 import { algebraView } from './view/algebra.ts'
@@ -83,7 +83,7 @@ export const update = (model: Model, message: Message) =>
         }),
         External: ({ href }) => ({ model, commands: [LoadExternal({ href })] }),
       }),
-    ChangedUrl: ({ url }) => ({
+    UpdatedUrl: ({ url }) => ({
       model: modifyFields(model, {
         route: () => urlToAppRoute(url),
         isMenuOpen: () => false,
@@ -95,22 +95,22 @@ export const update = (model: Model, message: Message) =>
     ClickedMenuToggle: () => ({
       model: modifyFields(model, { isMenuOpen: isMenuOpen => !isMenuOpen }),
     }),
-    PickedTone: ({ tone }) => ({
+    SelectedTone: ({ tone }) => ({
       model: modifyFields(model, {
-        playground: playground => ({ ...playground, tone }),
+        playground: modifyFields({ tone: () => tone }),
       }),
     }),
-    PickedSize: ({ size }) => ({
+    SelectedSize: ({ size }) => ({
       model: modifyFields(model, {
-        playground: playground => ({ ...playground, size }),
+        playground: modifyFields({ size: () => size }),
       }),
     }),
-    PickedPending: ({ isPending }) => ({
+    UpdatedPending: ({ isPending }) => ({
       model: modifyFields(model, {
-        playground: playground => ({ ...playground, isPending }),
+        playground: modifyFields({ isPending: () => isPending }),
       }),
     }),
-    EditedSpec: ({ source }) => ({
+    UpdatedSpec: ({ source }) => ({
       model: modifyFields(model, {
         specSource: () => source,
         preset: () => Option.none(),
@@ -122,36 +122,40 @@ export const update = (model: Model, message: Message) =>
         preset: () => Option.some(preset),
       }),
     }),
-    PickedMode: ({ mode }) => ({
+    SelectedMode: ({ mode }) => ({
       model: modifyFields(model, {
-        theming: theming => ({ ...theming, scope: { ...theming.scope, mode } }),
+        theming: modifyFields({
+          scope: modifyFields({ mode: () => mode }),
+        }),
       }),
     }),
-    PickedBrand: ({ brand }) => ({
+    SelectedBrand: ({ brand }) => ({
       model: modifyFields(model, {
-        theming: theming => ({ ...theming, scope: { ...theming.scope, brand } }),
+        theming: modifyFields({
+          scope: modifyFields({ brand: () => brand }),
+        }),
       }),
     }),
-    PickedDensity: ({ density }) => ({
+    SelectedDensity: ({ density }) => ({
       model: modifyFields(model, {
-        theming: theming => ({ ...theming, scope: { ...theming.scope, density } }),
+        theming: modifyFields({
+          scope: modifyFields({ density: () => density }),
+        }),
       }),
     }),
-    EditedBrandSource: ({ source }) => ({
+    UpdatedBrandSource: ({ source }) => ({
       model: modifyFields(model, {
-        theming: theming => ({
-          ...theming,
-          brandSource: source,
-          brandPreset: Option.none(),
+        theming: modifyFields({
+          brandSource: () => source,
+          brandPreset: () => Option.none(),
         }),
       }),
     }),
     ClickedBrandPreset: ({ preset }) => ({
       model: modifyFields(model, {
-        theming: theming => ({
-          ...theming,
-          brandSource: brandPresetSource(preset),
-          brandPreset: Option.some(preset),
+        theming: modifyFields({
+          brandSource: () => brandPresetSource(preset),
+          brandPreset: () => Option.some(preset),
         }),
       }),
     }),

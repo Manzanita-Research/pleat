@@ -1,5 +1,6 @@
-import { Recipe, Style, When } from '@pleat/core'
 import { Schema } from 'effect'
+
+import { Recipe, Style, When } from '@pleat/core'
 
 import { button, tokens } from '../design.ts'
 

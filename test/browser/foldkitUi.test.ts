@@ -1,5 +1,4 @@
 import { fileURLToPath } from 'node:url'
-
 import type { Browser, Page } from 'playwright-core'
 import { build, defaultClientConditions } from 'vite'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'

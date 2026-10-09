@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/not-found.ts",
+    "build": "vite build && node --test scripts/build.test.mjs",
     "preview": "vite preview --outDir dist/client",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings src"
   },
   "dependencies": {
     "@effect/platform-browser": "4.0.0",
@@ -20,8 +21,11 @@
     "foldkit": "0.167.0"
   },
   "devDependencies": {
+    "@foldkit/devtools-mcp": "0.24.1",
+    "@foldkit/oxlint-plugin": "0.15.3",
     "@foldkit/vite-plugin": "0.27.0",
     "typescript": "7.0.2",
-    "vite": "8.3.4"
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
   }
 }

@@ -1,6 +1,7 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Color, Recipe, Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { codeBlock } from '../code.ts'
 import * as Design from '../design.ts'
@@ -555,17 +556,17 @@ const playgroundView = (model: Model, h: HtmlBuilder<Message>): Html => {
         [...css(controls)],
         [
           segmented(h, 'tone', TONES, tone, option =>
-            Message.PickedTone({ tone: option }),
+            Message.SelectedTone({ tone: option }),
           ),
           segmented(h, 'size', SIZES, size, option =>
-            Message.PickedSize({ size: option }),
+            Message.SelectedSize({ size: option }),
           ),
           segmented(
             h,
             'isPending',
             ['false', 'true'],
             isPending ? 'true' : 'false',
-            option => Message.PickedPending({ isPending: option === 'true' }),
+            option => Message.UpdatedPending({ isPending: option === 'true' }),
           ),
         ],
       ),

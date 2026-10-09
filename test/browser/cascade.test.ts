@@ -1,7 +1,8 @@
-import { Sheet, Style, When } from '@pleat/core'
 import fc from 'fast-check'
 import type { Browser, Page } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+
+import { Sheet, Style, When } from '@pleat/core'
 
 import { description } from '../../packages/core/test/arbitrary.ts'
 import { type Description, fromDescription } from '../../packages/core/test/universe.ts'

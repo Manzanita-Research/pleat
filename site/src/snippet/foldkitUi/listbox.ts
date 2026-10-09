@@ -1,7 +1,8 @@
-import { Style } from '@pleat/core'
-import { css, cssClass } from '@pleat/foldkit'
 import { Option } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
+
+import { Style } from '@pleat/core'
+import { css, cssClass } from '@pleat/foldkit'
 
 import {
   AssigneeListbox,
@@ -78,7 +79,7 @@ export const listboxDemo = (
                 onNone: () => h.span([], ['Nobody']),
                 onSome: name => personView(name, h),
               }),
-              h.span([...css(chevron)], []),
+              h.span([...css(chevron)]),
             ],
           ),
           buttonClassName: cssClass(triggerButton),
@@ -87,10 +88,7 @@ export const listboxDemo = (
             className: cssClass(optionItem({})),
             content: h.span(
               [...css(spread)],
-              [
-                personView(name, h),
-                h.span([...css(optionCheck)], []),
-              ],
+              [personView(name, h), h.span([...css(optionCheck)])],
             ),
           }),
           anchor: { placement: 'bottom-start', gap: 6 },

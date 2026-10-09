@@ -1,7 +1,8 @@
-import { Style, When } from '@pleat/core'
-import { css, cssClass } from '@pleat/foldkit'
 import { Option, String } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
+
+import { Style, When } from '@pleat/core'
+import { css, cssClass } from '@pleat/foldkit'
 
 import {
   Fabric,
@@ -100,14 +101,14 @@ export const comboboxDemo = (
           inputPlaceholder: 'Search fabrics',
           inputWrapperClassName: cssClass(comboboxField),
           inputClassName: cssClass(comboboxInput),
-          buttonContent: h.span([...css(chevron)], []),
+          buttonContent: h.span([...css(chevron)]),
           buttonClassName: cssClass(comboboxToggle),
           itemsClassName: cssClass(panel),
           itemToConfig: fabric => ({
             className: cssClass(optionItem({})),
             content: h.span(
               [...css(spread)],
-              [fabric, h.span([...css(optionCheck)], [])],
+              [fabric, h.span([...css(optionCheck)])],
             ),
           }),
           anchor: { placement: 'bottom-start', gap: 6 },

@@ -23,14 +23,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
         with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            infra/pnpm-lock.yaml
+          runtime: node@24
+          install: false
+          cache: true
+          cache-dependency-path: pnpm-lock.yaml
       - name: Check that Cloudflare credentials are set
         run: |
           if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
@@ -38,5 +36,4 @@ jobs:
             exit 1
           fi
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --dir infra install --frozen-lockfile
-      - run: pnpm --dir infra exec alchemy deploy --stage prod
+      - run: pnpm site:deploy --stage prod

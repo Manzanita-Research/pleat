@@ -1,5 +1,8 @@
-import { foldkit } from '@foldkit/vite-plugin'
 import { defaultClientConditions, defaultServerConditions, defineConfig } from 'vite'
+
+import { foldkit } from '@foldkit/vite-plugin'
+
+import { cloudflareNotFound } from './scripts/not-found.ts'
 
 const SOURCE_CONDITION = '@pleat/source'
 
@@ -12,6 +15,7 @@ export default defineConfig({
         build: { prerender: {} },
       },
     }),
+    cloudflareNotFound(),
   ],
   resolve: { conditions: [SOURCE_CONDITION, ...defaultClientConditions] },
   ssr: { resolve: { conditions: [SOURCE_CONDITION, ...defaultServerConditions] } },

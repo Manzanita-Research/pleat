@@ -1,7 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
-
 import { compile } from 'tailwindcss'
 
 const root = join(dirname(createRequire(import.meta.url).resolve('tailwindcss')), '..')

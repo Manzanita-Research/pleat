@@ -1,5 +1,4 @@
 import { fileURLToPath } from 'node:url'
-
 import { build, defaultClientConditions } from 'vite'
 
 /** Bundles a fixture module into a script a page can run, the way an application's client

@@ -6,7 +6,7 @@ import {
   isValidPropertyName,
   toKebabCase,
 } from './property.ts'
-import { isRef, type Value } from './var.ts'
+import { type Value, isRef } from './var.ts'
 
 /** CSS properties in camelCase, with numbers allowed wherever a length is. */
 export type Properties = CSS.Properties<number | (string & {}), string & {}>
@@ -15,7 +15,9 @@ export type Properties = CSS.Properties<number | (string & {}), string & {}>
  *  are strings, numbers (`px` unless the property is unitless), or tokens and variables. */
 export type Declarations = {
   readonly [Property in keyof Properties]?:
-    Properties[Property] | Extract<Value, object> | undefined
+    | Properties[Property]
+    | Extract<Value, object>
+    | undefined
 } & {
   readonly [Property: `--${string}`]: Value | undefined
 }

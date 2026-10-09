@@ -1,7 +1,0 @@
-pnpm-lock.yaml
-dist
-node_modules
-**/.claude
-**/.mcp.json
-**/.vscode
-**/.idea

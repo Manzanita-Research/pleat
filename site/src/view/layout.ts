@@ -1,6 +1,7 @@
+import type { Html, HtmlBuilder } from 'foldkit/html'
+
 import { Color, Style, When } from '@pleat/core'
 import { css } from '@pleat/foldkit'
-import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import * as Design from '../design.ts'
 import { Message, type Model, type ThemeChoice } from '../message.ts'
@@ -391,7 +392,7 @@ const iconView = (h: HtmlBuilder<Message>, name: keyof typeof ICON_PATHS): Html 
       h.AriaHidden(true),
       ...css(icon),
     ],
-    [h.path([h.D(ICON_PATHS[name])], [])],
+    [h.path([h.D(ICON_PATHS[name])])],
   )
 
 // VIEW
