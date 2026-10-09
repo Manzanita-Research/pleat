@@ -869,7 +869,7 @@ export const contrastView = (model: Model, h: HtmlBuilder<Message>): Html =>
       section(h, 'site', 'This site’s themes', [
         paragraph(
           h,
-          'Here is every pair this site declares, checked in both themes when the page is built. A unit test pins the failures below so that no new ones can be added, and fixing one means taking it off the list.',
+          'Here is every pair this site declares, checked in both themes when the page is built. A unit test runs the same check, so a palette change that breaks a pair fails in CI. When a failure is accepted for now, the test lists it, and fixing it means taking it off the list.',
         ),
         paragraph(h, siteSummary()),
       ]),
