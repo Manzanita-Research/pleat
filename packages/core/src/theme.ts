@@ -1,4 +1,4 @@
-import { Effect, Schema } from 'effect'
+import { Effect, Option, Schema } from 'effect'
 
 import { formatNumber } from './property.ts'
 import {
@@ -9,7 +9,7 @@ import {
   type Token,
   type Tokens,
 } from './token.ts'
-import { type Binding, isRef, type Var } from './var.ts'
+import { type Binding, isRef, type Ref, type Var } from './var.ts'
 
 // TYPES
 
@@ -292,5 +292,108 @@ export const css = (theme: Theme, selector: string = ':root'): string =>
  *  element, and descendants inherit the results. */
 export const bindings = (theme: Theme): ReadonlyArray<Binding> =>
   theme.declarations.map(([name, value]) => ({ _tag: 'Binding', name, value }))
+
+// RESOLVING
+
+// NOTE: the index just past the `)` that closes the bracket opened before
+// `start`, skipping quoted strings. -1 when it never closes.
+const closingBracket = (value: string, start: number): number => {
+  let depth = 1
+  for (let index = start; index < value.length; index += 1) {
+    const character = value[index]
+    if (character === '"' || character === "'") {
+      const end = value.indexOf(character, index + 1)
+      index = end === -1 ? value.length : end
+    } else if (character === '(') {
+      depth += 1
+    } else if (character === ')') {
+      depth -= 1
+      if (depth === 0) {
+        return index + 1
+      }
+    }
+  }
+  return -1
+}
+
+// NOTE: replaces every `var(--name)` and `var(--name, fallback)` in `value`
+// with what `lookup` gives the name, or with its fallback when the lookup
+// gives nothing. None when a reference has neither, which is what makes the
+// whole declaration invalid in CSS.
+const substitute = (
+  value: string,
+  lookup: (name: string) => Option.Option<string>,
+): Option.Option<string> => {
+  let result = ''
+  let index = 0
+  for (;;) {
+    const start = value.indexOf('var(', index)
+    if (start === -1) {
+      return Option.some(result + value.slice(index))
+    }
+    const end = closingBracket(value, start + 4)
+    if (end === -1) {
+      return Option.none()
+    }
+    const inner = value.slice(start + 4, end - 1)
+    const comma = inner.indexOf(',')
+    const name = (comma === -1 ? inner : inner.slice(0, comma)).trim()
+    const resolved = Option.orElse(lookup(name), () =>
+      comma === -1 ? Option.none() : substitute(inner.slice(comma + 1).trim(), lookup),
+    )
+    if (Option.isNone(resolved)) {
+      return resolved
+    }
+    result += value.slice(index, start) + resolved.value
+    index = end
+  }
+}
+
+/** The value a token ends up with, following aliases the way CSS does, or None when it has
+ *  no value: no scope sets it, or an alias it follows points at nothing and has no
+ *  fallback. Use it for checks that need concrete values, such as contrast between a text
+ *  color and its background.
+ *
+ *  `scopes` are the themes applied from the outside in, such as the theme at `:root`, then
+ *  one on a section, then one on a card inside it. Pass one theme for one scope. The result
+ *  is the value inside the innermost scope.
+ *
+ *  An alias resolves in the scope that declares it, and inner scopes inherit the result, as
+ *  in CSS. So if `:root` sets `accent` to alias `brand`, and an inner scope sets only
+ *  `brand`, `accent` inside it still holds the root's brand.
+ *
+ *  ```ts
+ *  Theme.resolve(light, tokens.color.accent) // Option.some('oklch(55% 0.2 255)')
+ *  Theme.resolve([light, brandOnly], tokens.color.accent) // still light's accent
+ *  ``` */
+export const resolve = (
+  scopes: Theme | ReadonlyArray<Theme>,
+  token: Ref,
+): Option.Option<string> => {
+  const layers = (isTheme(scopes) ? [scopes] : scopes).map(
+    theme => new Map(theme.declarations),
+  )
+  const valueIn = (
+    scope: number,
+    name: string,
+    visiting: ReadonlySet<string>,
+  ): Option.Option<string> => {
+    let declaring = scope
+    while (declaring >= 0 && layers[declaring]?.has(name) !== true) {
+      declaring -= 1
+    }
+    const value = layers[declaring]?.get(name)
+    const key = `${declaring}:${name}`
+    if (value === undefined || visiting.has(key)) {
+      return Option.none()
+    }
+    const inside = new Set(visiting).add(key)
+    return substitute(value, reference => valueIn(declaring, reference, inside))
+  }
+  return valueIn(layers.length - 1, token.name, new Set())
+}
+
+const isTheme = (value: Theme | ReadonlyArray<Theme>): value is Theme =>
+  '_tag' in value && value._tag === 'Theme'
 
 export type { Kind, Spec, Tokens }

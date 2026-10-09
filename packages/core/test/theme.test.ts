@@ -1,4 +1,4 @@
-import { Cause, Effect, Exit, Schema } from 'effect'
+import { Cause, Effect, Exit, Option, Schema } from 'effect'
 import { describe, expect, test } from 'vitest'
 
 import { Theme, Token, Var } from '../src/index.ts'
@@ -150,6 +150,61 @@ describe('Theme.bindings', () => {
     )
     expect(Theme.bindings(night).every(Var.isBinding)).toBe(true)
     expect(Theme.bindings(Theme.empty)).toEqual([])
+  })
+})
+
+describe('Theme.resolve', () => {
+  const layered = Token.make({
+    brand: Token.color,
+    accent: Token.color,
+    soft: Token.color,
+    ring: Token.value,
+  })
+  const root = Theme.make(layered, {
+    brand: '#2563eb',
+    accent: layered.brand,
+    soft: `color-mix(in srgb, ${layered.accent} 20%, white)`,
+    ring: `0 0 0 2px ${Var.string('focus', { fallback: 'black' })}`,
+  })
+  const brandOnly = Theme.make({ brand: layered.brand }, { brand: '#dc2626' })
+
+  test('follows aliases to a literal, inside other values too', () => {
+    expect(Theme.resolve(light, tokens.color.ink)).toEqual(
+      Option.some('oklch(20% 0.02 260)'),
+    )
+    expect(Theme.resolve(light, tokens.font.weight)).toEqual(Option.some('450'))
+    expect(Theme.resolve(root, layered.accent)).toEqual(Option.some('#2563eb'))
+    expect(Theme.resolve(root, layered.soft)).toEqual(
+      Option.some('color-mix(in srgb, #2563eb 20%, white)'),
+    )
+  })
+
+  test('uses a fallback when the reference has no value, and None when there is none', () => {
+    expect(Theme.resolve(root, layered.ring)).toEqual(Option.some('0 0 0 2px black'))
+    const hue = Var.string('hue')
+    const tinted = Theme.make({ brand: layered.brand }, { brand: hue })
+    expect(Theme.resolve(tinted, layered.brand)).toEqual(Option.none())
+    expect(Theme.resolve([tinted, brandOnly], layered.brand)).toEqual(
+      Option.some('#dc2626'),
+    )
+    expect(Theme.resolve(light, layered.brand)).toEqual(Option.none())
+    expect(Theme.resolve([], layered.brand)).toEqual(Option.none())
+  })
+
+  test('resolves an alias in the scope that declares it, as CSS does', () => {
+    const scopes = [root, brandOnly]
+    expect(Theme.resolve(scopes, layered.brand)).toEqual(Option.some('#dc2626'))
+    expect(Theme.resolve(scopes, layered.accent)).toEqual(Option.some('#2563eb'))
+    const redeclared = [...scopes, Theme.extend(root, layered, {})]
+    expect(Theme.resolve(redeclared, layered.accent)).toEqual(Option.some('#2563eb'))
+    const extended = [root, Theme.extend(root, layered, { brand: '#dc2626' })]
+    expect(Theme.resolve(extended, layered.accent)).toEqual(Option.some('#dc2626'))
+  })
+
+  test('a declaration whose reference has no value is unset, not inherited', () => {
+    const hue = Var.string('hue')
+    const broken = Theme.make({ accent: layered.accent }, { accent: hue })
+    expect(Theme.resolve([root, broken], layered.accent)).toEqual(Option.none())
   })
 })
 
