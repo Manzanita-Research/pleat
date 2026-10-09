@@ -1,7 +1,9 @@
 name: Deploy
 
 # Deploys the docs site to Cloudflare with site/alchemy.run.ts.
-# Needs the repository secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.
+# Needs the secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN, on the
+# repository or the organization. README.md ("Deploy the docs") lists the
+# permissions the token needs and why the deploy passes --yes.
 on:
   workflow_dispatch:
 
@@ -29,11 +31,7 @@ jobs:
           install: false
           cache: true
           cache-dependency-path: pnpm-lock.yaml
-      - name: Check that Cloudflare credentials are set
-        run: |
-          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "Set the CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN repository secrets first."
-            exit 1
-          fi
       - run: pnpm install --frozen-lockfile
-      - run: pnpm site:deploy
+      - name: Check that Alchemy can see the Cloudflare credentials
+        run: pnpm --dir site exec alchemy provider check-env --provider Cloudflare
+      - run: pnpm --dir site run deploy:ci
