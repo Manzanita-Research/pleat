@@ -9,6 +9,7 @@
     "setup": "alchemy profile edit --add Cloudflare",
     "deploy": "alchemy deploy --stage prod",
     "deploy:ci": "alchemy deploy --stage prod --yes",
+    "secrets": "alchemy deploy --config github.run.ts --stage prod --profile admin",
     "destroy": "alchemy destroy",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --deny-warnings src"
