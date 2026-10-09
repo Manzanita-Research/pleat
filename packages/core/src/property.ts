@@ -74,49 +74,142 @@ export const formatNumber = (property: string, value: number): string =>
     ? String(value)
     : `${value}px`
 
+const isNewline = (character: string): boolean =>
+  character === '\n' || character === '\r' || character === '\f'
+
+const isWhitespace = (character: string): boolean =>
+  character === ' ' || character === '\t' || isNewline(character)
+
+// NOTE: CSS Syntax's ident code points, plus NUL, which CSS reads as U+FFFD.
+const isIdentCodePoint = (character: string): boolean => {
+  const code = character.charCodeAt(0)
+  return (
+    (code >= 0x61 && code <= 0x7a) ||
+    (code >= 0x41 && code <= 0x5a) ||
+    (code >= 0x30 && code <= 0x39) ||
+    code === 0x5f ||
+    code === 0x2d ||
+    code === 0 ||
+    code >= 0x80
+  )
+}
+
+const isNonPrintable = (character: string): boolean => {
+  const code = character.charCodeAt(0)
+  return code <= 0x08 || code === 0x0b || (code >= 0x0e && code <= 0x1f) || code === 0x7f
+}
+
+const UNSAFE_OUTSIDE_STRINGS: ReadonlySet<string> = new Set([';', '{', '}', '!', '\\'])
+
+const isUnsafeOutsideStrings = (value: string, index: number): boolean => {
+  const character = value.charAt(index)
+  return (
+    UNSAFE_OUTSIDE_STRINGS.has(character) ||
+    (character === '/' && value.charAt(index + 1) === '*')
+  )
+}
+
+// NOTE: CSS reads `url(` as an unquoted url-token when `url` is a whole ident and no quote
+// follows. A preceding ident code point, `#` or `@` makes it part of a longer token, such
+// as `1url(` (a dimension and then a parenthesis). Values sit after `:`, `,` or `(`, so the
+// start of the value begins a token.
+const startsUrlToken = (value: string, index: number): boolean => {
+  if (value.slice(index, index + 4).toLowerCase() !== 'url(') {
+    return false
+  }
+  const previous = value.charAt(index - 1)
+  if (index > 0 && (isIdentCodePoint(previous) || previous === '#' || previous === '@')) {
+    return false
+  }
+  let next = index + 4
+  while (isWhitespace(value.charAt(next))) {
+    next += 1
+  }
+  return value.charAt(next) !== '"' && value.charAt(next) !== "'"
+}
+
+/** The index of the `)` that ends an unquoted url-token whose contents start at `start`, or
+ *  -1 when the token is unsafe or would be a bad-url. A url-token runs to its `)` as one
+ *  token, so `;` inside it cannot end the declaration. Quotes, `(`, escapes, inner whitespace
+ *  and non-printable characters make CSS skip ahead to the next `)` instead, which can be
+ *  one this function would read as inside a string, so they are rejected. */
+const urlTokenEnd = (value: string, start: number): number => {
+  let index = start
+  while (isWhitespace(value.charAt(index))) {
+    index += 1
+  }
+  for (; index < value.length; index += 1) {
+    const character = value.charAt(index)
+    if (character === ')') {
+      return index
+    }
+    if (isWhitespace(character)) {
+      while (isWhitespace(value.charAt(index))) {
+        index += 1
+      }
+      return value.charAt(index) === ')' ? index : -1
+    }
+    if (
+      character === '"' ||
+      character === "'" ||
+      character === '(' ||
+      isNonPrintable(character) ||
+      (character !== ';' && isUnsafeOutsideStrings(value, index))
+    ) {
+      return -1
+    }
+  }
+  return -1
+}
+
 /** Whether a declaration value is safe to place inside a rule or a `style` attribute.
  *
- * Rejects anything that could end the declaration or the rule early (`;`, `{`, `}` outside
- * quotes), comments, unbalanced quotes or parentheses, and `<` outside quotes, which keeps a
- * value from closing a server-rendered `<style>` element. */
+ *  Rejects anything that could end the declaration or the rule early: `;` outside strings and
+ *  unquoted `url()`, `{`, `}`, `!` or `\` outside strings, comments, newlines in strings,
+ *  unbalanced quotes, parentheses or brackets, and unquoted `url()` contents that CSS would
+ *  read as a bad URL. Rejects `<` everywhere, which keeps a value from closing a
+ *  server-rendered `<style>` element. Accepts `url(data:font/woff2;base64,...)`. */
 export const isSafeValue = (value: string): boolean => {
+  if (value.trim() === '' || value.includes('<')) {
+    return false
+  }
+  const closers: Array<string> = []
   let quote: string | undefined
-  let depth = 0
   for (let index = 0; index < value.length; index += 1) {
     const character = value.charAt(index)
     if (quote !== undefined) {
       if (character === '\\') {
         index += 1
+        if (isNewline(value.charAt(index))) {
+          return false
+        }
       } else if (character === quote) {
         quote = undefined
-      } else if (character === '\n' || character === '<') {
+      } else if (isNewline(character)) {
         return false
       }
       continue
     }
     if (character === '"' || character === "'") {
       quote = character
-    } else if (character === '(') {
-      depth += 1
-    } else if (character === ')') {
-      depth -= 1
-      if (depth < 0) {
+    } else if ((character === 'u' || character === 'U') && startsUrlToken(value, index)) {
+      index = urlTokenEnd(value, index + 4)
+      if (index < 0) {
         return false
       }
-    } else if (
-      character === ';' ||
-      character === '{' ||
-      character === '}' ||
-      character === '<' ||
-      character === '!' ||
-      character === '\\'
-    ) {
-      return false
-    } else if (character === '/' && value.charAt(index + 1) === '*') {
+    } else if (character === '(') {
+      closers.push(')')
+    } else if (character === '[') {
+      closers.push(']')
+    } else if (character === ')' || character === ']') {
+      if (closers.pop() !== character) {
+        return false
+      }
+    } else if (isUnsafeOutsideStrings(value, index)) {
       return false
     }
   }
-  return quote === undefined && depth === 0 && value.trim() !== ''
+  return quote === undefined && closers.length === 0
 }
 
 // SHORTHANDS

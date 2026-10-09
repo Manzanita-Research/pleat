@@ -55,7 +55,9 @@ export const entriesOf = (
     if (!isSafeValue(formatted)) {
       throw new Error(
         `[pleat] ${property}: ${JSON.stringify(formatted)} is not a value Pleat can write ` +
-          'into a rule. It is empty, unbalanced, or contains ; { } < ! or a comment.',
+          'into a rule. It is empty or unbalanced, or contains ; { } < ! or a comment ' +
+          'outside a string. An unquoted url() cannot hold quotes, spaces, or parentheses; ' +
+          'quote the URL instead.',
       )
     }
     entries.push([property, formatted])
