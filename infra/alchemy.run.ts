@@ -3,33 +3,38 @@ import * as Cloudflare from 'alchemy/Cloudflare'
 import * as Effect from 'effect/Effect'
 import { fileURLToPath } from 'node:url'
 
-// The docs site: a Foldkit app prerendered to static pages, served as
-// Workers static assets with no Worker code in front of them.
-const REPOSITORY_ROOT = fileURLToPath(new URL('..', import.meta.url))
+// Foldkit owns the Vite build, including prerendered pages and the Cloudflare 404.
+const SITE_ROOT = fileURLToPath(new URL('../site', import.meta.url))
 
-export const Docs = Cloudflare.Website.StaticSite('Docs', {
-  command: 'pnpm install --frozen-lockfile && pnpm site:build',
-  cwd: REPOSITORY_ROOT,
-  outdir: 'site/dist/client',
+/** The docs site, built and deployed through Alchemy’s Foldkit integration. */
+export const Docs = Cloudflare.Website.Foldkit('Docs', {
+  rootDir: SITE_ROOT,
   memo: {
     include: [
-      'packages/*/src/**',
-      'packages/*/package.json',
-      'site/src/**',
-      'site/scripts/**',
-      'site/vite.config.ts',
-      'site/package.json',
+      'src/**',
+      'scripts/**',
+      'public/**',
+      'vite.config.ts',
+      'tsconfig.json',
       'package.json',
-      'pnpm-workspace.yaml',
-      'pnpm-lock.yaml',
-      'tsconfig.base.json',
+      '../package.json',
+      '../pnpm-workspace.yaml',
+      '../tsconfig.base.json',
+    ],
+    lockfile: true,
+    workspaces: [
+      { cwd: '../packages/core', include: ['src/**', 'package.json'] },
+      { cwd: '../packages/foldkit', include: ['src/**', 'package.json'] },
     ],
   },
   assets: {
     notFoundHandling: '404-page',
     htmlHandling: 'auto-trailing-slash',
   },
-})
+}).pipe(
+  // Keep the legacy worker identity supported by Alchemy’s StaticSite wrapper.
+  Alchemy.renamedFrom('Docs/Worker'),
+)
 
 export default Alchemy.Stack(
   'Pleat',
