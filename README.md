@@ -259,6 +259,60 @@ The workspace applies a one-line patch to Alchemy 2.0.0-beta.81’s published
 profile dashboard, restoring the JSX runtime specified by its source. React is
 not needed. Remove the patch when upgrading to a release that fixes that import.
 
+### Package previews
+
+[`pkg/`](pkg) owns [Alchemy's `pkg`](https://github.com/alchemy-run/alchemy/tree/main/packages/pkg)
+CLI and a separate registry stack. The Package Preview workflow builds and packs
+`@pleat/core` and `@pleat/foldkit` on library changes in pull requests and pushes
+to `main`. It checks out the PR head with full history, selects affected packages
+and their dependencies, and rewrites the adapter's core dependency to the matching
+preview tarball. Private workspaces are excluded.
+
+To inspect tarballs locally without publishing:
+
+```sh
+PKG_REGISTRY=https://pkg.manzanita.dev pnpm pkg:pack
+```
+
+Output is in `pkg/.pkg`, including `pkg-manifest.json`. Without `PKG_REGISTRY`,
+the upstream CLI defaults to Alchemy's registry, which does not accept Pleat.
+The workflow uses `https://preview.invalid` to check packing until a registry
+is configured; it skips uploads and publication in that case.
+
+To host the registry, create and install a GitHub App on
+`Manzanita-Research/pleat` with repository permissions **Actions: read**,
+**Checks: write**, and **Pull requests: write**. Put its App ID and private key
+in `pkg/.env` as `GH_APP_ID` and `GH_APP_PRIVATE_KEY`; use BB's secure secrets form
+for the key. [`pkg/.env.example`](pkg/.env.example) lists the configuration.
+Then run:
+
+```sh
+pnpm pkg:setup
+pnpm pkg:deploy
+```
+
+The stack creates a Worker, R2 bucket, D1 index, and KV cache, separately from the
+docs. Its default domain is `pkg.manzanita.dev`; set `PKG_DOMAIN` to override it.
+Only this repository may publish. Previews expire after a week, extended while
+their PR stays open, and each tarball is limited to 10 MB.
+
+After deploying and checking `/api/health`, set the repository Actions variable
+`PKG_REGISTRY` to the registry's HTTPS origin. The next matching workflow run
+uploads the manifest artifact and publishes; the registry posts install commands
+to the PR using its GitHub App. CI requires no App credentials or Cloudflare
+credentials. An existing compatible registry can also be used if it allows this
+repository and has its GitHub App installed here.
+
+Install both libraries from a PR's preview comment, for example:
+
+```sh
+pnpm add https://pkg.manzanita.dev/@pleat/core/pr:42:abcdef0 \
+  https://pkg.manzanita.dev/@pleat/foldkit/pr:42:abcdef0
+```
+
+Use the actual PR number and seven-character commit from the comment. These are
+temporary preview URLs, so stable releases should still come from npm.
+
 ## License
 
 MIT

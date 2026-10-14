@@ -3,6 +3,7 @@ dist
 coverage
 .pnpm-store
 .alchemy
+.pkg
 .env
 *.tsbuildinfo
 .DS_Store

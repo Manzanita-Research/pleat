@@ -22,7 +22,11 @@
     "chromium:install": "pnpm --dir test/browser exec playwright-core install chromium",
     "site:setup": "pnpm --dir site run setup",
     "site:deploy": "pnpm --dir site run deploy",
-    "site:secrets": "pnpm --dir site run secrets"
+    "site:secrets": "pnpm --dir site run secrets",
+    "pkg:pack": "pnpm build && pnpm --dir pkg run pack",
+    "pkg:publish": "pnpm --dir pkg run publish",
+    "pkg:setup": "pnpm --dir pkg run setup",
+    "pkg:deploy": "pnpm --dir pkg run deploy"
   },
   "devDependencies": {
     "@types/node": "24.19.1",

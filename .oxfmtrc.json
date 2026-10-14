@@ -42,6 +42,7 @@
     "**/pnpm-lock.yaml",
     "**/dist/",
     "**/node_modules/",
+    "**/.pkg/",
     "**/.claude/",
     "**/.mcp.json",
     "**/.vscode/",
