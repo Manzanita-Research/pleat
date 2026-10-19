@@ -13,6 +13,7 @@ Pleat is a styling library for Foldkit and Effect v4. Read `README.md` first, th
 
 - `packages/core`: the algebra. Depends only on `effect` (peer) and `csstype` (types).
 - `packages/foldkit`: the Foldkit adapter. `src/server.ts` is a separate entry so server code stays out of client bundles.
+- `packages/store`: the theme store. `src/index.ts` (catalog, versions, routes, client) depends on `@pleat/core` and Effect; `src/cloudflare.ts`, the Worker and Durable Object, also on Alchemy, an optional peer. `demo/` runs it locally with `alchemy dev`.
 - `site`: the docs site, a Foldkit SSG app styled only with Pleat. Snippets shown on the site live in `site/src/snippet` and are typechecked; import them with `?raw`.
 - `site/alchemy.run.ts`: the Alchemy stack that deploys the docs with `Cloudflare.Website.Foldkit`. Deployment dependencies are devDependencies of `site`, sharing its Effect version and the root lockfile.
 - `test/browser`: a private workspace for the Chromium test that the compiled cascade matches `Style.resolve`.
@@ -31,7 +32,7 @@ Pleat is a styling library for Foldkit and Effect v4. Read `README.md` first, th
 
 - Root devDependencies are shared workspace tooling only. Declare a dependency in the workspace that imports it.
 - Benchmark comparisons belong in `bench`; Tailwind belongs only in `test/browser` for interoperability tests. Do not add either to the libraries or site.
-- Keep one pnpm workspace and lockfile. Alchemy dependencies belong in `site/package.json` as devDependencies. Keep the Node platform version compatible with the site’s pinned Effect version.
+- Keep one pnpm workspace and lockfile. The docs deployment's Alchemy dependencies belong in `site/package.json` as devDependencies; `packages/store` declares the same Alchemy version for its Worker. Keep the Node platform version compatible with the site’s pinned Effect version.
 - Keep `repos/` out of workspace globs, formatting, linting, builds, and application imports.
 
 ## Commands

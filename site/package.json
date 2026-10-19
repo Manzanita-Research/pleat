@@ -20,6 +20,7 @@
     "@foldkit/ui": "0.167.0",
     "@pleat/core": "workspace:^",
     "@pleat/foldkit": "workspace:^",
+    "@pleat/store": "workspace:^",
     "effect": "4.0.0",
     "foldkit": "0.167.0"
   },

@@ -27,6 +27,7 @@ export const Docs = Cloudflare.Website.Foldkit('Docs', {
     workspaces: [
       { cwd: '../packages/core', include: ['src/**', 'package.json'] },
       { cwd: '../packages/foldkit', include: ['src/**', 'package.json'] },
+      { cwd: '../packages/store', include: ['src/**', 'package.json'] },
     ],
   },
   assets: {

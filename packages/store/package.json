@@ -1,0 +1,60 @@
+{
+  "name": "@pleat/store",
+  "version": "0.1.0",
+  "description": "A theme store for Pleat on a Cloudflare Durable Object, and a client that keeps pages in step with it.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manzanita-Research/pleat.git",
+    "directory": "packages/store"
+  },
+  "keywords": [
+    "design-tokens",
+    "themes",
+    "cloudflare",
+    "durable-objects",
+    "effect"
+  ],
+  "exports": {
+    ".": {
+      "@pleat/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cloudflare": {
+      "@pleat/source": "./src/cloudflare.ts",
+      "types": "./dist/cloudflare.d.ts",
+      "import": "./dist/cloudflare.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "demo": "alchemy dev demo/alchemy.run.ts"
+  },
+  "dependencies": {
+    "@pleat/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "alchemy": "2.0.0-beta.81",
+    "effect": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "alchemy": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261008.1",
+    "alchemy": "2.0.0-beta.81",
+    "effect": "4.0.0",
+    "vitest": "5.0.3"
+  }
+}
