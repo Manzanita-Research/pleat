@@ -5,9 +5,11 @@
  *  - {@link Recipe}: Schema-typed variant families, every branch compiled ahead of time.
  *  - {@link Var}: typed custom properties for values that vary continuously with the Model.
  *  - {@link Token} and {@link Theme}: design tokens and the values that fill them.
+ *  - {@link Shape}: themes as layers, derived from values provided later.
  *  - {@link Global}: element rules, themes, font faces, and keyframes.
  *  - {@link Sheet}: the stylesheet, for server rendering and the browser.
  *  - {@link Calc} and {@link Color}: value helpers that compile to CSS functions.
+ *  - {@link Paint}: color arithmetic computed in JavaScript, for deriving themes.
  *
  *  @packageDocumentation */
 
@@ -15,7 +17,9 @@ export * as Calc from './calc.ts'
 export * as Color from './color.ts'
 export type { Declarations, Properties } from './declarations.ts'
 export * as Global from './global.ts'
+export * as Paint from './paint.ts'
 export * as Recipe from './recipe.ts'
+export * as Shape from './shape.ts'
 export * as Sheet from './sheet.ts'
 export * as Style from './style.ts'
 export * as Theme from './theme.ts'

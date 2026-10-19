@@ -13,8 +13,10 @@ pnpm add @pleat/core effect
 | `Recipe`         | Variant families typed by Effect Schema, with `Recipe.jsonSchema` for structured output.                                                 |
 | `Var`            | Typed custom properties for values that change continuously.                                                                             |
 | `Token`, `Theme` | Design tokens with kinds, and themes whose values are checked against them.                                                              |
+| `Shape`          | Themes as layers: tokens derived from values provided later, like an Effect `Layer`.                                                     |
 | `Global`         | Element rules, themes at selectors, font faces, keyframes.                                                                               |
 | `Sheet`          | The stylesheet: render it on the server, insert it lazily in the browser.                                                                |
 | `Calc`, `Color`  | Value helpers that compile to `calc()`, `color-mix()`, and relative colors.                                                              |
+| `Paint`          | Color arithmetic computed in JavaScript: mixes, OKLCH with gamut fitting, APCA contrast. Gives hex.                                      |
 
 Every export has TSDoc. The docs site's reference page lists them all.

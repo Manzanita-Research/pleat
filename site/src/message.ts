@@ -36,10 +36,27 @@ export const BrandPreset = Schema.Literals([
 ])
 export type BrandPreset = typeof BrandPreset.Type
 
+export const LightColor = Schema.Literals(['Ground', 'Ink', 'Dye', 'Glow'])
+export type LightColor = typeof LightColor.Type
+
+export const LightPreset = Schema.Literals(['Paper', 'Night'])
+export type LightPreset = typeof LightPreset.Type
+
+export const Light = Schema.Struct({
+  ground: Schema.String,
+  ink: Schema.String,
+  dye: Schema.String,
+  glow: Schema.String,
+  tone: Schema.Struct({ lightness: Schema.Number, chroma: Schema.Number }),
+})
+export type Light = typeof Light.Type
+
 export const Theming = Schema.Struct({
   scope: Scope,
   brandPreset: Schema.Option(BrandPreset),
   brandSource: Schema.String,
+  light: Light,
+  lightPreset: Schema.Option(LightPreset),
 })
 export type Theming = typeof Theming.Type
 
@@ -74,6 +91,10 @@ export const Message = defineMessageUnion({
   SelectedDensity: { density: Density },
   UpdatedBrandSource: { source: Schema.String },
   ClickedBrandPreset: { preset: BrandPreset },
+  UpdatedLightColor: { color: LightColor, value: Schema.String },
+  UpdatedToneLightness: { lightness: Schema.Number },
+  UpdatedToneChroma: { chroma: Schema.Number },
+  ClickedLightPreset: { preset: LightPreset },
   GotFoldkitUiMessage: { message: FoldkitUi.Message },
 })
 export type Message = typeof Message.Type

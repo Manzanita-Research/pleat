@@ -20,6 +20,7 @@ import {
   scopeAttributes,
 } from '../demo/theming/scope.ts'
 import scopeSource from '../demo/theming/scope.ts?raw'
+import shapeSource from '../demo/theming/shape.ts?raw'
 import '../demo/theming/themes.ts'
 import themesSource from '../demo/theming/themes.ts?raw'
 import { contrastPairs, semantic } from '../demo/theming/tokens.ts'
@@ -28,6 +29,7 @@ import * as Design from '../design.ts'
 import { type BrandPreset, Message, type Model } from '../message.ts'
 import { articleStyle, pageIntro } from './guide.ts'
 import { bullets, paragraph, rich, section, subsection } from './prose.ts'
+import { shapeWorkbench } from './themingShape.ts'
 
 const { color, font, radius, space, text } = Design.tokens
 
@@ -702,6 +704,33 @@ export const themingView = (model: Model, h: HtmlBuilder<Message>): Html => {
         ),
       ]),
       pairsView(scope, h),
+      section(h, 'shapes', 'Shapes: provide the values last', [
+        paragraph(
+          h,
+          'A theme holds values. A shape holds the operations that make them: how each token is derived from a few others, before any of those exist. The values are provided later, the way an Effect `Layer` gets what it needs through `Layer.provide`. One shape can take many palettes.',
+        ),
+        paragraph(
+          h,
+          'Below, a light is four colors and a tone. The shape lays ink over the ground for the panel and the rule, fades ink until it reads at APCA Lc 60 for muted text, picks whichever of ground or ink reads best on the dye, and makes four kind inks from one lightness and chroma. `Paint` does the arithmetic in JavaScript, so the built theme holds hex values that an editor theme or a contrast check can read as well as a browser.',
+        ),
+        codeBlock(h, shapeSource, 'shape.ts'),
+        paragraph(
+          h,
+          'Change any of the five values. The shape runs again and the theme is bound to the panel with `Theme.bindings`. Each swatch shows its value and its APCA contrast with what it pairs with: ink for the ground, panel, and rule, the dye for onDye, and the ground for the rest.',
+        ),
+      ]),
+      shapeWorkbench(model, h),
+      h.div(
+        [...css(Design.prose)],
+        [
+          bullets(h, [
+            '`Shape.build` takes only a shape that needs nothing more, so a missing light is a type error, not a blank page.',
+            '`Shape.provide` keeps the light to itself: the theme declares the roles, and an alias to the light becomes its value. `Shape.provideMerge` declares both.',
+            'A shape that reads and writes the same tree is a transformation, such as a density that scales the spacing or a brand that turns a hue. Provide it a light and you get the transformed light.',
+            '`Shape.decode` checks a light from outside the program against each token’s kind before anything is derived from it.',
+          ]),
+        ],
+      ),
     ],
   )
 }
