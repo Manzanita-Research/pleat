@@ -51,12 +51,17 @@ export const Light = Schema.Struct({
 })
 export type Light = typeof Light.Type
 
+/** A theme store the light editor follows, from `?store=` and `?theme=` in the URL. */
+export const StoreSource = Schema.Struct({ url: Schema.String, theme: Schema.String })
+export type StoreSource = typeof StoreSource.Type
+
 export const Theming = Schema.Struct({
   scope: Scope,
   brandPreset: Schema.Option(BrandPreset),
   brandSource: Schema.String,
   light: Light,
   lightPreset: Schema.Option(LightPreset),
+  store: Schema.Option(StoreSource),
 })
 export type Theming = typeof Theming.Type
 
@@ -95,6 +100,7 @@ export const Message = defineMessageUnion({
   UpdatedToneLightness: { lightness: Schema.Number },
   UpdatedToneChroma: { chroma: Schema.Number },
   ClickedLightPreset: { preset: LightPreset },
+  ReceivedStoreLight: { light: Light, version: Schema.Number },
   GotFoldkitUiMessage: { message: FoldkitUi.Message },
 })
 export type Message = typeof Message.Type

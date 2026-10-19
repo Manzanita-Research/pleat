@@ -76,4 +76,25 @@ describe('site choices', () => {
       }),
     )
   })
+
+  test('a light from the store replaces the edited one', () => {
+    const light = {
+      ground: '#19161d',
+      ink: '#fff3ff',
+      dye: '#0b699f',
+      glow: '#ffb4e3',
+      tone: { lightness: 0.8, chroma: 0.11 },
+    }
+    story(
+      update,
+      given(initialModel),
+      message(Message.UpdatedLightColor({ color: 'Ink', value: '#000000' })),
+      message(Message.ReceivedStoreLight({ light, version: 3 })),
+      Command.expectNone(),
+      model(model => {
+        expect(model.theming.light).toEqual(light)
+        expect(Option.isNone(model.theming.store)).toBe(true)
+      }),
+    )
+  })
 })

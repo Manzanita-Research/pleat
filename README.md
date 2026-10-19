@@ -31,6 +31,7 @@ const postView = (post: Post, h: HtmlBuilder<Message>): Html =>
 | Package                              | What it is                                                                                                                                                                                      |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`@pleat/core`](packages/core)       | The algebra: `Style`, `When`, `Recipe`, `Var`, `Token`, `Theme`, `Shape`, `Global`, `Sheet`, `Calc`, `Color`, `Paint`. Depends only on Effect.                                                  |
+| [`@pleat/store`](packages/store)     | A theme store on a Cloudflare Durable Object, and `Remote`, which keeps pages in step with it, live, with a version pinned for offline.                                                         |
 | [`@pleat/foldkit`](packages/foldkit) | `css()` for Foldkit views, `cssClass()` for `@foldkit/ui` parts that take class names, and a `renderDocument` that puts each page's CSS in its head for server rendering and static generation. |
 
 ## What you get
@@ -107,6 +108,8 @@ Global.theme(Shape.build(look.pipe(Shape.provide(paper))))
 ```
 
 `Shape.provide` keeps the provided values to itself, and `Shape.provideMerge` declares both. A shape that reads and writes the same tree is a transformation, such as a density or a brand that turns a hue. `Shape.decode` checks a palette from outside the program before anything is derived from it. The `/theming` page has an editor for this example.
+
+[`@pleat/store`](packages/store) serves themes like this from a Durable Object: publish four colors and a tone, and every page that reads the theme gets the whole derived theme, live.
 
 ## Foldkit UI
 

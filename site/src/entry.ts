@@ -3,7 +3,7 @@ import { __setDevToolsOverlay } from 'foldkit/devtools-host'
 
 import { overlay } from '@foldkit/devtools/vite'
 
-import { Message, Model, init, update, view } from './main.ts'
+import { Message, Model, init, subscriptions, update, view } from './main.ts'
 
 // NOTE: The Foldkit Vite plugin registers this overlay through Vite's HTML
 // transform. The dev server runs that transform on every rendered document, but
@@ -16,6 +16,7 @@ const application = Runtime.makeApplication({
   init,
   update,
   view,
+  subscriptions,
   container: document.getElementById('root'),
   routing: {
     onUrlRequest: request => Message.ClickedLink({ request }),

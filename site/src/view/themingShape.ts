@@ -248,7 +248,15 @@ export const shapeWorkbench = (model: Model, h: HtmlBuilder<Message>): Html => {
       h.div(
         [...css(controls)],
         [
-          h.span([...css(caption)], ['A light: four colors and a tone']),
+          h.span(
+            [...css(caption)],
+            [
+              Option.match(model.theming.store, {
+                onNone: () => 'A light: four colors and a tone',
+                onSome: store => `A light, following ${store.theme} at ${store.url}`,
+              }),
+            ],
+          ),
           presetsView(model, h),
           ...COLORS.map(([label, key]) => colorField(h, label, light[key])),
           rangeView(
