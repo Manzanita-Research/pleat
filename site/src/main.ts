@@ -1,9 +1,11 @@
 import { Effect, Option, Schema } from 'effect'
-import { Command, type Runtime, Update } from 'foldkit'
+import { Command, type Runtime, Subscription, Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
 import { toString as urlToString } from 'foldkit/url'
+
+import { gridKey } from '@pleat/foldkit'
 
 import { brandPresetSource } from './brandPresets.ts'
 import * as FoldkitUi from './demo/foldkitUi.ts'
@@ -22,6 +24,7 @@ import { AppRoute, urlToAppRoute } from './route.ts'
 import { algebraView } from './view/algebra.ts'
 import { foldkitUiView } from './view/foldkitUi.ts'
 import { generativeView } from './view/generative.ts'
+import { gridView } from './view/grid.ts'
 import { guideView } from './view/guide.ts'
 import { homeView } from './view/home.ts'
 import { layoutView } from './view/layout.ts'
@@ -61,6 +64,7 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
       light: lightPreset('Paper'),
       lightPreset: Option.some<LightPreset>('Paper'),
     },
+    isGridShown: false,
     foldkitUi: FoldkitUi.init(),
   },
 })
@@ -212,8 +216,20 @@ export const update = (model: Model, message: Message) =>
         }),
       }),
     }),
+    PressedGridKey: () => ({
+      model: modifyFields(model, { isGridShown: isGridShown => !isGridShown }),
+    }),
+    ClickedGridToggle: () => ({
+      model: modifyFields(model, { isGridShown: isGridShown => !isGridShown }),
+    }),
     GotFoldkitUiMessage: ({ message }) => foldFoldkitUi(model, message),
   })
+
+// SUBSCRIPTIONS
+
+export const subscriptions = Subscription.make<Model, Message>()(() => ({
+  gridKey: gridKey(Message.PressedGridKey()),
+}))
 
 // VIEW
 
@@ -226,6 +242,7 @@ const routeTitle = (route: AppRoute): string =>
     Algebra: () => `The algebra | ${TITLE_SUFFIX}`,
     Generative: () => `Generative interfaces | ${TITLE_SUFFIX}`,
     Theming: () => `Theming | ${TITLE_SUFFIX}`,
+    Grid: () => `The grid | ${TITLE_SUFFIX}`,
     FoldkitUi: () => `Foldkit UI | ${TITLE_SUFFIX}`,
     Reference: () => `Reference | ${TITLE_SUFFIX}`,
     NotFound: () => `Not found | ${TITLE_SUFFIX}`,
@@ -242,6 +259,7 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
       Algebra: () => algebraView(h),
       Generative: () => generativeView(model, h),
       Theming: () => themingView(model, h),
+      Grid: () => gridView(model, h),
       FoldkitUi: () =>
         h.submodel({
           slotId: 'foldkit-ui',

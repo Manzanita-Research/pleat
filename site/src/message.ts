@@ -68,6 +68,7 @@ export const Model = Schema.Struct({
   preset: Schema.Option(Preset),
   specSource: Schema.String,
   theming: Theming,
+  isGridShown: Schema.Boolean,
   foldkitUi: FoldkitUi.Model,
 })
 export type Model = typeof Model.Type
@@ -95,6 +96,8 @@ export const Message = defineMessageUnion({
   UpdatedToneLightness: { lightness: Schema.Number },
   UpdatedToneChroma: { chroma: Schema.Number },
   ClickedLightPreset: { preset: LightPreset },
+  PressedGridKey: {},
+  ClickedGridToggle: {},
   GotFoldkitUiMessage: { message: FoldkitUi.Message },
 })
 export type Message = typeof Message.Type

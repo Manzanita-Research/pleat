@@ -14,6 +14,7 @@ pnpm add @pleat/core effect
 | `Var`            | Typed custom properties for values that change continuously.                                                                             |
 | `Token`, `Theme` | Design tokens with kinds, and themes whose values are checked against them.                                                              |
 | `Shape`          | Themes as layers: tokens derived from values provided later, like an Effect `Layer`.                                                     |
+| `Grid`           | Unit grids with whole-pixel frames, typed placement on exact splits, and type in units.                                                  |
 | `Global`         | Element rules, themes at selectors, font faces, keyframes.                                                                               |
 | `Sheet`          | The stylesheet: render it on the server, insert it lazily in the browser.                                                                |
 | `Calc`, `Color`  | Value helpers that compile to `calc()`, `color-mix()`, and relative colors.                                                              |
