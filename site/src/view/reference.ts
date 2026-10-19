@@ -170,6 +170,28 @@ const MODULES: ReadonlyArray<Module> = [
     ],
   },
   {
+    name: 'Shape',
+    summary: 'Themes as layers: tokens derived from values provided later.',
+    entries: [
+      ['Shape.succeed(tokens, values)', 'A shape that needs nothing, such as a palette.'],
+      [
+        'Shape.make(tokens, from, derive)',
+        'Values for `tokens` derived from the values of `from`, one tree or several.',
+      ],
+      [
+        'Shape.provide(self, that)',
+        'Feeds `that` into `self` and keeps its values to itself. Dual.',
+      ],
+      ['Shape.provideMerge(self, that)', 'Feeds `that` into `self` and keeps both.'],
+      ['Shape.merge(self, that)', 'Two shapes side by side.'],
+      [
+        'Shape.build(shape)',
+        'The theme of a shape that needs nothing more. The types check that.',
+      ],
+      ['Shape.decode(tokens, input)', 'A shape from values outside the program.'],
+    ],
+  },
+  {
     name: 'Global',
     summary: 'Rules outside the atomic layer.',
     entries: [
@@ -198,6 +220,25 @@ const MODULES: ReadonlyArray<Module> = [
       ],
       ['Color.mix(base, other, amount, space?)', '`color-mix()`.'],
       ['Color.alpha, lighten, darken, saturate, rotate', 'Relative OKLCH colors.'],
+    ],
+  },
+  {
+    name: 'Paint',
+    summary: 'Color arithmetic computed in JavaScript, for deriving themes. Gives hex.',
+    entries: [
+      ['Paint.over(color, background, amount)', 'A translucent color on another.'],
+      ['Paint.mix(base, other, amount)', 'A mix in OKLab.'],
+      [
+        'Paint.oklch(lightness, chroma, hue)',
+        'An sRGB color, with chroma lowered to fit and lightness kept.',
+      ],
+      ['Paint.contrast(text, background)', 'APCA lightness contrast (Lc).'],
+      [
+        'Paint.fade(color, background, target)',
+        'The color faded toward the background until it reads at `target` Lc.',
+      ],
+      ['Paint.mostLegible(background, candidates)', 'The candidate that reads best.'],
+      ['Paint.distance(self, that)', 'ΔEOK between two colors.'],
     ],
   },
   {

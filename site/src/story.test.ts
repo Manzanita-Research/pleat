@@ -54,4 +54,26 @@ describe('site choices', () => {
       }),
     )
   })
+
+  test('editing a light keeps the rest of it and clears the preset', () => {
+    story(
+      update,
+      given(initialModel),
+      message(Message.ClickedLightPreset({ preset: 'Night' })),
+      message(Message.UpdatedLightColor({ color: 'Dye', value: '#0b699f' })),
+      message(Message.UpdatedToneChroma({ chroma: 0.05 })),
+      Command.expectNone(),
+      model(model => {
+        expect(model.theming.light.ground).toBe('#19161d')
+        expect(model.theming.light.dye).toBe('#0b699f')
+        expect(model.theming.light.tone).toEqual({ lightness: 0.8, chroma: 0.05 })
+        expect(Option.isNone(model.theming.lightPreset)).toBe(true)
+      }),
+      message(Message.ClickedLightPreset({ preset: 'Paper' })),
+      model(model => {
+        expect(model.theming.light).toEqual(initialModel.theming.light)
+        expect(model.theming.lightPreset).toEqual(Option.some('Paper'))
+      }),
+    )
+  })
 })

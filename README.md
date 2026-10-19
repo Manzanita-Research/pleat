@@ -30,7 +30,7 @@ const postView = (post: Post, h: HtmlBuilder<Message>): Html =>
 
 | Package                              | What it is                                                                                                                                                                                      |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`@pleat/core`](packages/core)       | The algebra: `Style`, `When`, `Recipe`, `Var`, `Token`, `Theme`, `Global`, `Sheet`, `Calc`, `Color`. Depends only on Effect.                                                                    |
+| [`@pleat/core`](packages/core)       | The algebra: `Style`, `When`, `Recipe`, `Var`, `Token`, `Theme`, `Shape`, `Global`, `Sheet`, `Calc`, `Color`, `Paint`. Depends only on Effect.                                                  |
 | [`@pleat/foldkit`](packages/foldkit) | `css()` for Foldkit views, `cssClass()` for `@foldkit/ui` parts that take class names, and a `renderDocument` that puts each page's CSS in its head for server rendering and static generation. |
 
 ## What you get
@@ -71,6 +71,42 @@ h.section([...css(card, ...Theme.bindings(customerBrand))], children)
 ```
 
 The full page, [`site/src/view/theming.ts`](site/src/view/theming.ts), renders the same card from tokens and from hardcoded values side by side, nests scopes three deep, and decodes brands you type. Run `pnpm site:dev` and open `/theming`.
+
+### Shapes
+
+A theme holds values. A `Shape` holds the operations that make them, and the values are provided later, the way an Effect `Layer` gets what it needs through `Layer.provide`. One shape takes many palettes, and `Shape.build` only accepts a shape that needs nothing more, so a missing palette is a type error. `Paint` does the color arithmetic in JavaScript (sRGB, OKLab, OKLCH, APCA contrast), so a built theme holds hex values that an editor theme or a contrast check can read as well as a browser.
+
+```ts
+// What a palette provides, and what components read.
+const light = Token.make(
+  { ground: Token.color, ink: Token.color, dye: Token.color },
+  { prefix: 'light-' },
+)
+const role = Token.make({
+  ground: Token.color,
+  ink: Token.color,
+  rule: Token.color,
+  muted: Token.color,
+  dye: Token.color,
+  onDye: Token.color,
+})
+
+// The shape: operations, no colors yet.
+const look = Shape.make(role, light, ({ ground, ink, dye }) => ({
+  ground,
+  ink,
+  rule: Paint.over(ink, ground, 20), // ink at 20% over the ground
+  muted: Paint.fade(ink, ground, 60), // ink faded until it reads at APCA Lc 60
+  dye,
+  onDye: Paint.mostLegible(dye, [ground, ink]),
+}))
+
+// Provide a palette, and build.
+const paper = Shape.succeed(light, { ground: '#f9f5eb', ink: '#553364', dye: '#86469c' })
+Global.theme(Shape.build(look.pipe(Shape.provide(paper))))
+```
+
+`Shape.provide` keeps the provided values to itself, and `Shape.provideMerge` declares both. A shape that reads and writes the same tree is a transformation, such as a density or a brand that turns a hue. `Shape.decode` checks a palette from outside the program before anything is derived from it. The `/theming` page has an editor for this example.
 
 ## Foldkit UI
 

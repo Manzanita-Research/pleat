@@ -104,7 +104,8 @@ const tokensOf = (tokens: object): ReadonlyMap<string, Token> =>
 
 // NOTE: tokens are compared by identity, so two trees that happen to share a
 // path (two `space.2`s from separate `Token.make` calls) still collide.
-const unionTokens = (
+/** @internal */
+export const unionTokens = (
   left: ReadonlyMap<string, Token>,
   right: ReadonlyMap<string, Token>,
 ): ReadonlyMap<string, Token> => {
@@ -227,7 +228,8 @@ const checkCycles = (declarations: ReadonlyArray<readonly [string, string]>): vo
   }
 }
 
-const makeTheme = (
+/** @internal */
+export const makeTheme = (
   declarations: ReadonlyArray<readonly [string, string]>,
   tokens: ReadonlyMap<string, Token>,
 ): Theme => {
@@ -544,6 +546,40 @@ export const resolve = (
     return substitute(value, reference => valueIn(declaring, reference, inside))
   }
   return valueIn(layers.length - 1, token.name, new Set())
+}
+
+/** @internal Rewrites every reference to one of `names` in `theme` with the value it
+ *  resolves to in `scope`, so the theme no longer depends on those properties. A
+ *  reference that resolves to nothing is left as written. */
+export const inline = (theme: Theme, names: ReadonlySet<string>, scope: Theme): Theme => {
+  const rewrite = (value: string): string => {
+    let result = ''
+    let index = 0
+    for (;;) {
+      const start = value.indexOf('var(', index)
+      if (start === -1) {
+        return result + value.slice(index)
+      }
+      const end = closingBracket(value, start + 4)
+      if (end === -1) {
+        return result + value.slice(index)
+      }
+      const inner = value.slice(start + 4, end - 1)
+      const comma = inner.indexOf(',')
+      const name = (comma === -1 ? inner : inner.slice(0, comma)).trim()
+      const resolved = names.has(name)
+        ? resolve(scope, { name } as Ref)
+        : Option.none<string>()
+      result +=
+        value.slice(index, start) +
+        (Option.isSome(resolved) ? resolved.value : value.slice(start, end))
+      index = end
+    }
+  }
+  return makeTheme(
+    theme.declarations.map(([name, value]) => [name, rewrite(value)] as const),
+    theme.tokens,
+  )
 }
 
 const isTheme = (value: Theme | ReadonlyArray<Theme>): value is Theme =>

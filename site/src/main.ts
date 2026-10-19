@@ -7,7 +7,16 @@ import { toString as urlToString } from 'foldkit/url'
 
 import { brandPresetSource } from './brandPresets.ts'
 import * as FoldkitUi from './demo/foldkitUi.ts'
-import { type BrandPreset, Message, Model, type Preset } from './message.ts'
+import * as Lights from './demo/theming/shape.ts'
+import {
+  type BrandPreset,
+  type Light,
+  type LightColor,
+  type LightPreset,
+  Message,
+  Model,
+  type Preset,
+} from './message.ts'
 import { presetSource } from './presets.ts'
 import { AppRoute, urlToAppRoute } from './route.ts'
 import { algebraView } from './view/algebra.ts'
@@ -27,6 +36,16 @@ export { Message, Model }
 const INITIAL_PRESET: Preset = 'Valid'
 const INITIAL_BRAND_PRESET: BrandPreset = 'Valid'
 
+const lightPreset = (preset: LightPreset): Light =>
+  preset === 'Paper' ? Lights.paper : Lights.night
+
+const LIGHT_FIELDS: Readonly<Record<LightColor, 'ground' | 'ink' | 'dye' | 'glow'>> = {
+  Ground: 'ground',
+  Ink: 'ink',
+  Dye: 'dye',
+  Glow: 'glow',
+}
+
 export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
   model: {
     route: urlToAppRoute(url),
@@ -39,6 +58,8 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
       scope: { mode: 'Light', brand: 'Harbor', density: 'Comfortable' },
       brandPreset: Option.some(INITIAL_BRAND_PRESET),
       brandSource: brandPresetSource(INITIAL_BRAND_PRESET),
+      light: lightPreset('Paper'),
+      lightPreset: Option.some<LightPreset>('Paper'),
     },
     foldkitUi: FoldkitUi.init(),
   },
@@ -156,6 +177,38 @@ export const update = (model: Model, message: Message) =>
         theming: modifyFields({
           brandSource: () => brandPresetSource(preset),
           brandPreset: () => Option.some(preset),
+        }),
+      }),
+    }),
+    UpdatedLightColor: ({ color, value }) => ({
+      model: modifyFields(model, {
+        theming: modifyFields({
+          light: light => ({ ...light, [LIGHT_FIELDS[color]]: value }),
+          lightPreset: () => Option.none(),
+        }),
+      }),
+    }),
+    UpdatedToneLightness: ({ lightness }) => ({
+      model: modifyFields(model, {
+        theming: modifyFields({
+          light: modifyFields({ tone: modifyFields({ lightness: () => lightness }) }),
+          lightPreset: () => Option.none(),
+        }),
+      }),
+    }),
+    UpdatedToneChroma: ({ chroma }) => ({
+      model: modifyFields(model, {
+        theming: modifyFields({
+          light: modifyFields({ tone: modifyFields({ chroma: () => chroma }) }),
+          lightPreset: () => Option.none(),
+        }),
+      }),
+    }),
+    ClickedLightPreset: ({ preset }) => ({
+      model: modifyFields(model, {
+        theming: modifyFields({
+          light: () => lightPreset(preset),
+          lightPreset: () => Option.some(preset),
         }),
       }),
     }),
