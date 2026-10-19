@@ -10,6 +10,7 @@ import {
   algebraRouter,
   foldkitUiRouter,
   generativeRouter,
+  gridRouter,
   guideRouter,
   homeRouter,
   referenceRouter,
@@ -319,6 +320,7 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     links: [
       ['The algebra', algebraRouter(), 'Algebra'],
       ['Theming', themingRouter(), 'Theming'],
+      ['The grid', gridRouter(), 'Grid'],
     ],
   },
   {
@@ -338,6 +340,7 @@ const TOP_LINKS: ReadonlyArray<NavLink> = [
   ['Guide', guideRouter(), 'Guide'],
   ['Algebra', algebraRouter(), 'Algebra'],
   ['Theming', themingRouter(), 'Theming'],
+  ['Grid', gridRouter(), 'Grid'],
   ['Foldkit UI', foldkitUiRouter(), 'FoldkitUi'],
   ['Generative', generativeRouter(), 'Generative'],
   ['Reference', referenceRouter(), 'Reference'],
@@ -508,6 +511,7 @@ const FOOTER_COLUMNS: ReadonlyArray<
       ['Guide', guideRouter()],
       ['The algebra', algebraRouter()],
       ['Theming', themingRouter()],
+      ['The grid', gridRouter()],
       ['Foldkit UI', foldkitUiRouter()],
       ['Generative interfaces', generativeRouter()],
       ['API reference', referenceRouter()],

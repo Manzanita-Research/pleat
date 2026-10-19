@@ -22,6 +22,16 @@ import { cssClass } from '@pleat/foldkit'
 itemToConfig: item => ({ className: cssClass(menuItem), content: h.span([], [item]) })
 ```
 
+For a `Grid`, `gridOverlay(grid, h, { isShown })` draws the numbered ruler, unit lines, baselines, and column tracks over a frame's field, and `gridKey(message)` is a Subscription entry that sends `message` when G is pressed outside a text field:
+
+```ts
+import { gridKey, gridOverlay } from '@pleat/foldkit'
+
+export const subscriptions = Subscription.make<Model, Message>()(() => ({
+  gridKey: gridKey(Message.PressedGridKey()),
+}))
+```
+
 For server rendering and static generation, export Pleat's `renderDocument` from your server entry:
 
 ```ts

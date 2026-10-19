@@ -76,4 +76,16 @@ describe('site choices', () => {
       }),
     )
   })
+
+  test('the G key and the button both toggle the grid overlay', () => {
+    story(
+      update,
+      given(initialModel),
+      message(Message.PressedGridKey()),
+      model(model => expect(model.isGridShown).toBe(true)),
+      message(Message.ClickedGridToggle()),
+      Command.expectNone(),
+      model(model => expect(model.isGridShown).toBe(false)),
+    )
+  })
 })

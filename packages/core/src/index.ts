@@ -6,6 +6,7 @@
  *  - {@link Var}: typed custom properties for values that vary continuously with the Model.
  *  - {@link Token} and {@link Theme}: design tokens and the values that fill them.
  *  - {@link Shape}: themes as layers, derived from values provided later.
+ *  - {@link Grid}: unit grids with whole-pixel frames and typed placement.
  *  - {@link Global}: element rules, themes, font faces, and keyframes.
  *  - {@link Sheet}: the stylesheet, for server rendering and the browser.
  *  - {@link Calc} and {@link Color}: value helpers that compile to CSS functions.
@@ -17,6 +18,7 @@ export * as Calc from './calc.ts'
 export * as Color from './color.ts'
 export type { Declarations, Properties } from './declarations.ts'
 export * as Global from './global.ts'
+export * as Grid from './grid.ts'
 export * as Paint from './paint.ts'
 export * as Recipe from './recipe.ts'
 export * as Shape from './shape.ts'

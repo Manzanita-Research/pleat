@@ -223,6 +223,47 @@ const MODULES: ReadonlyArray<Module> = [
     ],
   },
   {
+    name: 'Grid',
+    summary: 'Unit grids, frames that fit them in whole pixels, and typed placement.',
+    entries: [
+      [
+        'Grid.gerstner',
+        '58 units, 2-unit gutters, splits 2 to 6, and a 28-unit half below 640px.',
+      ],
+      [
+        'Grid.make({ units, gutter, columns, half })',
+        'A grid. Throws on a split that leaves units over.',
+      ],
+      [
+        'Grid.frame(grid, { fit, margin, min, size })',
+        'How a page fits the grid: `host` and `field` styles.',
+      ],
+      [
+        'Grid.fit(grid, frame, width)',
+        'The unit, unit count, half, and margin at a width.',
+      ],
+      [
+        'Grid.column(grid, { of, at, span, row, rows }, { half })',
+        'Places a block on an exact split.',
+      ],
+      [
+        'Grid.place(grid, { col, span, row, rows }, { half })',
+        'Places a block by units.',
+      ],
+      ['Grid.split(grid, of)', 'Every column of a split.'],
+      [
+        'Grid.area, Grid.resolve',
+        'A placement in units, and in pixels for a fitted frame.',
+      ],
+      ['Grid.units(grid, n)', 'A length of `n` units, in quarters.'],
+      [
+        'Grid.text, Grid.type',
+        'Type sizes and quarter-unit leadings, as a style or a Recipe.',
+      ],
+      ['Grid.isHalf(grid)', 'The condition that holds on the half.'],
+    ],
+  },
+  {
     name: 'Paint',
     summary: 'Color arithmetic computed in JavaScript, for deriving themes. Gives hex.',
     entries: [
