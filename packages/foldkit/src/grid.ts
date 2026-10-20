@@ -1,7 +1,6 @@
 import { Stream } from 'effect'
 import { streamFromKeyBindings } from 'foldkit/dom'
 import type { Html, HtmlBuilder } from 'foldkit/html'
-import { persistentEntry } from 'foldkit/subscription'
 
 import { Grid, Style } from '@pleat/core'
 
@@ -154,24 +153,24 @@ export const gridOverlay = <Message, Columns extends number>(
   )
 }
 
-/** A Subscription entry that sends `message` each time the G key is pressed outside a text
- *  field, for showing and hiding {@link gridOverlay}.
+/** A Stream that sends `message` each time the G key is pressed outside a text field, for
+ *  showing and hiding {@link gridOverlay}. It's a plain Stream, so it fits any Subscription
+ *  API: wrap it in `persistentEntry` on Foldkit 0.167, or return it from a Block's
+ *  `Definition.subscriptions` handler.
  *
  *  ```ts
  *  export const subscriptions = Subscription.make<Model, Message>()(() => ({
- *    gridKey: gridKey(Message.PressedGridKey()),
+ *    gridKey: persistentEntry(gridKey(Message.PressedGridKey())),
  *  }))
  *  ``` */
 export const gridKey = <Message>(
   message: Message,
   options: Readonly<{ key?: string }> = {},
-) =>
-  persistentEntry(
-    Stream.suspend(() =>
-      streamFromKeyBindings({
-        bindings: [
-          { keys: options.key ?? 'g', mapEvent: () => message, whileTyping: 'Suppress' },
-        ],
-      }),
-    ),
+): Stream.Stream<Message> =>
+  Stream.suspend(() =>
+    streamFromKeyBindings({
+      bindings: [
+        { keys: options.key ?? 'g', mapEvent: () => message, whileTyping: 'Suppress' },
+      ],
+    }),
   )
