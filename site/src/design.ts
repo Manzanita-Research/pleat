@@ -1,13 +1,4 @@
-import {
-  Color,
-  type Declarations,
-  Global,
-  Recipe,
-  Style,
-  Theme,
-  Token,
-  When,
-} from '@pleat/core'
+import { Color, Global, Recipe, Style, Theme, Token, When } from '@pleat/core'
 
 import commitMonoUrl from './fonts/CommitMonoManzanita-400.woff2?url'
 import commitMonoBoldUrl from './fonts/CommitMonoManzanita-600.woff2?url'
@@ -64,36 +55,31 @@ const { color, font, space, text, radius } = tokens
 /** The fonts this site ships, preloaded by the server entry. */
 export const FONT_URLS: ReadonlyArray<string> = [terminalUrl, commitMonoUrl]
 
-// NOTE: Global.fontFace takes style Declarations, which have no `src` or
-// `fontDisplay`, so the descriptors are cast. Reported as API friction.
-const fontFace = (descriptors: Readonly<Record<string, string>>): void =>
-  Global.fontFace(descriptors as Declarations)
-
 // NOTE: Terminal Grotesque is a pixel grotesque with one weight and no
 // italic, so the whole site is set at weight 400 and `font-synthesis` is off.
 // Its outlined cut draws the wordmark.
-fontFace({
+Global.fontFace({
   fontFamily: 'Terminal Grotesque',
   fontStyle: 'normal',
   fontWeight: '400',
   fontDisplay: 'swap',
   src: `url(${terminalUrl}) format("woff2")`,
 })
-fontFace({
+Global.fontFace({
   fontFamily: 'Terminal Grotesque Open',
   fontStyle: 'normal',
   fontWeight: '400',
   fontDisplay: 'swap',
   src: `url(${terminalOpenUrl}) format("woff2")`,
 })
-fontFace({
+Global.fontFace({
   fontFamily: 'Commit Mono Manzanita',
   fontStyle: 'normal',
   fontWeight: '400',
   fontDisplay: 'swap',
   src: `url(${commitMonoUrl}) format("woff2")`,
 })
-fontFace({
+Global.fontFace({
   fontFamily: 'Commit Mono Manzanita',
   fontStyle: 'normal',
   fontWeight: '600',

@@ -2,7 +2,7 @@ import fc from 'fast-check'
 import type { Browser, Page } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { type Declarations, Global, Sheet, Style } from '@pleat/core'
+import { Global, Sheet, Style } from '@pleat/core'
 
 import { isSafeValue } from '../../packages/core/src/property.ts'
 import { launch } from './chromium.ts'
@@ -197,7 +197,7 @@ describe('isSafeValue keeps a value inside its declaration in Chromium', () => {
   test('data URLs reach Chromium through Pleat’s own sheet', async () => {
     const font = 'url(data:font/woff2;base64,d09GMgABAAAAAA==) format("woff2")'
     const image = 'url(data:image/svg+xml;charset=utf-8,%3Csvg%3E)'
-    Global.fontFace({ fontFamily: 'Inline', src: font } as Declarations)
+    Global.fontFace({ fontFamily: 'Inline', src: font })
     const style = Style.make({ backgroundImage: image })
     const css = Sheet.render({ classNames: style.className.split(' ') })
     const parsed = await page.evaluate(text => {

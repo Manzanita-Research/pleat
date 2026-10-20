@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { type Declarations, Global, Sheet, Style } from '../src/index.ts'
+import { Global, Sheet, Style } from '../src/index.ts'
 import { isSafeValue } from '../src/property.ts'
 
 const FONT = 'data:font/woff2;base64,d09GMgABAAAAAAKMAA0AAAAABZQAAAI5AAEAAAAAAAAAAAAA'
@@ -106,11 +106,10 @@ describe('isSafeValue', () => {
 
 describe('data URLs end to end', () => {
   test('Global.fontFace takes a base64 font', () => {
-    // NOTE: fontFace takes style Declarations, which have no `src`; the site casts the same way.
     Global.fontFace({
       fontFamily: 'Inline',
       src: `url(${FONT}) format("woff2")`,
-    } as Declarations)
+    })
     expect(Sheet.render()).toContain(
       `@font-face{font-family:Inline;src:url(${FONT}) format("woff2")}`,
     )

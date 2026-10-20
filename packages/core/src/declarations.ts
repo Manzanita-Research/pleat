@@ -22,6 +22,9 @@ export type Declarations = {
   readonly [Property: `--${string}`]: Value | undefined
 }
 
+/** The descriptors of an `@font-face` rule (camelCase), such as `src` and `fontDisplay`. */
+export type FontFaceDescriptors = Readonly<CSS.AtRule.FontFace>
+
 /** Formats one value for `property`. */
 export const formatValue = (property: string, value: Value): string =>
   typeof value === 'number'
