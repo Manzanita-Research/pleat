@@ -104,6 +104,14 @@ describe('Global', () => {
     expect(Sheet.render()).toContain(`${selector}{--rejected-ink:red;--other:green}`)
   })
 
+  test('global rules take combinators, and refuse what could escape the rule', () => {
+    Global.rule('nav > a + a ~ span', { color: 'red' })
+    expect(Sheet.render()).toContain('nav > a + a ~ span{color:red}')
+    for (const selector of ['a{}', 'a;b', 'a</style>', ' ']) {
+      expect(() => Global.rule(selector, { color: 'red' })).toThrow(/not a selector/)
+    }
+  })
+
   test('global rules refuse element conditions', () => {
     expect(() => Global.rule('a', { color: 'red' }, { when: When.hover })).toThrow(
       /environment conditions only/,

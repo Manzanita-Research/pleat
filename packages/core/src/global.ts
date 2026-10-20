@@ -8,7 +8,9 @@ import { registerGlobal } from './sheet.ts'
 import * as Theme from './theme.ts'
 import * as When from './when.ts'
 
-const SELECTOR = /^[^{};<>]+$/
+// NOTE: `{`, `}` and `;` could end the rule and `<` could end a <style> element; `>` is the
+// child combinator.
+const SELECTOR = /^[^{};<]+$/
 
 const assertSelector = (selector: string): void => {
   if (!SELECTOR.test(selector) || selector.trim() === '') {
