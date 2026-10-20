@@ -16,7 +16,7 @@
 
 export * as Calc from './calc.ts'
 export * as Color from './color.ts'
-export type { Declarations, Properties } from './declarations.ts'
+export type { Declarations, FontFaceDescriptors, Properties } from './declarations.ts'
 export * as Global from './global.ts'
 export * as Grid from './grid.ts'
 export * as Paint from './paint.ts'
