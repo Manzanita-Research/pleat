@@ -3,6 +3,7 @@ import { Command, type Runtime, Subscription, Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
+import { persistentEntry } from 'foldkit/subscription'
 import { toString as urlToString } from 'foldkit/url'
 
 import { gridKey } from '@pleat/foldkit'
@@ -228,7 +229,7 @@ export const update = (model: Model, message: Message) =>
 // SUBSCRIPTIONS
 
 export const subscriptions = Subscription.make<Model, Message>()(() => ({
-  gridKey: gridKey(Message.PressedGridKey()),
+  gridKey: persistentEntry(gridKey(Message.PressedGridKey())),
 }))
 
 // VIEW
