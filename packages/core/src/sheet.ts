@@ -317,16 +317,39 @@ const classOfRule = (rule: CSSRule): string => {
 const indexOfRule = (block: CSSGroupingRule, rule: CSSRule): number =>
   Array.prototype.indexOf.call(block.cssRules, rule)
 
+/** Inserts `rule` at `index`, returning its index, or `undefined` when the browser can't
+ *  parse it. A stylesheet drops a rule it can't parse, such as one for another engine's
+ *  pseudo-element (`::-moz-range-thumb` in Chromium, `::-webkit-slider-thumb` in Firefox),
+ *  and keeps the rest; `insertRule` throws instead, so Pleat drops it the same way. */
+const tryInsertRule = (
+  block: CSSGroupingRule,
+  rule: string,
+  index: number,
+): number | undefined => {
+  try {
+    return block.insertRule(rule, index)
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'SyntaxError') {
+      return undefined
+    }
+    throw error
+  }
+}
+
 const insertGlobal = (target: Mounted, global: Global): void => {
   const block = global.layer === 'globals' ? target.globals : target.themes
   const existing = target.insertedGlobals.get(global.id)
   const existingIndex = existing === undefined ? -1 : indexOfRule(block, existing)
   // NOTE: the new rule goes in before the old one comes out, so a rule the browser rejects
   // leaves the old one in place.
-  const index = block.insertRule(
+  const index = tryInsertRule(
+    block,
     global.rule,
     existingIndex >= 0 ? existingIndex : block.cssRules.length,
   )
+  if (index === undefined) {
+    return
+  }
   if (existingIndex >= 0) {
     block.deleteRule(existingIndex + 1)
   }
@@ -370,10 +393,12 @@ const insertAtom = (target: Mounted, atom: Atom): void => {
   }
   const index = sortedIndex(target.insertedAtoms, atom)
   const at = ruleIndex(target, index)
-  target.atoms.insertRule(atom.rule, at)
+  target.insertedClassNames.add(atom.className)
+  if (tryInsertRule(target.atoms, atom.rule, at) === undefined) {
+    return
+  }
   target.ruleClassNames.splice(at, 0, atom.className)
   target.insertedAtoms.splice(index, 0, atom)
-  target.insertedClassNames.add(atom.className)
 }
 
 /** Takes in a server rule whose atom this page has just defined, moving the rule if atoms

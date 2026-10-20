@@ -275,3 +275,37 @@ describe('Tailwind v4', () => {
     expect(result).toEqual(expected)
   })
 })
+
+describe('rules the browser cannot parse', () => {
+  // A stylesheet drops a rule it can't parse and keeps the rest, so the same must hold for
+  // rules Pleat inserts. Chromium can't parse Firefox's ::-moz-range-thumb.
+
+  test('are dropped, and the styles and globals around them still apply', async () => {
+    const opened = await page('', '<input id="probe" type="range"><div id="after"></div>')
+    const result = await opened.evaluate(() => {
+      const { Pleat, colorOf } = globalThis as unknown as PleatGlobal
+      const { Global, Sheet, Style, When } = Pleat
+      Sheet.mount()
+      const probe = document.getElementById('probe')
+      const after = document.getElementById('after')
+      if (probe === null || after === null) {
+        throw new Error('No probe elements.')
+      }
+      probe.className = Style.use(
+        Style.make({ color: 'red' }).pipe(
+          Style.when(When.pseudoElement('::-moz-range-thumb'), { color: 'green' }),
+        ),
+      )
+      Global.rule('#probe::-moz-range-thumb', { color: 'green' })
+      Global.rule('#after', { color: 'blue' })
+      after.className = Style.use(Style.make({ backgroundColor: 'red' }))
+      return {
+        probe: colorOf('probe'),
+        after: colorOf('after'),
+        background: getComputedStyle(after).backgroundColor,
+      }
+    })
+    await opened.close()
+    expect(result).toEqual({ probe: RED, after: BLUE, background: RED })
+  })
+})
